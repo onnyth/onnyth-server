@@ -1,7 +1,7 @@
 package com.onnyth.onnythserver.controller;
 
-import org.springframework.web.bind.annotation.*;
 import com.onnyth.onnythserver.models.User;
+import org.springframework.web.bind.annotation.*;
 import com.onnyth.onnythserver.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

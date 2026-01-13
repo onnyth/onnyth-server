@@ -1,52 +1,39 @@
 package com.onnyth.onnythserver.models;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
-import java.util.LinkedHashSet;
-import java.util.Set;
 import java.util.UUID;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter
+@Setter
 @Entity
 @Table(name = "users")
 public class User {
     @Id
+    @ColumnDefault("gen_random_uuid()")
     @Column(name = "id", nullable = false)
     private UUID id;
 
-    @Column(name = "username", nullable = false)
+    @Column(name = "username", nullable = false, length = Integer.MAX_VALUE)
     private String username;
 
-    @Column(name = "email", nullable = false)
+    @Column(name = "email", nullable = false, length = Integer.MAX_VALUE)
     private String email;
 
-    @Column(name = "full_name")
+    @Column(name = "full_name", length = Integer.MAX_VALUE)
     private String fullName;
 
-    @Column(name = "profile_pic")
+    @Column(name = "profile_pic", length = Integer.MAX_VALUE)
     private String profilePic;
 
     @Column(name = "created_at")
     private Instant createdAt;
 
-    @OneToMany(mappedBy = "user")
-    private Set<Comment> comments = new LinkedHashSet<>();
-
-    @OneToMany(mappedBy = "user")
-    private Set<Like> likes = new LinkedHashSet<>();
-
-    @OneToOne(mappedBy = "users")
-    private Point point;
-
-    @OneToMany(mappedBy = "user")
-    private Set<Post> posts = new LinkedHashSet<>();
-
-    @OneToMany(mappedBy = "follows")
-    private Set<Follow> follows = new LinkedHashSet<>();
-
 }
-

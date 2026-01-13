@@ -1,29 +1,31 @@
 package com.onnyth.onnythserver.models;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.Instant;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter
+@Setter
 @Entity
-@Table(name="follows")
+@Table(name = "follows")
 public class Follow {
     @EmbeddedId
     private FollowId id;
 
-    @MapsId
+    @MapsId("followerId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "follower_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JoinColumn(name = "follower_id", nullable = false)
     private User follower;
 
-    @MapsId
+    @MapsId("followingId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "following_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JoinColumn(name = "following_id", nullable = false)
     private User following;
 
     @Column(name = "created_at")
