@@ -5,6 +5,7 @@ import com.onnyth.onnythserver.dto.RefreshTokenResponse;
 import com.onnyth.onnythserver.dto.supabase.SupabaseLoginResponse;
 import com.onnyth.onnythserver.dto.supabase.SupabaseSignupResponse;
 import com.onnyth.onnythserver.exceptions.*;
+import com.onnyth.onnythserver.exceptions.handler.LogoutFailedException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
@@ -92,6 +93,21 @@ public class SupabaseAuthService {
                         r.expiresIn(),
                         r.tokenType()
                 ))
+                .block();
+    }
+
+    public void logout(String authorizationHeader) {
+        webClient.post()
+                .uri(supabaseUrl + "/auth/v1/logout")
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header("apikey", supabaseAnonKey)
+                .header(HttpHeaders.AUTHORIZATION, authorizationHeader)
+                .retrieve()
+                .onStatus(
+                        HttpStatusCode::isError,
+                        r -> Mono.error(new LogoutFailedException("Logout failed"))
+                )
+                .toBodilessEntity()
                 .block();
     }
 
