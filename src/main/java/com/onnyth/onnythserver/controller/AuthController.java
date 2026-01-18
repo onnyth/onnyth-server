@@ -1,6 +1,8 @@
 package com.onnyth.onnythserver.controller;
 
 import com.onnyth.onnythserver.dto.AuthRequest;
+import com.onnyth.onnythserver.dto.RefreshTokenRequest;
+import com.onnyth.onnythserver.dto.RefreshTokenResponse;
 import com.onnyth.onnythserver.dto.supabase.SupabaseLoginResponse;
 import com.onnyth.onnythserver.dto.supabase.SupabaseSignupResponse;
 import com.onnyth.onnythserver.service.SupabaseAuthService;
@@ -30,4 +32,10 @@ public class AuthController {
         SupabaseLoginResponse supabaseLoginResponse = supabaseAuthService.login(authRequest);
         return ResponseEntity.status(HttpStatus.OK).body(supabaseLoginResponse);
     }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<RefreshTokenResponse> refresh(@RequestBody RefreshTokenRequest request) {
+        return ResponseEntity.ok(supabaseAuthService.refresh(request.refreshToken()));
+    }
+
 }

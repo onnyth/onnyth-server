@@ -1,12 +1,10 @@
 package com.onnyth.onnythserver.service;
 
 import com.onnyth.onnythserver.dto.AuthRequest;
+import com.onnyth.onnythserver.dto.RefreshTokenResponse;
 import com.onnyth.onnythserver.dto.supabase.SupabaseLoginResponse;
 import com.onnyth.onnythserver.dto.supabase.SupabaseSignupResponse;
-import com.onnyth.onnythserver.exceptions.EmailAlreadyExistsException;
-import com.onnyth.onnythserver.exceptions.InvalidSigninRequestException;
-import com.onnyth.onnythserver.exceptions.InvalidSignupRequestException;
-import com.onnyth.onnythserver.exceptions.SupabaseUnavailableException;
+import com.onnyth.onnythserver.exceptions.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
@@ -14,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.http.HttpHeaders;
 import reactor.core.publisher.Mono;
+
+import java.util.Map;
 
 @Service
 public class SupabaseAuthService {
@@ -23,8 +23,8 @@ public class SupabaseAuthService {
     @Value("${supabase.url}")
     private String supabaseUrl;
 
-    @Value("${supabase.anon.key}")
-    private String supabaseAnon;
+    @Value("${supabase.anon-key}")
+    private String supabaseAnonKey;
 
     public SupabaseAuthService(WebClient webClient) {
         this.webClient = webClient;
@@ -34,7 +34,7 @@ public class SupabaseAuthService {
         return webClient.post()
                 .uri(supabaseUrl + "/auth/v1/signup")
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .header("apikey", supabaseAnon)
+                .header("apikey", supabaseAnonKey)
                 .bodyValue(authRequest)
                 .retrieve().onStatus(
                         HttpStatusCode::is4xxClientError,
@@ -60,7 +60,7 @@ public class SupabaseAuthService {
         return webClient.post()
                 .uri(supabaseUrl + "/auth/v1/token?grant_type=password")
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .header("apikey", supabaseAnon)
+                .header("apikey", supabaseAnonKey)
                 .bodyValue(authRequest)
                 .retrieve().onStatus(
                         HttpStatusCode::is4xxClientError,
@@ -73,4 +73,26 @@ public class SupabaseAuthService {
                 .bodyToMono(SupabaseLoginResponse.class)
                 .block();
     }
+
+    public RefreshTokenResponse refresh(String refreshToken) {
+        return webClient.post()
+                .uri(supabaseUrl + "/auth/v1/token?grant_type=refresh_token")
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header("apikey", supabaseAnonKey)
+                .bodyValue(Map.of("refresh_token", refreshToken))
+                .retrieve()
+                .onStatus(
+                        HttpStatusCode::is4xxClientError,
+                        r -> Mono.error(new InvalidRefreshTokenException("Invalid refresh token"))
+                )
+                .bodyToMono(SupabaseLoginResponse.class)
+                .map(r -> new RefreshTokenResponse(
+                        r.accessToken(),
+                        r.refreshToken(),
+                        r.expiresIn(),
+                        r.tokenType()
+                ))
+                .block();
+    }
+
 }
