@@ -1,10 +1,6 @@
 package com.onnyth.onnythserver.controller;
 
-import com.onnyth.onnythserver.dto.AuthRequest;
-import com.onnyth.onnythserver.dto.RefreshTokenRequest;
-import com.onnyth.onnythserver.dto.RefreshTokenResponse;
-import com.onnyth.onnythserver.dto.supabase.SupabaseLoginResponse;
-import com.onnyth.onnythserver.dto.supabase.SupabaseSignupResponse;
+import com.onnyth.onnythserver.dto.*;
 import com.onnyth.onnythserver.service.SupabaseAuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,14 +16,13 @@ public class AuthController {
     private final SupabaseAuthService supabaseAuthService;
 
     @PostMapping("/signup")
-    public ResponseEntity<SupabaseSignupResponse> signUp(@RequestBody AuthRequest authRequest) {
+    public ResponseEntity<SignupResponse> signUp(@RequestBody AuthRequest authRequest) {
         return ResponseEntity.status(HttpStatus.CREATED).body(supabaseAuthService.signUp(authRequest));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<SupabaseLoginResponse> login(@RequestBody AuthRequest authRequest) {
-        SupabaseLoginResponse supabaseLoginResponse = supabaseAuthService.login(authRequest);
-        return ResponseEntity.status(HttpStatus.OK).body(supabaseLoginResponse);
+    public ResponseEntity<LoginResponse> login(@RequestBody AuthRequest authRequest) {
+        return ResponseEntity.status(HttpStatus.OK).body(supabaseAuthService.login(authRequest));
     }
 
     @PostMapping("/refresh")

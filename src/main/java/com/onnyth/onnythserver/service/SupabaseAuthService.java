@@ -1,8 +1,11 @@
 package com.onnyth.onnythserver.service;
 
 import com.onnyth.onnythserver.dto.AuthRequest;
+import com.onnyth.onnythserver.dto.LoginResponse;
 import com.onnyth.onnythserver.dto.RefreshTokenResponse;
+import com.onnyth.onnythserver.dto.SignupResponse;
 import com.onnyth.onnythserver.dto.supabase.SupabaseLoginResponse;
+import com.onnyth.onnythserver.dto.supabase.SupabaseRefreshTokenResponse;
 import com.onnyth.onnythserver.dto.supabase.SupabaseSignupResponse;
 import com.onnyth.onnythserver.exceptions.*;
 import com.onnyth.onnythserver.exceptions.handler.LogoutFailedException;
@@ -15,9 +18,13 @@ import org.springframework.http.HttpHeaders;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class SupabaseAuthService {
+
+    private static final Logger logger = LoggerFactory.getLogger(SupabaseAuthService.class);
 
     private final WebClient webClient;
 
@@ -31,7 +38,7 @@ public class SupabaseAuthService {
         this.webClient = webClient;
     }
 
-    public SupabaseSignupResponse signUp(AuthRequest authRequest) {
+    public SignupResponse signUp(AuthRequest authRequest) {
         return webClient.post()
                 .uri(supabaseUrl + "/auth/v1/signup")
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -41,11 +48,12 @@ public class SupabaseAuthService {
                         HttpStatusCode::is4xxClientError,
                         response -> response.bodyToMono(String.class)
                                 .flatMap(body -> {
+                                    logger.error("Supabase signup error response: {}", body);
                                     if (body.contains("User already registered")) {
                                         return Mono.error(new EmailAlreadyExistsException(authRequest.email()));
                                     }
                                     return Mono.error(
-                                            new InvalidSignupRequestException("Invalid signup request")
+                                            new InvalidSignupRequestException("Invalid signup request: " + body)
                                     );
                                 })
                 )
@@ -54,10 +62,15 @@ public class SupabaseAuthService {
                         response -> Mono.error(new SupabaseUnavailableException())
                 )
                 .bodyToMono(SupabaseSignupResponse.class)
+                .map(s -> new SignupResponse(
+                        s.id(),
+                        s.email(),
+                        s.confirmationSentAt()
+                ))
                 .block();
     }
 
-    public SupabaseLoginResponse login(AuthRequest authRequest) {
+    public LoginResponse login(AuthRequest authRequest) {
         return webClient.post()
                 .uri(supabaseUrl + "/auth/v1/token?grant_type=password")
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -72,6 +85,14 @@ public class SupabaseAuthService {
                         response -> Mono.error(new SupabaseUnavailableException())
                 )
                 .bodyToMono(SupabaseLoginResponse.class)
+                .map( s -> new LoginResponse(
+                        s.accessToken(),
+                        s.refreshToken(),
+                        s.expiresIn(),
+                        s.tokenType(),
+                        s.expiresAt(),
+                        s.supabaseUser()
+                ))
                 .block();
     }
 
@@ -86,7 +107,7 @@ public class SupabaseAuthService {
                         HttpStatusCode::is4xxClientError,
                         r -> Mono.error(new InvalidRefreshTokenException("Invalid refresh token"))
                 )
-                .bodyToMono(SupabaseLoginResponse.class)
+                .bodyToMono(SupabaseRefreshTokenResponse.class)
                 .map(r -> new RefreshTokenResponse(
                         r.accessToken(),
                         r.refreshToken(),
