@@ -32,6 +32,9 @@ build/
 ### VS Code ###
 .vscode/
 
-# Ignore local configuration
-application.properties
+# Environment files (secrets)
+.env
+.env.local
+.env.*.local
+
 
