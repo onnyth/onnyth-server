@@ -4,9 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
-import org.hibernate.annotations.ColumnDefault;
+import lombok.*;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -14,17 +12,19 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "users")
 public class User {
     @Id
-    @ColumnDefault("gen_random_uuid()")
-    @Column(name = "id", nullable = false)
+    @Column(name = "id", nullable = false, updatable = false)
     private UUID id;
 
-    @Column(name = "username", nullable = false, length = Integer.MAX_VALUE)
+    @Column(name = "username", length = Integer.MAX_VALUE)
     private String username;
 
-    @Column(name = "email", nullable = false, length = Integer.MAX_VALUE)
+    @Column(name = "email", nullable = false, unique = true, length = Integer.MAX_VALUE)
     private String email;
 
     @Column(name = "full_name", length = Integer.MAX_VALUE)
@@ -33,7 +33,10 @@ public class User {
     @Column(name = "profile_pic", length = Integer.MAX_VALUE)
     private String profilePic;
 
-    @Column(name = "created_at")
+    @Column(name = "email_verified", nullable = false, updatable = false)
+    private Boolean emailVerified;
+
+    @Column(name = "created_at", nullable = false, updatable = false, insertable = false)
     private Instant createdAt;
 
 }

@@ -1,13 +1,18 @@
 package com.onnyth.onnythserver.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.onnyth.onnythserver.dto.supabase.SupabaseUser;
+import java.util.UUID;
 
-public record LoginResponse (
+public record LoginResponse(
         String accessToken,
         String refreshToken,
-        int expiresIn,
-        String tokenType,
         long expiresAt,
-        SupabaseUser supabaseUser
-){ }
+        UserInfo user
+) {
+    public record UserInfo(
+            UUID id,
+            String email,
+            String username,
+            String fullName,
+            String profilePic
+    ) {}
+}

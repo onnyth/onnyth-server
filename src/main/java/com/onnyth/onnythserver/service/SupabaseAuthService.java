@@ -9,14 +9,19 @@ import com.onnyth.onnythserver.dto.supabase.SupabaseRefreshTokenResponse;
 import com.onnyth.onnythserver.dto.supabase.SupabaseSignupResponse;
 import com.onnyth.onnythserver.exceptions.*;
 import com.onnyth.onnythserver.exceptions.handler.LogoutFailedException;
+import com.onnyth.onnythserver.models.User;
+import com.onnyth.onnythserver.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
+import java.util.UUID;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +31,7 @@ public class SupabaseAuthService {
     private static final Logger logger = LoggerFactory.getLogger(SupabaseAuthService.class);
 
     private final RestTemplate restTemplate;
+    private final UserRepository userRepository;
 
     @Value("${supabase.url}")
     private String supabaseUrl;
@@ -33,8 +39,9 @@ public class SupabaseAuthService {
     @Value("${supabase.anon-key}")
     private String supabaseAnonKey;
 
-    public SupabaseAuthService(RestTemplate restTemplate) {
+    public SupabaseAuthService(RestTemplate restTemplate, UserRepository userRepository) {
         this.restTemplate = restTemplate;
+        this.userRepository = userRepository;
     }
 
     private HttpHeaders createHeaders() {
@@ -50,6 +57,12 @@ public class SupabaseAuthService {
         return headers;
     }
 
+    /**
+     * Signup flow:
+     * 1. Register user with Supabase
+     * 2. Return confirmation pending response
+     * NOTE: User row is NOT created here - it's created on first login
+     */
     public SignupResponse signUp(AuthRequest authRequest) {
         HttpEntity<AuthRequest> entity = new HttpEntity<>(authRequest, createHeaders());
 
@@ -61,16 +74,14 @@ public class SupabaseAuthService {
                     SupabaseSignupResponse.class
             );
 
-            SupabaseSignupResponse s = response.getBody();
-            if (s == null) {
+            SupabaseSignupResponse supabaseResponse = response.getBody();
+            if (supabaseResponse == null || supabaseResponse.id() == null) {
                 throw new InvalidSignupRequestException("Empty response from Supabase");
             }
 
-            return new SignupResponse(
-                    s.id(),
-                    s.email(),
-                    s.confirmationSentAt()
-            );
+            logger.info("User registered with Supabase, id: {}", supabaseResponse.id());
+            return SignupResponse.confirmationPending(supabaseResponse.email());
+
         } catch (HttpClientErrorException e) {
             String body = e.getResponseBodyAsString();
             logger.error("Supabase signup error response: {}", body);
@@ -83,6 +94,14 @@ public class SupabaseAuthService {
         }
     }
 
+    /**
+     * Login flow:
+     * 1. Authenticate with Supabase
+     * 2. Check if user exists in local database
+     * 3. If first login, create user with emailVerified=true
+     * 4. Return tokens and user info
+     */
+    @Transactional
     public LoginResponse login(AuthRequest authRequest) {
         HttpEntity<AuthRequest> entity = new HttpEntity<>(authRequest, createHeaders());
 
@@ -94,26 +113,52 @@ public class SupabaseAuthService {
                     SupabaseLoginResponse.class
             );
 
-            SupabaseLoginResponse s = response.getBody();
-            if (s == null) {
+            SupabaseLoginResponse supabaseResponse = response.getBody();
+            if (supabaseResponse == null || supabaseResponse.supabaseUser() == null) {
                 throw new InvalidSigninRequestException("Empty response from Supabase");
             }
 
+            UUID userId = UUID.fromString(supabaseResponse.supabaseUser().id());
+            String email = supabaseResponse.supabaseUser().email();
+            logger.info("Supabase login successful for user ID: {}", userId);
+
+            // Find or create user on first login
+            User user = userRepository.findById(userId)
+                    .orElseGet(() -> {
+                        logger.info("First login - creating user in database with ID: {}", userId);
+                        User newUser = User.builder()
+                                .id(userId)
+                                .email(email)
+                                .emailVerified(true)
+                                .build();
+                        return userRepository.save(newUser);
+                    });
+
             return new LoginResponse(
-                    s.accessToken(),
-                    s.refreshToken(),
-                    s.expiresIn(),
-                    s.tokenType(),
-                    s.expiresAt(),
-                    s.supabaseUser()
+                    supabaseResponse.accessToken(),
+                    supabaseResponse.refreshToken(),
+                    supabaseResponse.expiresAt(),
+                    new LoginResponse.UserInfo(
+                            user.getId(),
+                            user.getEmail(),
+                            user.getUsername(),
+                            user.getFullName(),
+                            user.getProfilePic()
+                    )
             );
+
         } catch (HttpClientErrorException e) {
-            throw new InvalidSigninRequestException("Invalid Sign-in request");
+            throw new InvalidSigninRequestException("Invalid email or password");
         } catch (HttpServerErrorException e) {
             throw new SupabaseUnavailableException();
         }
     }
 
+    /**
+     * Refresh token flow for mobile app:
+     * 1. Exchange refresh token with Supabase
+     * 2. Return new tokens with expiry timestamp
+     */
     public RefreshTokenResponse refresh(String refreshToken) {
         HttpEntity<Map<String, String>> entity = new HttpEntity<>(
                 Map.of("refresh_token", refreshToken),
@@ -128,22 +173,28 @@ public class SupabaseAuthService {
                     SupabaseRefreshTokenResponse.class
             );
 
-            SupabaseRefreshTokenResponse r = response.getBody();
-            if (r == null) {
+            SupabaseRefreshTokenResponse supabaseResponse = response.getBody();
+            if (supabaseResponse == null) {
                 throw new InvalidRefreshTokenException("Empty response from Supabase");
             }
 
             return new RefreshTokenResponse(
-                    r.accessToken(),
-                    r.refreshToken(),
-                    r.expiresIn(),
-                    r.tokenType()
+                    supabaseResponse.accessToken(),
+                    supabaseResponse.refreshToken(),
+                    supabaseResponse.expiresAt()
             );
+
         } catch (HttpClientErrorException e) {
-            throw new InvalidRefreshTokenException("Invalid refresh token");
+            logger.error("Refresh token error: {}", e.getResponseBodyAsString());
+            throw new InvalidRefreshTokenException("Invalid or expired refresh token");
+        } catch (HttpServerErrorException e) {
+            throw new SupabaseUnavailableException();
         }
     }
 
+    /**
+     * Logout - invalidate session on Supabase
+     */
     public void logout(String authorizationHeader) {
         HttpEntity<Void> entity = new HttpEntity<>(createHeadersWithAuth(authorizationHeader));
 

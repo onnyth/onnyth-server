@@ -15,6 +15,9 @@ public record SupabaseRefreshTokenResponse(
         @JsonProperty("expires_in")
         int expiresIn,
 
+        @JsonProperty("expires_at")
+        long expiresAt,
+
         @JsonProperty("token_type")
         String tokenType
 ) {}

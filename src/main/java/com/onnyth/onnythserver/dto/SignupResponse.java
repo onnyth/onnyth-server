@@ -1,9 +1,10 @@
 package com.onnyth.onnythserver.dto;
 
-import java.time.Instant;
-
 public record SignupResponse(
-        String id,
-        String email,
-        String confirmationSentAt
-) {}
+        String message,
+        String email
+) {
+    public static SignupResponse confirmationPending(String email) {
+        return new SignupResponse("Please check your email to confirm your account", email);
+    }
+}
