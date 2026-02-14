@@ -1,0 +1,65 @@
+openapi: 3.0.3
+info:
+  title: Supabase Auth API
+  description: Supabase authentication API for user signup
+  version: 1.0.0
+
+servers:
+  - url: https://czktiswbnpkjpyztssud.supabase.co
+
+paths:
+  /auth/v1/signup:
+    post:
+      summary: Sign up a new user
+      description: Creates a new user with email and password using Supabase Auth
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: someone@email.com
+                password:
+                  type: string
+                  format: password
+                  example: UBLclapmCCnyyDCbKuOR
+      parameters:
+        - name: apikey
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Supabase anon or service role key
+      responses:
+        "200":
+          description: Signup successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 123e4567-e89b-12d3-a456-426614174000
+                      email:
+                        type: string
+                        example: someone@email.com
+                  session:
+                    type: object
+                    nullable: true
+        "400":
+          description: Invalid signup request
+        "401":
+          description: Unauthorized or invalid API key

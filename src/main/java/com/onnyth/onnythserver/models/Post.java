@@ -1,45 +1,40 @@
 package com.onnyth.onnythserver.models;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.Instant;
-import java.util.LinkedHashSet;
-import java.util.Set;
 import java.util.UUID;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter
+@Setter
 @Entity
-@Table(name="posts")
+@Table(name = "posts")
 public class Post {
     @Id
+    @ColumnDefault("gen_random_uuid()")
     @Column(name = "id", nullable = false)
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(name = "caption")
+    @Column(name = "caption", length = Integer.MAX_VALUE)
     private String caption;
 
-    @Column(name = "media_url", nullable = false)
+    @Column(name = "media_url", nullable = false, length = Integer.MAX_VALUE)
     private String mediaUrl;
 
-    @Column(name = "media_type")
+    @Column(name = "media_type", length = Integer.MAX_VALUE)
     private String mediaType;
 
     @Column(name = "created_at")
     private Instant createdAt;
-
-    @OneToMany(mappedBy = "post")
-    private Set<Comment> comments = new LinkedHashSet<>();
-
-    @OneToMany(mappedBy = "post")
-    private Set<Like> likes = new LinkedHashSet<>();
 
 }
