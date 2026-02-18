@@ -4,6 +4,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.Instant;
@@ -21,13 +23,16 @@ public class User {
     @Column(name = "id", nullable = false, updatable = false)
     private UUID id;
 
-    @Column(name = "username", length = Integer.MAX_VALUE)
+    @Size(min = 3, max = 20, message = "Username must be between 3 and 20 characters")
+    @Pattern(regexp = "^[a-zA-Z0-9_]+$", message = "Username can only contain letters, numbers, and underscores")
+    @Column(name = "username", unique = true, length = 20)
     private String username;
 
     @Column(name = "email", nullable = false, unique = true, length = Integer.MAX_VALUE)
     private String email;
 
-    @Column(name = "full_name", length = Integer.MAX_VALUE)
+    @Size(max = 100, message = "Full name cannot exceed 100 characters")
+    @Column(name = "full_name", length = 100)
     private String fullName;
 
     @Column(name = "profile_pic", length = Integer.MAX_VALUE)
@@ -36,7 +41,22 @@ public class User {
     @Column(name = "email_verified", nullable = false, updatable = false)
     private Boolean emailVerified;
 
+    @Builder.Default
+    @Column(name = "profile_complete", nullable = false)
+    private Boolean profileComplete = false;
+
     @Column(name = "created_at", nullable = false, updatable = false, insertable = false)
     private Instant createdAt;
 
+    @Column(name = "updated_at")
+    private Instant updatedAt;
+
+    /**
+     * Checks if all required profile fields are filled and updates profileComplete status.
+     */
+    public void checkAndUpdateProfileCompletion() {
+        this.profileComplete = username != null && !username.isBlank()
+                && fullName != null && !fullName.isBlank()
+                && profilePic != null && !profilePic.isBlank();
+    }
 }
