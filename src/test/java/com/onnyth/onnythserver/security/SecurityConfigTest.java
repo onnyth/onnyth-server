@@ -1,8 +1,10 @@
 package com.onnyth.onnythserver.security;
 
 import com.onnyth.onnythserver.controller.AuthController;
+import com.onnyth.onnythserver.controller.LifeStatController;
 import com.onnyth.onnythserver.controller.ProfileController;
 import com.onnyth.onnythserver.controller.UserController;
+import com.onnyth.onnythserver.service.LifeStatService;
 import com.onnyth.onnythserver.service.ProfileService;
 import com.onnyth.onnythserver.service.SupabaseAuthService;
 import com.onnyth.onnythserver.service.UserService;
@@ -25,7 +27,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * and protects all other routes behind JWT authentication.
  * Uses @WebMvcTest to avoid needing Docker/Testcontainers.
  */
-@WebMvcTest(controllers = { AuthController.class, ProfileController.class, UserController.class })
+@WebMvcTest(controllers = { AuthController.class, ProfileController.class, UserController.class,
+        LifeStatController.class })
 @Import({ SecurityConfig.class, MockJwtDecoderConfig.class })
 class SecurityConfigTest {
 
@@ -40,6 +43,9 @@ class SecurityConfigTest {
 
     @MockitoBean
     private UserService userService;
+
+    @MockitoBean
+    private LifeStatService lifeStatService;
 
     // ─── Public routes — must be accessible without a token ──────────────────
 
@@ -154,5 +160,32 @@ class SecurityConfigTest {
                 .with(jwt().jwt(j -> j.subject("00000000-0000-0000-0000-000000000001"))))
                 .andExpect(status().is(not(401)))
                 .andExpect(status().is(not(403)));
+    }
+
+    // ─── Life Stats routes ─ all require JWT ──────────────────────────────────
+
+    @Test
+    @DisplayName("POST /api/v1/stats returns 401 without JWT")
+    void saveStat_requiresAuth() throws Exception {
+        mockMvc.perform(post("/api/v1/stats")
+                .contentType("application/json")
+                .content("{\"category\":\"CAREER\",\"value\":75}"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/stats/bulk returns 401 without JWT")
+    void saveStatsBulk_requiresAuth() throws Exception {
+        mockMvc.perform(post("/api/v1/stats/bulk")
+                .contentType("application/json")
+                .content("{\"stats\":[{\"category\":\"CAREER\",\"value\":75}]}"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/stats returns 401 without JWT")
+    void getUserStats_requiresAuth() throws Exception {
+        mockMvc.perform(get("/api/v1/stats"))
+                .andExpect(status().isUnauthorized());
     }
 }
