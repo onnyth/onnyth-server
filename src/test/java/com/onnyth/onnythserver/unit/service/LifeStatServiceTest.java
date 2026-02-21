@@ -4,6 +4,7 @@ import com.onnyth.onnythserver.dto.LifeStatResponse;
 import com.onnyth.onnythserver.dto.StatInputRequest;
 import com.onnyth.onnythserver.dto.StatUpdateRequest;
 import com.onnyth.onnythserver.dto.StatUpdateResponse;
+import com.onnyth.onnythserver.events.StatChangedEvent;
 import com.onnyth.onnythserver.exceptions.InvalidStatValueException;
 import com.onnyth.onnythserver.exceptions.StatNotFoundException;
 import com.onnyth.onnythserver.exceptions.UserNotFoundException;
@@ -14,6 +15,7 @@ import com.onnyth.onnythserver.repository.LifeStatHistoryRepository;
 import com.onnyth.onnythserver.repository.LifeStatRepository;
 import com.onnyth.onnythserver.repository.UserRepository;
 import com.onnyth.onnythserver.service.LifeStatService;
+import com.onnyth.onnythserver.service.ScoreCalculationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -22,6 +24,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.Instant;
 import java.util.List;
@@ -47,6 +50,12 @@ class LifeStatServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+
+    @Mock
+    private ScoreCalculationService scoreCalculationService;
 
     @InjectMocks
     private LifeStatService lifeStatService;
@@ -261,6 +270,7 @@ class LifeStatServiceTest {
             when(lifeStatRepository.save(any(LifeStat.class))).thenAnswer(inv -> inv.getArgument(0));
             when(lifeStatHistoryRepository.save(any(LifeStatHistory.class))).thenAnswer(inv -> inv.getArgument(0));
             when(lifeStatRepository.findAllByUserId(userId)).thenReturn(List.of(existing));
+            when(scoreCalculationService.calculateScore(any())).thenReturn(90L);
 
             StatUpdateRequest request = new StatUpdateRequest(75, "promotion");
             StatUpdateResponse result = lifeStatService.updateStat(userId, StatCategory.CAREER, request);
@@ -268,8 +278,10 @@ class LifeStatServiceTest {
             assertThat(result.category()).isEqualTo(StatCategory.CAREER);
             assertThat(result.previousValue()).isEqualTo(50);
             assertThat(result.newValue()).isEqualTo(75);
-            assertThat(result.scoreChange()).isEqualTo(25);
+            // scoreChange = round(75*1.2) - round(50*1.2) = 90 - 60 = 30
+            assertThat(result.scoreChange()).isEqualTo(30);
             verify(lifeStatHistoryRepository).save(any(LifeStatHistory.class));
+            verify(eventPublisher).publishEvent(any(StatChangedEvent.class));
         }
 
         @Test
@@ -328,27 +340,28 @@ class LifeStatServiceTest {
     class CalculateTotalScore {
 
         @Test
-        @DisplayName("sums all stat values")
-        void sumsAllStatValues() {
+        @DisplayName("delegates to ScoreCalculationService")
+        void delegatesToScoreCalculation() {
             List<LifeStat> stats = List.of(
                     LifeStat.builder().userId(userId).category(StatCategory.CAREER).value(70).lastUpdated(Instant.now())
                             .build(),
                     LifeStat.builder().userId(userId).category(StatCategory.FITNESS).value(85)
-                            .lastUpdated(Instant.now()).build(),
-                    LifeStat.builder().userId(userId).category(StatCategory.EDUCATION).value(45)
                             .lastUpdated(Instant.now()).build());
 
             when(lifeStatRepository.findAllByUserId(userId)).thenReturn(stats);
+            when(scoreCalculationService.calculateScore(stats)).thenReturn(178L);
 
             long total = lifeStatService.calculateTotalScore(userId);
 
-            assertThat(total).isEqualTo(200); // 70 + 85 + 45
+            assertThat(total).isEqualTo(178);
+            verify(scoreCalculationService).calculateScore(stats);
         }
 
         @Test
         @DisplayName("returns 0 when no stats")
         void returnsZero_whenNoStats() {
             when(lifeStatRepository.findAllByUserId(userId)).thenReturn(List.of());
+            when(scoreCalculationService.calculateScore(List.of())).thenReturn(0L);
 
             long total = lifeStatService.calculateTotalScore(userId);
 

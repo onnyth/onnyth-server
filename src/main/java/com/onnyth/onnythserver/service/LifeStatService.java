@@ -4,6 +4,7 @@ import com.onnyth.onnythserver.dto.LifeStatResponse;
 import com.onnyth.onnythserver.dto.StatInputRequest;
 import com.onnyth.onnythserver.dto.StatUpdateRequest;
 import com.onnyth.onnythserver.dto.StatUpdateResponse;
+import com.onnyth.onnythserver.events.StatChangedEvent;
 import com.onnyth.onnythserver.exceptions.InvalidStatValueException;
 import com.onnyth.onnythserver.exceptions.StatNotFoundException;
 import com.onnyth.onnythserver.exceptions.UserNotFoundException;
@@ -15,6 +16,7 @@ import com.onnyth.onnythserver.repository.LifeStatRepository;
 import com.onnyth.onnythserver.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +32,8 @@ public class LifeStatService {
     private final LifeStatRepository lifeStatRepository;
     private final LifeStatHistoryRepository lifeStatHistoryRepository;
     private final UserRepository userRepository;
+    private final ApplicationEventPublisher eventPublisher;
+    private final ScoreCalculationService scoreCalculationService;
 
     /**
      * Save or update a single life stat for a user.
@@ -59,6 +63,8 @@ public class LifeStatService {
         LifeStat saved = lifeStatRepository.save(stat);
         log.info("Saved stat {} = {} for user {}", request.category(), request.value(), userId);
 
+        eventPublisher.publishEvent(new StatChangedEvent(userId));
+
         return LifeStatResponse.fromEntity(saved);
     }
 
@@ -70,9 +76,13 @@ public class LifeStatService {
         validateUserExists(userId);
         requests.forEach(r -> validateStatValue(r.category(), r.value()));
 
-        return requests.stream()
+        List<LifeStatResponse> results = requests.stream()
                 .map(request -> saveSingleStat(userId, request))
                 .toList();
+
+        eventPublisher.publishEvent(new StatChangedEvent(userId));
+
+        return results;
     }
 
     /**
@@ -107,11 +117,15 @@ public class LifeStatService {
                 .build();
         lifeStatHistoryRepository.save(history);
 
-        long totalScore = calculateTotalScore(userId);
-        long scoreChange = (long) request.newValue() - oldValue;
+        long totalScore = scoreCalculationService.calculateScore(
+                lifeStatRepository.findAllByUserId(userId));
+        long scoreChange = Math.round(request.newValue() * category.getWeight())
+                - Math.round(oldValue * category.getWeight());
 
         log.info("Updated stat {} for user {}: {} → {} (delta: {})",
                 category, userId, oldValue, request.newValue(), scoreChange);
+
+        eventPublisher.publishEvent(new StatChangedEvent(userId));
 
         return StatUpdateResponse.builder()
                 .category(category)
@@ -135,12 +149,12 @@ public class LifeStatService {
     }
 
     /**
-     * Calculate total score for a user (sum of all stat values).
+     * Calculate total weighted score for a user.
+     * Delegates to ScoreCalculationService for the weighted formula.
      */
     public long calculateTotalScore(UUID userId) {
-        return lifeStatRepository.findAllByUserId(userId).stream()
-                .mapToLong(LifeStat::getValue)
-                .sum();
+        return scoreCalculationService.calculateScore(
+                lifeStatRepository.findAllByUserId(userId));
     }
 
     // ─── Private helpers ──────────────────────────────────────────────────────

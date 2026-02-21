@@ -46,6 +46,10 @@ public class User {
     @Column(name = "profile_complete", nullable = false)
     private Boolean profileComplete = false;
 
+    @Builder.Default
+    @Column(name = "total_score", nullable = false)
+    private Long totalScore = 0L;
+
     @ColumnDefault("now()")
     @Column(name = "created_at", nullable = false, updatable = false, insertable = false)
     private Instant createdAt;
@@ -54,7 +58,8 @@ public class User {
     private Instant updatedAt;
 
     /**
-     * Checks if all required profile fields are filled and updates profileComplete status.
+     * Checks if all required profile fields are filled and updates profileComplete
+     * status.
      */
     public void checkAndUpdateProfileCompletion() {
         this.profileComplete = username != null && !username.isBlank()

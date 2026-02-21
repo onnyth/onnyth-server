@@ -6,7 +6,6 @@ import com.onnyth.onnythserver.exceptions.UserNotFoundException;
 import com.onnyth.onnythserver.exceptions.UsernameAlreadyExistsException;
 import com.onnyth.onnythserver.models.User;
 import com.onnyth.onnythserver.repository.UserRepository;
-import com.onnyth.onnythserver.service.LifeStatService;
 import com.onnyth.onnythserver.service.ProfileService;
 import com.onnyth.onnythserver.service.StorageService;
 import com.onnyth.onnythserver.support.TestDataFactory;
@@ -39,9 +38,6 @@ class ProfileServiceTest {
     @Mock
     private StorageService storageService;
 
-    @Mock
-    private LifeStatService lifeStatService;
-
     @InjectMocks
     private ProfileService profileService;
 
@@ -56,6 +52,7 @@ class ProfileServiceTest {
                 .username("currentuser")
                 .fullName("Current User")
                 .profilePic("https://example.com/old.jpg")
+                .totalScore(150L)
                 .build();
     }
 
@@ -313,7 +310,6 @@ class ProfileServiceTest {
         @DisplayName("returns ProfileCardResponse when user exists")
         void returnsProfileCard_whenUserExists() {
             when(userRepository.findById(userId)).thenReturn(Optional.of(testUser));
-            when(lifeStatService.calculateTotalScore(userId)).thenReturn(150L);
 
             var result = profileService.getProfileCard(userId);
 

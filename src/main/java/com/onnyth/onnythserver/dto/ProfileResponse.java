@@ -15,9 +15,9 @@ public record ProfileResponse(
         String profilePic,
         Boolean emailVerified,
         Boolean profileComplete,
+        long totalScore,
         Instant createdAt,
-        Instant updatedAt
-) {
+        Instant updatedAt) {
     /**
      * Factory method to create ProfileResponse from User entity.
      */
@@ -30,9 +30,9 @@ public record ProfileResponse(
                 .profilePic(user.getProfilePic())
                 .emailVerified(user.getEmailVerified())
                 .profileComplete(user.getProfileComplete())
+                .totalScore(user.getTotalScore())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
                 .build();
     }
 }
-

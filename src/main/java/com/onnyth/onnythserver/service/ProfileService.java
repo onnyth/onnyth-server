@@ -22,7 +22,6 @@ public class ProfileService {
 
     private final UserRepository userRepository;
     private final StorageService storageService;
-    private final LifeStatService lifeStatService;
 
     /**
      * Get user profile by user ID.
@@ -135,8 +134,8 @@ public class ProfileService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId.toString()));
 
-        // Calculate total score from all life stats
-        long totalScore = lifeStatService.calculateTotalScore(userId);
+        // Score is persisted on User, updated via StatChangedEvent
+        long totalScore = user.getTotalScore();
 
         return ProfileCardResponse.fromUser(user, totalScore);
     }
