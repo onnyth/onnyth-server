@@ -298,4 +298,36 @@ class ProfileServiceTest {
                     .isInstanceOf(UserNotFoundException.class);
         }
     }
+
+    // ─── getProfileCard() ─────────────────────────────────────────────────────
+
+    @Nested
+    @DisplayName("getProfileCard()")
+    class GetProfileCard {
+
+        @Test
+        @DisplayName("returns ProfileCardResponse when user exists")
+        void returnsProfileCard_whenUserExists() {
+            when(userRepository.findById(userId)).thenReturn(Optional.of(testUser));
+
+            var result = profileService.getProfileCard(userId);
+
+            assertThat(result.userId()).isEqualTo(userId);
+            assertThat(result.username()).isEqualTo("currentuser");
+            assertThat(result.fullName()).isEqualTo("Current User");
+            assertThat(result.profilePic()).isEqualTo("https://example.com/old.jpg");
+            assertThat(result.totalScore()).isEqualTo(0); // default until LifeStats integration
+            assertThat(result.rankTier()).isEqualTo("Novice");
+            assertThat(result.rankBadgeUrl()).isEqualTo("🟤");
+        }
+
+        @Test
+        @DisplayName("throws UserNotFoundException when user does not exist")
+        void throwsUserNotFound_whenUserMissing() {
+            when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> profileService.getProfileCard(userId))
+                    .isInstanceOf(UserNotFoundException.class);
+        }
+    }
 }

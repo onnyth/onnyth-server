@@ -1,7 +1,10 @@
 package com.onnyth.onnythserver.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.onnyth.onnythserver.dto.ProfileCardResponse;
+import com.onnyth.onnythserver.exceptions.UserNotFoundException;
 import com.onnyth.onnythserver.models.User;
+import com.onnyth.onnythserver.service.ProfileService;
 import com.onnyth.onnythserver.service.UserService;
 import com.onnyth.onnythserver.support.TestDataFactory;
 import org.junit.jupiter.api.DisplayName;
@@ -43,6 +46,9 @@ class UserControllerTest {
 
     @MockitoBean
     private UserService userService;
+
+    @MockitoBean
+    private ProfileService profileService;
 
     private static final UUID USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
 
@@ -149,6 +155,47 @@ class UserControllerTest {
 
             mockMvc.perform(delete("/api/users/" + USER_ID).with(jwt()))
                     .andExpect(status().isNoContent());
+        }
+    }
+
+    // ─── GET /api/v1/users/{userId}/card (public endpoint) ────────────────────
+
+    @Nested
+    @DisplayName("GET /api/v1/users/{userId}/card")
+    class GetUserProfileCard {
+
+        @Test
+        @DisplayName("returns 200 with profile card (no auth required)")
+        void returns200_withProfileCard() throws Exception {
+            ProfileCardResponse card = ProfileCardResponse.builder()
+                    .userId(USER_ID)
+                    .username("hero")
+                    .fullName("Test Hero")
+                    .profilePic("https://cdn.example.com/pic.jpg")
+                    .totalScore(0)
+                    .rankTier("Novice")
+                    .rankBadgeUrl("🟤")
+                    .build();
+
+            when(profileService.getProfileCard(USER_ID)).thenReturn(card);
+
+            // No JWT required — this is a public endpoint
+            mockMvc.perform(get("/api/v1/users/" + USER_ID + "/card"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.userId").value(USER_ID.toString()))
+                    .andExpect(jsonPath("$.username").value("hero"))
+                    .andExpect(jsonPath("$.rankTier").value("Novice"))
+                    .andExpect(jsonPath("$.totalScore").value(0));
+        }
+
+        @Test
+        @DisplayName("returns 404 when user not found")
+        void returns404_whenUserNotFound() throws Exception {
+            when(profileService.getProfileCard(USER_ID))
+                    .thenThrow(new UserNotFoundException(USER_ID.toString()));
+
+            mockMvc.perform(get("/api/v1/users/" + USER_ID + "/card"))
+                    .andExpect(status().isNotFound());
         }
     }
 }

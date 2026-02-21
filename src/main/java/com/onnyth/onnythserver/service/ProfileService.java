@@ -1,5 +1,6 @@
 package com.onnyth.onnythserver.service;
 
+import com.onnyth.onnythserver.dto.ProfileCardResponse;
 import com.onnyth.onnythserver.dto.ProfileResponse;
 import com.onnyth.onnythserver.dto.ProfileUpdateRequest;
 import com.onnyth.onnythserver.exceptions.UsernameAlreadyExistsException;
@@ -74,7 +75,8 @@ public class ProfileService {
 
     /**
      * Check if a username is available.
-     * @param username the username to check
+     * 
+     * @param username      the username to check
      * @param currentUserId optional current user ID to exclude from check
      * @return true if username is available, false otherwise
      */
@@ -98,7 +100,8 @@ public class ProfileService {
      * Upload profile picture and update user profile.
      */
     @Transactional
-    public ProfileResponse uploadProfilePicture(UUID userId, byte[] imageData, String contentType, String originalFilename) {
+    public ProfileResponse uploadProfilePicture(UUID userId, byte[] imageData, String contentType,
+            String originalFilename) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId.toString()));
 
@@ -119,5 +122,21 @@ public class ProfileService {
 
         return ProfileResponse.fromUser(savedUser);
     }
-}
 
+    /**
+     * Get the RPG-style profile card for a user.
+     * Includes gamification data: total score and rank tier.
+     *
+     * @param userId the user's ID
+     * @return a ProfileCardResponse with user info and rank data
+     */
+    public ProfileCardResponse getProfileCard(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId.toString()));
+
+        // TODO: Integrate with LifeStats service in Sprint 2
+        long totalScore = 0;
+
+        return ProfileCardResponse.fromUser(user, totalScore);
+    }
+}

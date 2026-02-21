@@ -1,6 +1,7 @@
 package com.onnyth.onnythserver.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.onnyth.onnythserver.dto.ProfileCardResponse;
 import com.onnyth.onnythserver.dto.ProfileResponse;
 import com.onnyth.onnythserver.dto.ProfileUpdateRequest;
 import com.onnyth.onnythserver.exceptions.UserNotFoundException;
@@ -229,6 +230,56 @@ class ProfileControllerTest {
 
                         mockMvc.perform(multipart("/api/v1/profile/picture").file(file))
                                         .andExpect(status().isUnauthorized());
+                }
+        }
+
+        // ─── GET /api/v1/profile/card
+        // ─────────────────────────────────────────────────────
+
+        @Nested
+        @DisplayName("GET /api/v1/profile/card")
+        class GetProfileCard {
+
+                @Test
+                @DisplayName("returns 200 with profile card when authenticated")
+                void returns200_withProfileCard() throws Exception {
+                        ProfileCardResponse card = ProfileCardResponse.builder()
+                                        .userId(USER_ID)
+                                        .username("hero")
+                                        .fullName("Test Hero")
+                                        .profilePic("https://cdn.example.com/pic.jpg")
+                                        .totalScore(0)
+                                        .rankTier("Novice")
+                                        .rankBadgeUrl("🟤")
+                                        .build();
+
+                        when(profileService.getProfileCard(USER_ID)).thenReturn(card);
+
+                        mockMvc.perform(get("/api/v1/profile/card")
+                                        .with(jwt().jwt(j -> j.subject(USER_ID.toString()))))
+                                        .andExpect(status().isOk())
+                                        .andExpect(jsonPath("$.userId").value(USER_ID.toString()))
+                                        .andExpect(jsonPath("$.username").value("hero"))
+                                        .andExpect(jsonPath("$.rankTier").value("Novice"))
+                                        .andExpect(jsonPath("$.totalScore").value(0));
+                }
+
+                @Test
+                @DisplayName("returns 401 when not authenticated")
+                void returns401_whenNotAuthenticated() throws Exception {
+                        mockMvc.perform(get("/api/v1/profile/card"))
+                                        .andExpect(status().isUnauthorized());
+                }
+
+                @Test
+                @DisplayName("returns 404 when user not found")
+                void returns404_whenUserNotFound() throws Exception {
+                        when(profileService.getProfileCard(USER_ID))
+                                        .thenThrow(new UserNotFoundException(USER_ID.toString()));
+
+                        mockMvc.perform(get("/api/v1/profile/card")
+                                        .with(jwt().jwt(j -> j.subject(USER_ID.toString()))))
+                                        .andExpect(status().isNotFound());
                 }
         }
 }

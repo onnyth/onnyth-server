@@ -130,4 +130,29 @@ class SecurityConfigTest {
                 .andExpect(status().is(not(401)))
                 .andExpect(status().is(not(403)));
     }
+
+    // ─── Profile Card routes ──────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("GET /api/v1/users/{userId}/card is publicly accessible (not 401)")
+    void publicProfileCard_isPublic() throws Exception {
+        mockMvc.perform(get("/api/v1/users/00000000-0000-0000-0000-000000000001/card"))
+                .andExpect(status().is(not(401)));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/profile/card returns 401 without JWT")
+    void authenticatedProfileCard_requiresAuth() throws Exception {
+        mockMvc.perform(get("/api/v1/profile/card"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/profile/card passes security with valid JWT (not 401/403)")
+    void authenticatedProfileCard_passesWithJwt() throws Exception {
+        mockMvc.perform(get("/api/v1/profile/card")
+                .with(jwt().jwt(j -> j.subject("00000000-0000-0000-0000-000000000001"))))
+                .andExpect(status().is(not(401)))
+                .andExpect(status().is(not(403)));
+    }
 }
