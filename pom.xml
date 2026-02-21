@@ -93,6 +93,12 @@
             <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- JUnit Platform Launcher - align version for PITest compatibility -->
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- WireMock - HTTP stub server for mocking Supabase API calls -->
         <dependency>
             <groupId>org.wiremock.integrations</groupId>
@@ -162,6 +168,76 @@
                             <artifactId>lombok</artifactId>
                         </exclude>
                     </excludes>
+                </configuration>
+            </plugin>
+            <!-- PITest Mutation Testing -->
+            <plugin>
+                <groupId>org.pitest</groupId>
+                <artifactId>pitest-maven</artifactId>
+                <version>1.17.4</version>
+                <dependencies>
+                    <!-- JUnit 5 support for PITest -->
+                    <dependency>
+                        <groupId>org.pitest</groupId>
+                        <artifactId>pitest-junit5-plugin</artifactId>
+                        <version>1.2.2</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <!-- Target production code packages -->
+                    <targetClasses>
+                        <param>com.onnyth.onnythserver.service.*</param>
+                        <param>com.onnyth.onnythserver.controller.*</param>
+                        <param>com.onnyth.onnythserver.models.*</param>
+                        <param>com.onnyth.onnythserver.exceptions.handler.*</param>
+                    </targetClasses>
+
+                    <!-- Target test packages -->
+                    <targetTests>
+                        <param>com.onnyth.onnythserver.unit.*</param>
+                        <param>com.onnyth.onnythserver.controller.*</param>
+                    </targetTests>
+
+                    <!-- Excluded classes (low-value mutation targets) -->
+                    <excludedClasses>
+                        <param>com.onnyth.onnythserver.OnnythServerApplication</param>
+                        <param>com.onnyth.onnythserver.configuration.*</param>
+                        <param>com.onnyth.onnythserver.dto.*</param>
+                        <param>com.onnyth.onnythserver.security.*</param>
+                    </excludedClasses>
+
+                    <!-- Mutator group: DEFAULTS is a balanced set -->
+                    <mutators>
+                        <mutator>DEFAULTS</mutator>
+                    </mutators>
+
+                    <!-- Thresholds: warn initially, enforce later -->
+                    <mutationThreshold>0</mutationThreshold>
+
+                    <!-- Output settings -->
+                    <outputFormats>
+                        <outputFormat>HTML</outputFormat>
+                        <outputFormat>XML</outputFormat>
+                    </outputFormats>
+                    <timestampedReports>false</timestampedReports>
+
+                    <!-- Performance: use available cores -->
+                    <threads>4</threads>
+
+                    <!-- Skip integration/repository tests (need Docker/DB) -->
+                    <excludedTestClasses>
+                        <param>com.onnyth.onnythserver.integration.*</param>
+                        <param>com.onnyth.onnythserver.repository.*</param>
+                        <param>com.onnyth.onnythserver.security.*</param>
+                        <param>com.onnyth.onnythserver.OnnythServerApplicationTests</param>
+                    </excludedTestClasses>
+
+                    <!-- JVM args for Java 21+ compatibility -->
+                    <jvmArgs>
+                        <jvmArg>--add-opens=java.base/java.lang=ALL-UNNAMED</jvmArg>
+                        <jvmArg>--add-opens=java.base/java.util=ALL-UNNAMED</jvmArg>
+                        <jvmArg>--add-opens=java.base/java.lang.reflect=ALL-UNNAMED</jvmArg>
+                    </jvmArgs>
                 </configuration>
             </plugin>
         </plugins>
