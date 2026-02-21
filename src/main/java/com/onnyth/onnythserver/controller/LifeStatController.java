@@ -3,6 +3,9 @@ package com.onnyth.onnythserver.controller;
 import com.onnyth.onnythserver.dto.BulkStatInputRequest;
 import com.onnyth.onnythserver.dto.LifeStatResponse;
 import com.onnyth.onnythserver.dto.StatInputRequest;
+import com.onnyth.onnythserver.dto.StatUpdateRequest;
+import com.onnyth.onnythserver.dto.StatUpdateResponse;
+import com.onnyth.onnythserver.models.StatCategory;
 import com.onnyth.onnythserver.service.LifeStatService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -69,5 +72,22 @@ public class LifeStatController {
     public ResponseEntity<List<LifeStatResponse>> getUserStats(@AuthenticationPrincipal Jwt jwt) {
         UUID userId = UUID.fromString(jwt.getSubject());
         return ResponseEntity.ok(lifeStatService.getUserStats(userId));
+    }
+
+    @Operation(summary = "Update a single life stat")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Stat updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid stat value"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "Stat or user not found")
+    })
+    @PutMapping("/{category}")
+    public ResponseEntity<StatUpdateResponse> updateStat(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable StatCategory category,
+            @Valid @RequestBody StatUpdateRequest request) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        StatUpdateResponse response = lifeStatService.updateStat(userId, category, request);
+        return ResponseEntity.ok(response);
     }
 }

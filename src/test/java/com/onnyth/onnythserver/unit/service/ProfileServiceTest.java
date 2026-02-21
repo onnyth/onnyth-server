@@ -6,6 +6,7 @@ import com.onnyth.onnythserver.exceptions.UserNotFoundException;
 import com.onnyth.onnythserver.exceptions.UsernameAlreadyExistsException;
 import com.onnyth.onnythserver.models.User;
 import com.onnyth.onnythserver.repository.UserRepository;
+import com.onnyth.onnythserver.service.LifeStatService;
 import com.onnyth.onnythserver.service.ProfileService;
 import com.onnyth.onnythserver.service.StorageService;
 import com.onnyth.onnythserver.support.TestDataFactory;
@@ -37,6 +38,9 @@ class ProfileServiceTest {
 
     @Mock
     private StorageService storageService;
+
+    @Mock
+    private LifeStatService lifeStatService;
 
     @InjectMocks
     private ProfileService profileService;
@@ -309,6 +313,7 @@ class ProfileServiceTest {
         @DisplayName("returns ProfileCardResponse when user exists")
         void returnsProfileCard_whenUserExists() {
             when(userRepository.findById(userId)).thenReturn(Optional.of(testUser));
+            when(lifeStatService.calculateTotalScore(userId)).thenReturn(150L);
 
             var result = profileService.getProfileCard(userId);
 
@@ -316,9 +321,9 @@ class ProfileServiceTest {
             assertThat(result.username()).isEqualTo("currentuser");
             assertThat(result.fullName()).isEqualTo("Current User");
             assertThat(result.profilePic()).isEqualTo("https://example.com/old.jpg");
-            assertThat(result.totalScore()).isEqualTo(0); // default until LifeStats integration
-            assertThat(result.rankTier()).isEqualTo("Novice");
-            assertThat(result.rankBadgeUrl()).isEqualTo("🟤");
+            assertThat(result.totalScore()).isEqualTo(150);
+            assertThat(result.rankTier()).isEqualTo("Apprentice");
+            assertThat(result.rankBadgeUrl()).isEqualTo("🟢");
         }
 
         @Test

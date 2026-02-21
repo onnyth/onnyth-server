@@ -38,6 +38,9 @@ public class LifeStat {
     @Column(name = "value", nullable = false)
     private int value;
 
+    @Column(name = "previous_value")
+    private Integer previousValue;
+
     @ColumnDefault("now()")
     @Column(name = "last_updated", nullable = false)
     private Instant lastUpdated;

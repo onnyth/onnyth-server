@@ -188,4 +188,13 @@ class SecurityConfigTest {
         mockMvc.perform(get("/api/v1/stats"))
                 .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    @DisplayName("PUT /api/v1/stats/CAREER returns 401 without JWT")
+    void updateStat_requiresAuth() throws Exception {
+        mockMvc.perform(put("/api/v1/stats/CAREER")
+                .contentType("application/json")
+                .content("{\"newValue\":75}"))
+                .andExpect(status().isUnauthorized());
+    }
 }

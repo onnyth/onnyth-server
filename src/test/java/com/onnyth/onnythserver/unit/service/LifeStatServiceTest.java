@@ -2,10 +2,15 @@ package com.onnyth.onnythserver.unit.service;
 
 import com.onnyth.onnythserver.dto.LifeStatResponse;
 import com.onnyth.onnythserver.dto.StatInputRequest;
+import com.onnyth.onnythserver.dto.StatUpdateRequest;
+import com.onnyth.onnythserver.dto.StatUpdateResponse;
 import com.onnyth.onnythserver.exceptions.InvalidStatValueException;
+import com.onnyth.onnythserver.exceptions.StatNotFoundException;
 import com.onnyth.onnythserver.exceptions.UserNotFoundException;
 import com.onnyth.onnythserver.models.LifeStat;
+import com.onnyth.onnythserver.models.LifeStatHistory;
 import com.onnyth.onnythserver.models.StatCategory;
+import com.onnyth.onnythserver.repository.LifeStatHistoryRepository;
 import com.onnyth.onnythserver.repository.LifeStatRepository;
 import com.onnyth.onnythserver.repository.UserRepository;
 import com.onnyth.onnythserver.service.LifeStatService;
@@ -36,6 +41,9 @@ class LifeStatServiceTest {
 
     @Mock
     private LifeStatRepository lifeStatRepository;
+
+    @Mock
+    private LifeStatHistoryRepository lifeStatHistoryRepository;
 
     @Mock
     private UserRepository userRepository;
@@ -227,6 +235,124 @@ class LifeStatServiceTest {
 
             assertThatThrownBy(() -> lifeStatService.getUserStats(userId))
                     .isInstanceOf(UserNotFoundException.class);
+        }
+    }
+
+    // ─── updateStat() ────────────────────────────────────────────────────────
+
+    @Nested
+    @DisplayName("updateStat()")
+    class UpdateStat {
+
+        @Test
+        @DisplayName("updates stat and returns response with score change")
+        void updatesStatSuccessfully() {
+            LifeStat existing = LifeStat.builder()
+                    .id(UUID.randomUUID())
+                    .userId(userId)
+                    .category(StatCategory.CAREER)
+                    .value(50)
+                    .lastUpdated(Instant.now().minusSeconds(3600))
+                    .build();
+
+            when(userRepository.existsById(userId)).thenReturn(true);
+            when(lifeStatRepository.findByUserIdAndCategory(userId, StatCategory.CAREER))
+                    .thenReturn(Optional.of(existing));
+            when(lifeStatRepository.save(any(LifeStat.class))).thenAnswer(inv -> inv.getArgument(0));
+            when(lifeStatHistoryRepository.save(any(LifeStatHistory.class))).thenAnswer(inv -> inv.getArgument(0));
+            when(lifeStatRepository.findAllByUserId(userId)).thenReturn(List.of(existing));
+
+            StatUpdateRequest request = new StatUpdateRequest(75, "promotion");
+            StatUpdateResponse result = lifeStatService.updateStat(userId, StatCategory.CAREER, request);
+
+            assertThat(result.category()).isEqualTo(StatCategory.CAREER);
+            assertThat(result.previousValue()).isEqualTo(50);
+            assertThat(result.newValue()).isEqualTo(75);
+            assertThat(result.scoreChange()).isEqualTo(25);
+            verify(lifeStatHistoryRepository).save(any(LifeStatHistory.class));
+        }
+
+        @Test
+        @DisplayName("throws StatNotFoundException when stat not set")
+        void throwsStatNotFound() {
+            when(userRepository.existsById(userId)).thenReturn(true);
+            when(lifeStatRepository.findByUserIdAndCategory(userId, StatCategory.CAREER))
+                    .thenReturn(Optional.empty());
+
+            StatUpdateRequest request = new StatUpdateRequest(75, null);
+
+            assertThatThrownBy(() -> lifeStatService.updateStat(userId, StatCategory.CAREER, request))
+                    .isInstanceOf(StatNotFoundException.class);
+        }
+
+        @Test
+        @DisplayName("throws InvalidStatValueException for out-of-range")
+        void throwsInvalidStatValue() {
+            when(userRepository.existsById(userId)).thenReturn(true);
+
+            StatUpdateRequest request = new StatUpdateRequest(0, null);
+
+            assertThatThrownBy(() -> lifeStatService.updateStat(userId, StatCategory.CAREER, request))
+                    .isInstanceOf(InvalidStatValueException.class);
+        }
+
+        @Test
+        @DisplayName("sets previousValue on the entity")
+        void setsPreviousValueOnEntity() {
+            LifeStat existing = LifeStat.builder()
+                    .id(UUID.randomUUID())
+                    .userId(userId)
+                    .category(StatCategory.FITNESS)
+                    .value(60)
+                    .lastUpdated(Instant.now())
+                    .build();
+
+            when(userRepository.existsById(userId)).thenReturn(true);
+            when(lifeStatRepository.findByUserIdAndCategory(userId, StatCategory.FITNESS))
+                    .thenReturn(Optional.of(existing));
+            when(lifeStatRepository.save(any(LifeStat.class))).thenAnswer(inv -> inv.getArgument(0));
+            when(lifeStatHistoryRepository.save(any(LifeStatHistory.class))).thenAnswer(inv -> inv.getArgument(0));
+            when(lifeStatRepository.findAllByUserId(userId)).thenReturn(List.of(existing));
+
+            lifeStatService.updateStat(userId, StatCategory.FITNESS, new StatUpdateRequest(80, null));
+
+            assertThat(existing.getPreviousValue()).isEqualTo(60);
+            assertThat(existing.getValue()).isEqualTo(80);
+        }
+    }
+
+    // ─── calculateTotalScore() ────────────────────────────────────────────────
+
+    @Nested
+    @DisplayName("calculateTotalScore()")
+    class CalculateTotalScore {
+
+        @Test
+        @DisplayName("sums all stat values")
+        void sumsAllStatValues() {
+            List<LifeStat> stats = List.of(
+                    LifeStat.builder().userId(userId).category(StatCategory.CAREER).value(70).lastUpdated(Instant.now())
+                            .build(),
+                    LifeStat.builder().userId(userId).category(StatCategory.FITNESS).value(85)
+                            .lastUpdated(Instant.now()).build(),
+                    LifeStat.builder().userId(userId).category(StatCategory.EDUCATION).value(45)
+                            .lastUpdated(Instant.now()).build());
+
+            when(lifeStatRepository.findAllByUserId(userId)).thenReturn(stats);
+
+            long total = lifeStatService.calculateTotalScore(userId);
+
+            assertThat(total).isEqualTo(200); // 70 + 85 + 45
+        }
+
+        @Test
+        @DisplayName("returns 0 when no stats")
+        void returnsZero_whenNoStats() {
+            when(lifeStatRepository.findAllByUserId(userId)).thenReturn(List.of());
+
+            long total = lifeStatService.calculateTotalScore(userId);
+
+            assertThat(total).isEqualTo(0);
         }
     }
 }

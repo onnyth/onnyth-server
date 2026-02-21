@@ -2,9 +2,15 @@ package com.onnyth.onnythserver.service;
 
 import com.onnyth.onnythserver.dto.LifeStatResponse;
 import com.onnyth.onnythserver.dto.StatInputRequest;
+import com.onnyth.onnythserver.dto.StatUpdateRequest;
+import com.onnyth.onnythserver.dto.StatUpdateResponse;
 import com.onnyth.onnythserver.exceptions.InvalidStatValueException;
+import com.onnyth.onnythserver.exceptions.StatNotFoundException;
 import com.onnyth.onnythserver.exceptions.UserNotFoundException;
 import com.onnyth.onnythserver.models.LifeStat;
+import com.onnyth.onnythserver.models.LifeStatHistory;
+import com.onnyth.onnythserver.models.StatCategory;
+import com.onnyth.onnythserver.repository.LifeStatHistoryRepository;
 import com.onnyth.onnythserver.repository.LifeStatRepository;
 import com.onnyth.onnythserver.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +28,7 @@ import java.util.UUID;
 public class LifeStatService {
 
     private final LifeStatRepository lifeStatRepository;
+    private final LifeStatHistoryRepository lifeStatHistoryRepository;
     private final UserRepository userRepository;
 
     /**
@@ -32,7 +39,7 @@ public class LifeStatService {
     @Transactional
     public LifeStatResponse saveStat(UUID userId, StatInputRequest request) {
         validateUserExists(userId);
-        validateStatValue(request);
+        validateStatValue(request.category(), request.value());
 
         LifeStat stat = lifeStatRepository.findByUserIdAndCategory(userId, request.category())
                 .map(existing -> {
@@ -61,11 +68,59 @@ public class LifeStatService {
     @Transactional
     public List<LifeStatResponse> saveStats(UUID userId, List<StatInputRequest> requests) {
         validateUserExists(userId);
-        requests.forEach(this::validateStatValue);
+        requests.forEach(r -> validateStatValue(r.category(), r.value()));
 
         return requests.stream()
                 .map(request -> saveSingleStat(userId, request))
                 .toList();
+    }
+
+    /**
+     * Update an existing stat with history tracking and score recalculation.
+     */
+    @Transactional
+    public StatUpdateResponse updateStat(UUID userId, StatCategory category, StatUpdateRequest request) {
+        validateUserExists(userId);
+        validateStatValue(category, request.newValue());
+
+        LifeStat stat = lifeStatRepository.findByUserIdAndCategory(userId, category)
+                .orElseThrow(() -> new StatNotFoundException(
+                        String.format("Stat %s not found for user %s. Use POST /api/v1/stats to create it first.",
+                                category.getDisplayName(), userId)));
+
+        int oldValue = stat.getValue();
+
+        // Update stat with previous value tracking
+        stat.setPreviousValue(oldValue);
+        stat.setValue(request.newValue());
+        stat.setLastUpdated(Instant.now());
+        lifeStatRepository.save(stat);
+
+        // Record history
+        LifeStatHistory history = LifeStatHistory.builder()
+                .userId(userId)
+                .category(category)
+                .oldValue(oldValue)
+                .newValue(request.newValue())
+                .reason(request.reason())
+                .changedAt(Instant.now())
+                .build();
+        lifeStatHistoryRepository.save(history);
+
+        long totalScore = calculateTotalScore(userId);
+        long scoreChange = (long) request.newValue() - oldValue;
+
+        log.info("Updated stat {} for user {}: {} → {} (delta: {})",
+                category, userId, oldValue, request.newValue(), scoreChange);
+
+        return StatUpdateResponse.builder()
+                .category(category)
+                .displayName(category.getDisplayName())
+                .previousValue(oldValue)
+                .newValue(request.newValue())
+                .totalScore(totalScore)
+                .scoreChange(scoreChange)
+                .build();
     }
 
     /**
@@ -79,6 +134,15 @@ public class LifeStatService {
                 .toList();
     }
 
+    /**
+     * Calculate total score for a user (sum of all stat values).
+     */
+    public long calculateTotalScore(UUID userId) {
+        return lifeStatRepository.findAllByUserId(userId).stream()
+                .mapToLong(LifeStat::getValue)
+                .sum();
+    }
+
     // ─── Private helpers ──────────────────────────────────────────────────────
 
     private void validateUserExists(UUID userId) {
@@ -87,14 +151,14 @@ public class LifeStatService {
         }
     }
 
-    private void validateStatValue(StatInputRequest request) {
-        if (!request.category().isValidValue(request.value())) {
+    private void validateStatValue(StatCategory category, int value) {
+        if (!category.isValidValue(value)) {
             throw new InvalidStatValueException(
                     String.format("Value %d is out of range for %s (allowed: %d-%d)",
-                            request.value(),
-                            request.category().getDisplayName(),
-                            request.category().getMinValue(),
-                            request.category().getMaxValue()));
+                            value,
+                            category.getDisplayName(),
+                            category.getMinValue(),
+                            category.getMaxValue()));
         }
     }
 
