@@ -6,6 +6,7 @@ import com.onnyth.onnythserver.controller.ProfileController;
 import com.onnyth.onnythserver.controller.UserController;
 import com.onnyth.onnythserver.service.LifeStatService;
 import com.onnyth.onnythserver.service.ProfileService;
+import com.onnyth.onnythserver.service.RankService;
 import com.onnyth.onnythserver.service.SupabaseAuthService;
 import com.onnyth.onnythserver.service.UserService;
 import com.onnyth.onnythserver.support.MockJwtDecoderConfig;
@@ -46,6 +47,9 @@ class SecurityConfigTest {
 
     @MockitoBean
     private LifeStatService lifeStatService;
+
+    @MockitoBean
+    private RankService rankService;
 
     // ─── Public routes — must be accessible without a token ──────────────────
 
@@ -196,5 +200,23 @@ class SecurityConfigTest {
                 .contentType("application/json")
                 .content("{\"newValue\":75}"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    // ─── Rank routes ─────────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("GET /api/v1/profile/rank returns 401 without JWT")
+    void rankProgress_requiresAuth() throws Exception {
+        mockMvc.perform(get("/api/v1/profile/rank"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/profile/rank passes security with valid JWT (not 401/403)")
+    void rankProgress_passesWithJwt() throws Exception {
+        mockMvc.perform(get("/api/v1/profile/rank")
+                .with(jwt().jwt(j -> j.subject("00000000-0000-0000-0000-000000000001"))))
+                .andExpect(status().is(not(401)))
+                .andExpect(status().is(not(403)));
     }
 }

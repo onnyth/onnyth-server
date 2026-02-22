@@ -7,6 +7,7 @@ import com.onnyth.onnythserver.models.StatCategory;
 import com.onnyth.onnythserver.models.User;
 import com.onnyth.onnythserver.repository.LifeStatRepository;
 import com.onnyth.onnythserver.repository.UserRepository;
+import com.onnyth.onnythserver.service.RankService;
 import com.onnyth.onnythserver.service.ScoreCalculationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -38,6 +39,9 @@ class ScoreCalculationServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private RankService rankService;
 
     @InjectMocks
     private ScoreCalculationService scoreCalculationService;
@@ -139,6 +143,7 @@ class ScoreCalculationServiceTest {
             assertThat(score).isEqualTo(156);
             assertThat(user.getTotalScore()).isEqualTo(156);
             verify(userRepository).save(user);
+            verify(rankService).updateUserRank(userId);
         }
 
         @Test
@@ -168,6 +173,7 @@ class ScoreCalculationServiceTest {
             scoreCalculationService.onStatChanged(new StatChangedEvent(userId));
 
             verify(userRepository).save(user);
+            verify(rankService).updateUserRank(userId);
             assertThat(user.getTotalScore()).isEqualTo(0);
         }
     }

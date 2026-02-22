@@ -134,9 +134,6 @@ public class ProfileService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId.toString()));
 
-        // Score is persisted on User, updated via StatChangedEvent
-        long totalScore = user.getTotalScore();
-
-        return ProfileCardResponse.fromUser(user, totalScore);
+        return ProfileCardResponse.fromUser(user);
     }
 }

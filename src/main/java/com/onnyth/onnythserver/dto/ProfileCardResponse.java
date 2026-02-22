@@ -20,20 +20,20 @@ public record ProfileCardResponse(
         String rankTier,
         String rankBadgeUrl) {
     /**
-     * Factory method to create a ProfileCardResponse from a User entity and score.
+     * Factory method to create a ProfileCardResponse from a User entity.
+     * Reads rank tier directly from the User entity (persisted).
      *
-     * @param user       the user entity
-     * @param totalScore the user's total life score
+     * @param user the user entity
      * @return a fully populated ProfileCardResponse
      */
-    public static ProfileCardResponse fromUser(User user, long totalScore) {
-        RankTier tier = RankTier.fromScore(totalScore);
+    public static ProfileCardResponse fromUser(User user) {
+        RankTier tier = user.getRankTier();
         return ProfileCardResponse.builder()
                 .userId(user.getId())
                 .username(user.getUsername())
                 .fullName(user.getFullName())
                 .profilePic(user.getProfilePic())
-                .totalScore(totalScore)
+                .totalScore(user.getTotalScore())
                 .rankTier(tier.getDisplayName())
                 .rankBadgeUrl(tier.getBadgeEmoji())
                 .build();

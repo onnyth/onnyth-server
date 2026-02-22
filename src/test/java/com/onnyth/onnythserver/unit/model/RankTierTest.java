@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Unit tests for RankTier enum.
- * Verifies fromScore() correctly maps scores to tiers.
+ * Verifies fromScore(), nextTier(), and enum properties for the 5-tier system.
  */
 class RankTierTest {
 
@@ -21,27 +21,21 @@ class RankTierTest {
 
         @ParameterizedTest
         @CsvSource({
-                "0, NOVICE",
-                "50, NOVICE",
-                "99, NOVICE",
-                "100, APPRENTICE",
-                "250, APPRENTICE",
-                "499, APPRENTICE",
-                "500, JOURNEYMAN",
-                "1000, JOURNEYMAN",
-                "1499, JOURNEYMAN",
-                "1500, EXPERT",
-                "3000, EXPERT",
-                "4999, EXPERT",
-                "5000, MASTER",
-                "10000, MASTER",
-                "14999, MASTER",
-                "15000, GRANDMASTER",
-                "30000, GRANDMASTER",
-                "49999, GRANDMASTER",
-                "50000, LEGEND",
-                "100000, LEGEND",
-                "999999, LEGEND"
+                "0, BRONZE",
+                "50, BRONZE",
+                "99, BRONZE",
+                "100, SILVER",
+                "200, SILVER",
+                "249, SILVER",
+                "250, GOLD",
+                "400, GOLD",
+                "499, GOLD",
+                "500, PLATINUM",
+                "750, PLATINUM",
+                "999, PLATINUM",
+                "1000, ELITE",
+                "5000, ELITE",
+                "999999, ELITE"
         })
         @DisplayName("maps score to correct tier")
         void mapsScoreToCorrectTier(long score, RankTier expectedTier) {
@@ -49,22 +43,40 @@ class RankTierTest {
         }
 
         @Test
-        @DisplayName("returns NOVICE for negative scores")
-        void returnsNoviceForNegativeScore() {
-            assertThat(RankTier.fromScore(-1)).isEqualTo(RankTier.NOVICE);
-            assertThat(RankTier.fromScore(-100)).isEqualTo(RankTier.NOVICE);
+        @DisplayName("returns BRONZE for negative scores")
+        void returnsBronzeForNegativeScore() {
+            assertThat(RankTier.fromScore(-1)).isEqualTo(RankTier.BRONZE);
+            assertThat(RankTier.fromScore(-100)).isEqualTo(RankTier.BRONZE);
         }
 
         @Test
         @DisplayName("each tier boundary returns the new tier")
         void eachBoundaryReturnsNewTier() {
-            assertThat(RankTier.fromScore(0)).isEqualTo(RankTier.NOVICE);
-            assertThat(RankTier.fromScore(100)).isEqualTo(RankTier.APPRENTICE);
-            assertThat(RankTier.fromScore(500)).isEqualTo(RankTier.JOURNEYMAN);
-            assertThat(RankTier.fromScore(1500)).isEqualTo(RankTier.EXPERT);
-            assertThat(RankTier.fromScore(5000)).isEqualTo(RankTier.MASTER);
-            assertThat(RankTier.fromScore(15000)).isEqualTo(RankTier.GRANDMASTER);
-            assertThat(RankTier.fromScore(50000)).isEqualTo(RankTier.LEGEND);
+            assertThat(RankTier.fromScore(0)).isEqualTo(RankTier.BRONZE);
+            assertThat(RankTier.fromScore(100)).isEqualTo(RankTier.SILVER);
+            assertThat(RankTier.fromScore(250)).isEqualTo(RankTier.GOLD);
+            assertThat(RankTier.fromScore(500)).isEqualTo(RankTier.PLATINUM);
+            assertThat(RankTier.fromScore(1000)).isEqualTo(RankTier.ELITE);
+        }
+    }
+
+    @Nested
+    @DisplayName("nextTier()")
+    class NextTier {
+
+        @Test
+        @DisplayName("returns next tier for each non-max tier")
+        void returnsNextTier() {
+            assertThat(RankTier.BRONZE.nextTier()).isEqualTo(RankTier.SILVER);
+            assertThat(RankTier.SILVER.nextTier()).isEqualTo(RankTier.GOLD);
+            assertThat(RankTier.GOLD.nextTier()).isEqualTo(RankTier.PLATINUM);
+            assertThat(RankTier.PLATINUM.nextTier()).isEqualTo(RankTier.ELITE);
+        }
+
+        @Test
+        @DisplayName("returns null for ELITE (max tier)")
+        void returnsNullForElite() {
+            assertThat(RankTier.ELITE.nextTier()).isNull();
         }
     }
 
@@ -73,27 +85,25 @@ class RankTierTest {
     class EnumProperties {
 
         @Test
-        @DisplayName("NOVICE has correct properties")
-        void noviceProperties() {
-            RankTier tier = RankTier.NOVICE;
-            assertThat(tier.getMinScore()).isEqualTo(0);
-            assertThat(tier.getDisplayName()).isEqualTo("Novice");
-            assertThat(tier.getBadgeEmoji()).isEqualTo("🟤");
+        @DisplayName("BRONZE has correct properties")
+        void bronzeProperties() {
+            assertThat(RankTier.BRONZE.getMinScore()).isEqualTo(0);
+            assertThat(RankTier.BRONZE.getDisplayName()).isEqualTo("Bronze");
+            assertThat(RankTier.BRONZE.getBadgeEmoji()).isEqualTo("🥉");
         }
 
         @Test
-        @DisplayName("LEGEND has correct properties")
-        void legendProperties() {
-            RankTier tier = RankTier.LEGEND;
-            assertThat(tier.getMinScore()).isEqualTo(50000);
-            assertThat(tier.getDisplayName()).isEqualTo("Legend");
-            assertThat(tier.getBadgeEmoji()).isEqualTo("⭐");
+        @DisplayName("ELITE has correct properties")
+        void eliteProperties() {
+            assertThat(RankTier.ELITE.getMinScore()).isEqualTo(1000);
+            assertThat(RankTier.ELITE.getDisplayName()).isEqualTo("Elite");
+            assertThat(RankTier.ELITE.getBadgeEmoji()).isEqualTo("👑");
         }
 
         @Test
-        @DisplayName("all 7 tiers exist")
+        @DisplayName("all 5 tiers exist")
         void allTiersExist() {
-            assertThat(RankTier.values()).hasSize(7);
+            assertThat(RankTier.values()).hasSize(5);
         }
     }
 }

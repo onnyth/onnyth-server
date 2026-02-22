@@ -2,6 +2,8 @@ package com.onnyth.onnythserver.models;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Pattern;
@@ -49,6 +51,11 @@ public class User {
     @Builder.Default
     @Column(name = "total_score", nullable = false)
     private Long totalScore = 0L;
+
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "rank_tier", nullable = false, length = 20)
+    private RankTier rankTier = RankTier.BRONZE;
 
     @ColumnDefault("now()")
     @Column(name = "created_at", nullable = false, updatable = false, insertable = false)

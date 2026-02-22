@@ -1,6 +1,7 @@
 package com.onnyth.onnythserver.unit.dto;
 
 import com.onnyth.onnythserver.dto.ProfileCardResponse;
+import com.onnyth.onnythserver.models.RankTier;
 import com.onnyth.onnythserver.models.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,14 +12,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Unit tests for ProfileCardResponse DTO.
- * Verifies the fromUser() factory method correctly maps User + score to the
- * DTO.
+ * Verifies the fromUser() factory method correctly maps User entity to DTO.
  */
 class ProfileCardResponseTest {
 
     @Test
-    @DisplayName("fromUser() maps user fields and calculates NOVICE rank for score 0")
-    void fromUser_mapsFieldsAndNoviceRank() {
+    @DisplayName("fromUser() maps user fields and BRONZE rank for score 0")
+    void fromUser_mapsFieldsAndBronzeRank() {
         UUID userId = UUID.randomUUID();
         User user = User.builder()
                 .id(userId)
@@ -26,34 +26,38 @@ class ProfileCardResponseTest {
                 .fullName("Test Hero")
                 .profilePic("https://cdn.example.com/pic.jpg")
                 .email("hero@example.com")
+                .totalScore(0L)
+                .rankTier(RankTier.BRONZE)
                 .build();
 
-        ProfileCardResponse card = ProfileCardResponse.fromUser(user, 0);
+        ProfileCardResponse card = ProfileCardResponse.fromUser(user);
 
         assertThat(card.userId()).isEqualTo(userId);
         assertThat(card.username()).isEqualTo("hero42");
         assertThat(card.fullName()).isEqualTo("Test Hero");
         assertThat(card.profilePic()).isEqualTo("https://cdn.example.com/pic.jpg");
         assertThat(card.totalScore()).isEqualTo(0);
-        assertThat(card.rankTier()).isEqualTo("Novice");
-        assertThat(card.rankBadgeUrl()).isEqualTo("🟤");
+        assertThat(card.rankTier()).isEqualTo("Bronze");
+        assertThat(card.rankBadgeUrl()).isEqualTo("🥉");
     }
 
     @Test
-    @DisplayName("fromUser() calculates LEGEND rank for high score")
-    void fromUser_legendRankForHighScore() {
+    @DisplayName("fromUser() shows ELITE rank for high score")
+    void fromUser_eliteRankForHighScore() {
         User user = User.builder()
                 .id(UUID.randomUUID())
-                .username("legend_player")
-                .fullName("Legend Player")
-                .email("legend@example.com")
+                .username("elite_player")
+                .fullName("Elite Player")
+                .email("elite@example.com")
+                .totalScore(5000L)
+                .rankTier(RankTier.ELITE)
                 .build();
 
-        ProfileCardResponse card = ProfileCardResponse.fromUser(user, 75000);
+        ProfileCardResponse card = ProfileCardResponse.fromUser(user);
 
-        assertThat(card.totalScore()).isEqualTo(75000);
-        assertThat(card.rankTier()).isEqualTo("Legend");
-        assertThat(card.rankBadgeUrl()).isEqualTo("⭐");
+        assertThat(card.totalScore()).isEqualTo(5000);
+        assertThat(card.rankTier()).isEqualTo("Elite");
+        assertThat(card.rankBadgeUrl()).isEqualTo("👑");
     }
 
     @Test
@@ -62,31 +66,35 @@ class ProfileCardResponseTest {
         User user = User.builder()
                 .id(UUID.randomUUID())
                 .email("minimal@example.com")
+                .totalScore(0L)
+                .rankTier(RankTier.BRONZE)
                 .build();
 
-        ProfileCardResponse card = ProfileCardResponse.fromUser(user, 0);
+        ProfileCardResponse card = ProfileCardResponse.fromUser(user);
 
         assertThat(card.username()).isNull();
         assertThat(card.fullName()).isNull();
         assertThat(card.profilePic()).isNull();
         assertThat(card.totalScore()).isEqualTo(0);
-        assertThat(card.rankTier()).isEqualTo("Novice");
+        assertThat(card.rankTier()).isEqualTo("Bronze");
     }
 
     @Test
-    @DisplayName("fromUser() calculates EXPERT rank correctly")
-    void fromUser_expertRank() {
+    @DisplayName("fromUser() shows PLATINUM rank correctly")
+    void fromUser_platinumRank() {
         User user = User.builder()
                 .id(UUID.randomUUID())
-                .username("expert_user")
-                .fullName("Expert User")
-                .email("expert@example.com")
+                .username("platinum_user")
+                .fullName("Platinum User")
+                .email("platinum@example.com")
+                .totalScore(750L)
+                .rankTier(RankTier.PLATINUM)
                 .build();
 
-        ProfileCardResponse card = ProfileCardResponse.fromUser(user, 2500);
+        ProfileCardResponse card = ProfileCardResponse.fromUser(user);
 
-        assertThat(card.totalScore()).isEqualTo(2500);
-        assertThat(card.rankTier()).isEqualTo("Expert");
-        assertThat(card.rankBadgeUrl()).isEqualTo("🟣");
+        assertThat(card.totalScore()).isEqualTo(750);
+        assertThat(card.rankTier()).isEqualTo("Platinum");
+        assertThat(card.rankBadgeUrl()).isEqualTo("💎");
     }
 }

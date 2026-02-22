@@ -26,6 +26,7 @@ public class ScoreCalculationService {
 
     private final LifeStatRepository lifeStatRepository;
     private final UserRepository userRepository;
+    private final RankService rankService;
 
     /**
      * Calculates the weighted score from a list of stats.
@@ -41,7 +42,7 @@ public class ScoreCalculationService {
     }
 
     /**
-     * Recalculates and persists the user's total score.
+     * Recalculates and persists the user's total score, then updates rank.
      *
      * @param userId the user ID
      * @return the new total score
@@ -56,6 +57,9 @@ public class ScoreCalculationService {
 
         user.setTotalScore(newScore);
         userRepository.save(user);
+
+        // Update rank tier after score change
+        rankService.updateUserRank(userId);
 
         log.info("Recalculated score for user {}: {}", userId, newScore);
         return newScore;

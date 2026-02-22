@@ -9,13 +9,11 @@ import lombok.Getter;
 @Getter
 public enum RankTier {
 
-    NOVICE(0, "Novice", "🟤"),
-    APPRENTICE(100, "Apprentice", "🟢"),
-    JOURNEYMAN(500, "Journeyman", "🔵"),
-    EXPERT(1500, "Expert", "🟣"),
-    MASTER(5000, "Master", "🟠"),
-    GRANDMASTER(15000, "Grandmaster", "🔴"),
-    LEGEND(50000, "Legend", "⭐");
+    BRONZE(0, "Bronze", "🥉"),
+    SILVER(100, "Silver", "🥈"),
+    GOLD(250, "Gold", "🥇"),
+    PLATINUM(500, "Platinum", "💎"),
+    ELITE(1000, "Elite", "👑");
 
     private final long minScore;
     private final String displayName;
@@ -36,12 +34,22 @@ public enum RankTier {
      */
     public static RankTier fromScore(long totalScore) {
         RankTier[] tiers = values();
-        // Walk backwards from the highest tier
         for (int i = tiers.length - 1; i >= 0; i--) {
             if (totalScore >= tiers[i].minScore) {
                 return tiers[i];
             }
         }
-        return NOVICE;
+        return BRONZE;
+    }
+
+    /**
+     * Returns the next tier above this one, or null if already at ELITE.
+     *
+     * @return the next RankTier, or null
+     */
+    public RankTier nextTier() {
+        RankTier[] tiers = values();
+        int nextOrdinal = this.ordinal() + 1;
+        return nextOrdinal < tiers.length ? tiers[nextOrdinal] : null;
     }
 }

@@ -4,9 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.onnyth.onnythserver.dto.ProfileCardResponse;
 import com.onnyth.onnythserver.dto.ProfileResponse;
 import com.onnyth.onnythserver.dto.ProfileUpdateRequest;
+import com.onnyth.onnythserver.dto.RankProgressResponse;
 import com.onnyth.onnythserver.exceptions.UserNotFoundException;
 import com.onnyth.onnythserver.exceptions.UsernameAlreadyExistsException;
 import com.onnyth.onnythserver.service.ProfileService;
+import com.onnyth.onnythserver.service.RankService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -46,6 +48,9 @@ class ProfileControllerTest {
 
         @MockitoBean
         private ProfileService profileService;
+
+        @MockitoBean
+        private RankService rankService;
 
         private static final UUID USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
 
@@ -249,8 +254,8 @@ class ProfileControllerTest {
                                         .fullName("Test Hero")
                                         .profilePic("https://cdn.example.com/pic.jpg")
                                         .totalScore(0)
-                                        .rankTier("Novice")
-                                        .rankBadgeUrl("🟤")
+                                        .rankTier("Bronze")
+                                        .rankBadgeUrl("🥉")
                                         .build();
 
                         when(profileService.getProfileCard(USER_ID)).thenReturn(card);
@@ -260,7 +265,7 @@ class ProfileControllerTest {
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$.userId").value(USER_ID.toString()))
                                         .andExpect(jsonPath("$.username").value("hero"))
-                                        .andExpect(jsonPath("$.rankTier").value("Novice"))
+                                        .andExpect(jsonPath("$.rankTier").value("Bronze"))
                                         .andExpect(jsonPath("$.totalScore").value(0));
                 }
 
@@ -278,6 +283,56 @@ class ProfileControllerTest {
                                         .thenThrow(new UserNotFoundException(USER_ID.toString()));
 
                         mockMvc.perform(get("/api/v1/profile/card")
+                                        .with(jwt().jwt(j -> j.subject(USER_ID.toString()))))
+                                        .andExpect(status().isNotFound());
+                }
+        }
+
+        // ─── GET /api/v1/profile/rank ─────────────────────────────────────────────
+
+        @Nested
+        @DisplayName("GET /api/v1/profile/rank")
+        class GetRankProgress {
+
+                @Test
+                @DisplayName("returns 200 with rank progress when authenticated")
+                void returns200_withRankProgress() throws Exception {
+                        RankProgressResponse progress = RankProgressResponse.builder()
+                                        .currentTier("Silver")
+                                        .currentBadge("🥈")
+                                        .currentScore(150)
+                                        .nextTier("Gold")
+                                        .nextBadge("🥇")
+                                        .pointsToNextTier(100)
+                                        .progressPercent(33.3)
+                                        .build();
+
+                        when(rankService.getRankProgress(USER_ID)).thenReturn(progress);
+
+                        mockMvc.perform(get("/api/v1/profile/rank")
+                                        .with(jwt().jwt(j -> j.subject(USER_ID.toString()))))
+                                        .andExpect(status().isOk())
+                                        .andExpect(jsonPath("$.currentTier").value("Silver"))
+                                        .andExpect(jsonPath("$.currentScore").value(150))
+                                        .andExpect(jsonPath("$.nextTier").value("Gold"))
+                                        .andExpect(jsonPath("$.pointsToNextTier").value(100))
+                                        .andExpect(jsonPath("$.progressPercent").value(33.3));
+                }
+
+                @Test
+                @DisplayName("returns 401 when not authenticated")
+                void returns401_whenNotAuthenticated() throws Exception {
+                        mockMvc.perform(get("/api/v1/profile/rank"))
+                                        .andExpect(status().isUnauthorized());
+                }
+
+                @Test
+                @DisplayName("returns 404 when user not found")
+                void returns404_whenUserNotFound() throws Exception {
+                        when(rankService.getRankProgress(USER_ID))
+                                        .thenThrow(new UserNotFoundException(USER_ID.toString()));
+
+                        mockMvc.perform(get("/api/v1/profile/rank")
                                         .with(jwt().jwt(j -> j.subject(USER_ID.toString()))))
                                         .andExpect(status().isNotFound());
                 }

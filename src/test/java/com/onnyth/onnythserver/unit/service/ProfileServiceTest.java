@@ -4,6 +4,7 @@ import com.onnyth.onnythserver.dto.ProfileResponse;
 import com.onnyth.onnythserver.dto.ProfileUpdateRequest;
 import com.onnyth.onnythserver.exceptions.UserNotFoundException;
 import com.onnyth.onnythserver.exceptions.UsernameAlreadyExistsException;
+import com.onnyth.onnythserver.models.RankTier;
 import com.onnyth.onnythserver.models.User;
 import com.onnyth.onnythserver.repository.UserRepository;
 import com.onnyth.onnythserver.service.ProfileService;
@@ -53,6 +54,7 @@ class ProfileServiceTest {
                 .fullName("Current User")
                 .profilePic("https://example.com/old.jpg")
                 .totalScore(150L)
+                .rankTier(RankTier.SILVER)
                 .build();
     }
 
@@ -318,8 +320,8 @@ class ProfileServiceTest {
             assertThat(result.fullName()).isEqualTo("Current User");
             assertThat(result.profilePic()).isEqualTo("https://example.com/old.jpg");
             assertThat(result.totalScore()).isEqualTo(150);
-            assertThat(result.rankTier()).isEqualTo("Apprentice");
-            assertThat(result.rankBadgeUrl()).isEqualTo("🟢");
+            assertThat(result.rankTier()).isEqualTo("Silver");
+            assertThat(result.rankBadgeUrl()).isEqualTo("🥈");
         }
 
         @Test

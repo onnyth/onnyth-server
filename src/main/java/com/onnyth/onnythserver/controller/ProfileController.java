@@ -3,7 +3,9 @@ package com.onnyth.onnythserver.controller;
 import com.onnyth.onnythserver.dto.ProfileCardResponse;
 import com.onnyth.onnythserver.dto.ProfileResponse;
 import com.onnyth.onnythserver.dto.ProfileUpdateRequest;
+import com.onnyth.onnythserver.dto.RankProgressResponse;
 import com.onnyth.onnythserver.service.ProfileService;
+import com.onnyth.onnythserver.service.RankService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -28,6 +30,7 @@ import java.util.UUID;
 public class ProfileController {
 
         private final ProfileService profileService;
+        private final RankService rankService;
 
         @Operation(summary = "Get current user's profile")
         @ApiResponses(value = {
@@ -102,5 +105,17 @@ public class ProfileController {
         public ResponseEntity<ProfileCardResponse> getProfileCard(@AuthenticationPrincipal Jwt jwt) {
                 UUID userId = UUID.fromString(jwt.getSubject());
                 return ResponseEntity.ok(profileService.getProfileCard(userId));
+        }
+
+        @Operation(summary = "Get current user's rank progress")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Rank progress retrieved successfully"),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+                        @ApiResponse(responseCode = "404", description = "User not found")
+        })
+        @GetMapping("/rank")
+        public ResponseEntity<RankProgressResponse> getRankProgress(@AuthenticationPrincipal Jwt jwt) {
+                UUID userId = UUID.fromString(jwt.getSubject());
+                return ResponseEntity.ok(rankService.getRankProgress(userId));
         }
 }
