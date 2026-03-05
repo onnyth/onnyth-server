@@ -24,4 +24,7 @@ public interface FriendshipRepository extends JpaRepository<Friendship, UUID> {
     List<Friendship> searchFriends(@Param("userId") UUID userId, @Param("query") String query);
 
     List<Friendship> findAllByUserId(UUID userId);
+
+    @Query("SELECT f.friendId FROM Friendship f WHERE f.userId = :userId")
+    List<UUID> findFriendIdsByUserId(@Param("userId") UUID userId);
 }

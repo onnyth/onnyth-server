@@ -1,12 +1,19 @@
 package com.onnyth.onnythserver.unit.service;
 
-import com.onnyth.onnythserver.dto.LeaderboardEntryResponse;
+import com.onnyth.onnythserver.dto.CategoryLeaderboardEntryResponse;
 import com.onnyth.onnythserver.dto.LeaderboardResponse;
+import com.onnyth.onnythserver.dto.UserLeaderboardPositionResponse;
+import com.onnyth.onnythserver.models.LifeStat;
 import com.onnyth.onnythserver.models.RankTier;
+import com.onnyth.onnythserver.models.StatCategory;
 import com.onnyth.onnythserver.models.User;
+import com.onnyth.onnythserver.repository.FriendshipRepository;
+import com.onnyth.onnythserver.repository.LifeStatRepository;
 import com.onnyth.onnythserver.repository.UserRepository;
 import com.onnyth.onnythserver.service.LeaderboardService;
+import com.onnyth.onnythserver.service.LeaderboardSnapshotService;
 import com.onnyth.onnythserver.support.TestDataFactory;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -15,12 +22,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -33,143 +37,144 @@ class LeaderboardServiceTest {
 
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private FriendshipRepository friendshipRepository;
+    @Mock
+    private LifeStatRepository lifeStatRepository;
+    @Mock
+    private LeaderboardSnapshotService snapshotService;
 
     @InjectMocks
     private LeaderboardService leaderboardService;
 
-    private User buildRankedUser(String username, long score, RankTier tier) {
-        return TestDataFactory.aUser()
-                .username(username)
-                .fullName(username + " User")
-                .totalScore(score)
-                .rankTier(tier)
-                .build();
+    private static final UUID USER_A = UUID.fromString("00000000-0000-0000-0000-000000000001");
+    private static final UUID USER_B = UUID.fromString("00000000-0000-0000-0000-000000000002");
+    private static final UUID USER_C = UUID.fromString("00000000-0000-0000-0000-000000000003");
+
+    private User userA, userB, userC;
+
+    @BeforeEach
+    void setUp() {
+        userA = TestDataFactory.aUser().id(USER_A).username("alice").fullName("Alice").totalScore(500L)
+                .rankTier(RankTier.GOLD).build();
+        userB = TestDataFactory.aUser().id(USER_B).username("bob").fullName("Bob").totalScore(300L)
+                .rankTier(RankTier.SILVER).build();
+        userC = TestDataFactory.aUser().id(USER_C).username("charlie").fullName("Charlie").totalScore(700L)
+                .rankTier(RankTier.PLATINUM).build();
     }
 
     @Nested
-    @DisplayName("getGlobalLeaderboard")
-    class GetGlobalLeaderboard {
+    @DisplayName("getFriendsLeaderboard")
+    class GetFriendsLeaderboard {
 
         @Test
-        @DisplayName("returns ranked entries sorted by score descending")
-        void returnsRankedEntries() {
-            User user1 = buildRankedUser("alice", 500, RankTier.PLATINUM);
-            User user2 = buildRankedUser("bob", 300, RankTier.GOLD);
-            User user3 = buildRankedUser("charlie", 100, RankTier.SILVER);
+        @DisplayName("returns sorted leaderboard with current user marked")
+        void returnsSortedLeaderboard() {
+            when(friendshipRepository.findFriendIdsByUserId(USER_A))
+                    .thenReturn(List.of(USER_B, USER_C));
+            when(userRepository.findAllById(any()))
+                    .thenReturn(List.of(userA, userB, userC));
+            when(snapshotService.getPositionChanges(any(), any())).thenReturn(Map.of());
+            when(snapshotService.getSnapshotUserIds(any())).thenReturn(Set.of());
 
-            Page<User> page = new PageImpl<>(List.of(user1, user2, user3));
-            when(userRepository.findAllByOrderByTotalScoreDesc(any(PageRequest.class))).thenReturn(page);
-            when(userRepository.count()).thenReturn(3L);
-
-            LeaderboardResponse response = leaderboardService.getGlobalLeaderboard(null, 50, 0);
+            LeaderboardResponse response = leaderboardService.getFriendsLeaderboard(USER_A, PageRequest.of(0, 20));
 
             assertThat(response.entries()).hasSize(3);
-            assertThat(response.entries().get(0).rank()).isEqualTo(1);
-            assertThat(response.entries().get(0).username()).isEqualTo("alice");
-            assertThat(response.entries().get(0).totalScore()).isEqualTo(500);
-            assertThat(response.entries().get(1).rank()).isEqualTo(2);
-            assertThat(response.entries().get(2).rank()).isEqualTo(3);
-            assertThat(response.totalUsers()).isEqualTo(3);
-            assertThat(response.userRank()).isNull();
+            // Charlie (700) first, Alice (500) second, Bob (300) third
+            assertThat(response.entries().get(0).username()).isEqualTo("charlie");
+            assertThat(response.entries().get(0).position()).isEqualTo(1);
+            assertThat(response.entries().get(1).username()).isEqualTo("alice");
+            assertThat(response.entries().get(1).isCurrentUser()).isTrue();
+            assertThat(response.entries().get(2).username()).isEqualTo("bob");
+            assertThat(response.currentUserPosition()).isEqualTo(2);
+            assertThat(response.currentUserScore()).isEqualTo(500L);
+            assertThat(response.totalFriends()).isEqualTo(2);
         }
 
         @Test
-        @DisplayName("includes user's own rank when userId is provided")
-        void includesUserRank() {
-            UUID userId = UUID.randomUUID();
-            User currentUser = TestDataFactory.aUser().id(userId).totalScore(300L).rankTier(RankTier.GOLD).build();
+        @DisplayName("returns empty entries for user with no friends")
+        void emptyForNoFriends() {
+            when(friendshipRepository.findFriendIdsByUserId(USER_A))
+                    .thenReturn(List.of());
+            when(userRepository.findAllById(any()))
+                    .thenReturn(List.of(userA));
+            when(snapshotService.getPositionChanges(any(), any())).thenReturn(Map.of());
+            when(snapshotService.getSnapshotUserIds(any())).thenReturn(Set.of());
 
-            Page<User> page = new PageImpl<>(List.of());
-            when(userRepository.findAllByOrderByTotalScoreDesc(any(PageRequest.class))).thenReturn(page);
-            when(userRepository.count()).thenReturn(10L);
-            when(userRepository.findById(userId)).thenReturn(Optional.of(currentUser));
-            when(userRepository.countByTotalScoreGreaterThan(300L)).thenReturn(2L);
+            LeaderboardResponse response = leaderboardService.getFriendsLeaderboard(USER_A, PageRequest.of(0, 20));
 
-            LeaderboardResponse response = leaderboardService.getGlobalLeaderboard(userId, 50, 0);
-
-            assertThat(response.userRank()).isEqualTo(3); // 2 users above + 1
-        }
-
-        @Test
-        @DisplayName("clamps limit to max 100")
-        void clampsLimitToMax() {
-            Page<User> page = new PageImpl<>(List.of());
-            when(userRepository.findAllByOrderByTotalScoreDesc(any(PageRequest.class))).thenReturn(page);
-            when(userRepository.count()).thenReturn(0L);
-
-            leaderboardService.getGlobalLeaderboard(null, 200, 0);
-
-            // Should not throw — limit clamped to 100
-        }
-
-        @Test
-        @DisplayName("defaults negative limit and offset to safe values")
-        void defaultsNegativeValues() {
-            Page<User> page = new PageImpl<>(List.of());
-            when(userRepository.findAllByOrderByTotalScoreDesc(any(PageRequest.class))).thenReturn(page);
-            when(userRepository.count()).thenReturn(0L);
-
-            LeaderboardResponse response = leaderboardService.getGlobalLeaderboard(null, -1, -5);
-
-            assertThat(response.entries()).isEmpty();
-        }
-
-        @Test
-        @DisplayName("calculates correct ranks for paginated results with offset")
-        void correctRanksWithOffset() {
-            User user = buildRankedUser("page2user", 200, RankTier.SILVER);
-
-            Page<User> page = new PageImpl<>(List.of(user));
-            when(userRepository.findAllByOrderByTotalScoreDesc(any(PageRequest.class))).thenReturn(page);
-            when(userRepository.count()).thenReturn(100L);
-
-            LeaderboardResponse response = leaderboardService.getGlobalLeaderboard(null, 10, 10);
-
-            assertThat(response.entries().get(0).rank()).isEqualTo(11); // offset 10 → first rank is 11
+            assertThat(response.entries()).hasSize(1);
+            assertThat(response.entries().get(0).isCurrentUser()).isTrue();
+            assertThat(response.totalFriends()).isEqualTo(0);
         }
     }
 
     @Nested
-    @DisplayName("getUserRank")
-    class GetUserRank {
+    @DisplayName("getUserPosition")
+    class GetUserPosition {
 
         @Test
-        @DisplayName("returns correct rank based on users with higher scores")
-        void returnsCorrectRank() {
-            UUID userId = UUID.randomUUID();
-            User user = TestDataFactory.aUser().id(userId).totalScore(250L).build();
+        @DisplayName("returns correct position and user ahead")
+        void returnsPositionWithUserAhead() {
+            when(friendshipRepository.findFriendIdsByUserId(USER_A))
+                    .thenReturn(List.of(USER_B, USER_C));
+            when(userRepository.findAllById(any()))
+                    .thenReturn(List.of(userA, userB, userC));
 
-            when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-            when(userRepository.countByTotalScoreGreaterThan(250L)).thenReturn(5L);
+            UserLeaderboardPositionResponse response = leaderboardService.getUserPosition(USER_A);
 
-            Integer rank = leaderboardService.getUserRank(userId);
-
-            assertThat(rank).isEqualTo(6); // 5 above + 1
+            assertThat(response.position()).isEqualTo(2); // Charlie is #1
+            assertThat(response.totalParticipants()).isEqualTo(3);
+            assertThat(response.score()).isEqualTo(500L);
+            assertThat(response.pointsToNextPosition()).isEqualTo(200L); // 700 - 500
+            assertThat(response.userAheadUsername()).isEqualTo("charlie");
+            assertThat(response.userAheadId()).isEqualTo(USER_C);
         }
 
         @Test
-        @DisplayName("returns 1 when user has highest score")
-        void returnsOneForTopUser() {
-            UUID userId = UUID.randomUUID();
-            User user = TestDataFactory.aUser().id(userId).totalScore(1000L).build();
+        @DisplayName("returns zero gap when in first place")
+        void firstPlace() {
+            when(friendshipRepository.findFriendIdsByUserId(USER_C))
+                    .thenReturn(List.of(USER_A, USER_B));
+            when(userRepository.findAllById(any()))
+                    .thenReturn(List.of(userA, userB, userC));
 
-            when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-            when(userRepository.countByTotalScoreGreaterThan(1000L)).thenReturn(0L);
+            UserLeaderboardPositionResponse response = leaderboardService.getUserPosition(USER_C);
 
-            Integer rank = leaderboardService.getUserRank(userId);
-
-            assertThat(rank).isEqualTo(1);
+            assertThat(response.position()).isEqualTo(1);
+            assertThat(response.pointsToNextPosition()).isEqualTo(0);
+            assertThat(response.userAheadUsername()).isNull();
         }
+    }
+
+    @Nested
+    @DisplayName("getLeaderboardByCategory")
+    class GetLeaderboardByCategory {
 
         @Test
-        @DisplayName("returns null when user not found")
-        void returnsNullForMissingUser() {
-            UUID userId = UUID.randomUUID();
-            when(userRepository.findById(userId)).thenReturn(Optional.empty());
+        @DisplayName("ranks by category value, users without stat get 0")
+        void ranksByCategory() {
+            when(friendshipRepository.findFriendIdsByUserId(USER_A))
+                    .thenReturn(List.of(USER_B, USER_C));
+            when(userRepository.findAllById(any()))
+                    .thenReturn(List.of(userA, userB, userC));
 
-            Integer rank = leaderboardService.getUserRank(userId);
+            LifeStat statA = LifeStat.builder().userId(USER_A).category(StatCategory.FITNESS).value(80).build();
+            LifeStat statC = LifeStat.builder().userId(USER_C).category(StatCategory.FITNESS).value(60).build();
+            // User B has no FITNESS stat → ranked last with value 0
 
-            assertThat(rank).isNull();
+            when(lifeStatRepository.findAllByUserIdInAndCategory(any(), eq(StatCategory.FITNESS)))
+                    .thenReturn(List.of(statA, statC));
+
+            Page<CategoryLeaderboardEntryResponse> page =
+                    leaderboardService.getLeaderboardByCategory(USER_A, StatCategory.FITNESS, PageRequest.of(0, 20));
+
+            assertThat(page.getContent()).hasSize(3);
+            assertThat(page.getContent().get(0).username()).isEqualTo("alice"); // 80
+            assertThat(page.getContent().get(0).categoryValue()).isEqualTo(80);
+            assertThat(page.getContent().get(1).username()).isEqualTo("charlie"); // 60
+            assertThat(page.getContent().get(2).username()).isEqualTo("bob"); // 0
+            assertThat(page.getContent().get(2).categoryValue()).isEqualTo(0);
         }
     }
 }

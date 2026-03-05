@@ -13,4 +13,6 @@ public interface LifeStatRepository extends JpaRepository<LifeStat, UUID> {
     List<LifeStat> findAllByUserId(UUID userId);
 
     Optional<LifeStat> findByUserIdAndCategory(UUID userId, StatCategory category);
+
+    List<LifeStat> findAllByUserIdInAndCategory(List<UUID> userIds, StatCategory category);
 }

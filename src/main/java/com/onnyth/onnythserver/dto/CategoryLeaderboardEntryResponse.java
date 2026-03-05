@@ -5,15 +5,14 @@ import lombok.Builder;
 import java.util.UUID;
 
 @Builder
-public record LeaderboardEntryResponse(
+public record CategoryLeaderboardEntryResponse(
         int position,
         UUID userId,
         String username,
         String fullName,
         String profilePic,
-        long totalScore,
+        int categoryValue,
+        String category,
         String rankTier,
-        boolean isCurrentUser,
-        Integer positionChange,
-        boolean isNew) {
+        boolean isCurrentUser) {
 }
