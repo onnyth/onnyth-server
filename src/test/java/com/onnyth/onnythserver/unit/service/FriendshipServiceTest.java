@@ -9,6 +9,7 @@ import com.onnyth.onnythserver.models.*;
 import com.onnyth.onnythserver.repository.FriendRequestRepository;
 import com.onnyth.onnythserver.repository.FriendshipRepository;
 import com.onnyth.onnythserver.repository.UserRepository;
+import com.onnyth.onnythserver.service.AchievementUnlockService;
 import com.onnyth.onnythserver.service.FriendshipService;
 import com.onnyth.onnythserver.service.LifeStatService;
 import com.onnyth.onnythserver.service.RankService;
@@ -49,6 +50,8 @@ class FriendshipServiceTest {
     private LifeStatService lifeStatService;
     @Mock
     private RankService rankService;
+    @Mock
+    private AchievementUnlockService achievementUnlockService;
 
     @InjectMocks
     private FriendshipService friendshipService;

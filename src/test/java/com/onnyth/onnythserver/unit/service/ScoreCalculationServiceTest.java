@@ -7,6 +7,7 @@ import com.onnyth.onnythserver.models.StatCategory;
 import com.onnyth.onnythserver.models.User;
 import com.onnyth.onnythserver.repository.LifeStatRepository;
 import com.onnyth.onnythserver.repository.UserRepository;
+import com.onnyth.onnythserver.service.AchievementUnlockService;
 import com.onnyth.onnythserver.service.RankService;
 import com.onnyth.onnythserver.service.ScoreCalculationService;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,6 +43,9 @@ class ScoreCalculationServiceTest {
 
     @Mock
     private RankService rankService;
+
+    @Mock
+    private AchievementUnlockService achievementUnlockService;
 
     @InjectMocks
     private ScoreCalculationService scoreCalculationService;

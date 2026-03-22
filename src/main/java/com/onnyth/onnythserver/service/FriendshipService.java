@@ -31,6 +31,7 @@ public class FriendshipService {
     private final UserRepository userRepository;
     private final LifeStatService lifeStatService;
     private final RankService rankService;
+    private final AchievementUnlockService achievementUnlockService;
 
     // ─── Friend Requests ──────────────────────────────────────────────────────
 
@@ -105,6 +106,12 @@ public class FriendshipService {
                 .orElseThrow(() -> new UserNotFoundException(request.getReceiverId().toString()));
 
         log.info("Friend request accepted: {} ↔ {}", request.getSenderId(), request.getReceiverId());
+
+        // Check achievements for both users (friend count may trigger social
+        // achievements)
+        achievementUnlockService.checkAndUnlockAchievements(request.getSenderId());
+        achievementUnlockService.checkAndUnlockAchievements(request.getReceiverId());
+
         return FriendRequestResponse.fromRequest(request, sender, receiver);
     }
 

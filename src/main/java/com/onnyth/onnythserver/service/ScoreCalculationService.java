@@ -27,6 +27,7 @@ public class ScoreCalculationService {
     private final LifeStatRepository lifeStatRepository;
     private final UserRepository userRepository;
     private final RankService rankService;
+    private final AchievementUnlockService achievementUnlockService;
 
     /**
      * Calculates the weighted score from a list of stats.
@@ -60,6 +61,9 @@ public class ScoreCalculationService {
 
         // Update rank tier after score change
         rankService.updateUserRank(userId);
+
+        // Check and unlock any achievements
+        achievementUnlockService.checkAndUnlockAchievements(userId);
 
         log.info("Recalculated score for user {}: {}", userId, newScore);
         return newScore;
