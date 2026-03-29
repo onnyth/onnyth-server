@@ -59,6 +59,14 @@ public class User {
     private Long totalScore = 0L;
 
     @Builder.Default
+    @Column(name = "xp", nullable = false)
+    private Long xp = 0L;
+
+    @Builder.Default
+    @Column(name = "level", nullable = false)
+    private Integer level = 1;
+
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "rank_tier", nullable = false, length = 20)
     private RankTier rankTier = RankTier.BRONZE;

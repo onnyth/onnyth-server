@@ -2,13 +2,14 @@ package com.onnyth.onnythserver.dto;
 
 import com.onnyth.onnythserver.models.RankTier;
 import com.onnyth.onnythserver.models.User;
+import com.onnyth.onnythserver.service.LevelService;
 import lombok.Builder;
 
 import java.util.UUID;
 
 /**
  * DTO for the RPG-style profile card view.
- * Contains essential user info plus gamification data (score + rank).
+ * Contains essential user info plus gamification data (score, rank, level, streak).
  */
 @Builder
 public record ProfileCardResponse(
@@ -18,15 +19,18 @@ public record ProfileCardResponse(
         String profilePic,
         long totalScore,
         String rankTier,
-        String rankBadgeUrl) {
+        String rankBadgeUrl,
+        Integer level,
+        String levelTitle,
+        Integer currentStreak) {
     /**
      * Factory method to create a ProfileCardResponse from a User entity.
-     * Reads rank tier directly from the User entity (persisted).
      *
-     * @param user the user entity
+     * @param user          the user entity
+     * @param currentStreak the user's current streak (0 if no streak data)
      * @return a fully populated ProfileCardResponse
      */
-    public static ProfileCardResponse fromUser(User user) {
+    public static ProfileCardResponse fromUser(User user, int currentStreak) {
         RankTier tier = user.getRankTier();
         return ProfileCardResponse.builder()
                 .userId(user.getId())
@@ -36,6 +40,17 @@ public record ProfileCardResponse(
                 .totalScore(user.getTotalScore())
                 .rankTier(tier.getDisplayName())
                 .rankBadgeUrl(tier.getBadgeEmoji())
+                .level(user.getLevel())
+                .levelTitle(LevelService.getTitle(user.getLevel()))
+                .currentStreak(currentStreak)
                 .build();
     }
+
+    /**
+     * Backward-compatible factory with no streak data.
+     */
+    public static ProfileCardResponse fromUser(User user) {
+        return fromUser(user, 0);
+    }
 }
+
