@@ -40,4 +40,7 @@ build/
 #agents
 .agents/
 
+#supabase
+supabase/.temp
+
 
