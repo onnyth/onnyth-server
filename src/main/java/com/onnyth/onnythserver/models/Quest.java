@@ -9,7 +9,7 @@ import java.util.UUID;
 
 /**
  * A quest is a system-created challenge that users can complete to earn XP.
- * Quests have a category (maps to StatCategory), an XP reward, and an optional
+ * Quests have a category (maps to StatDomain), an XP reward, and an optional
  * deadline.
  */
 @Getter
@@ -37,7 +37,7 @@ public class Quest {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "category", nullable = false, length = 30)
-    private StatCategory category;
+    private StatDomain category;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)

@@ -3,7 +3,7 @@ package com.onnyth.onnythserver.controller;
 import com.onnyth.onnythserver.dto.CategoryLeaderboardEntryResponse;
 import com.onnyth.onnythserver.dto.LeaderboardResponse;
 import com.onnyth.onnythserver.dto.UserLeaderboardPositionResponse;
-import com.onnyth.onnythserver.models.StatCategory;
+import com.onnyth.onnythserver.models.StatDomain;
 import com.onnyth.onnythserver.service.LeaderboardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,7 +30,7 @@ public class LeaderboardController {
     public ResponseEntity<?> getLeaderboard(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(required = false) StatCategory category,
+            @RequestParam(required = false) StatDomain category,
             @AuthenticationPrincipal Jwt jwt) {
 
         UUID userId = UUID.fromString(jwt.getSubject());

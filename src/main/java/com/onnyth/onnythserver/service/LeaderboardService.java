@@ -2,12 +2,11 @@ package com.onnyth.onnythserver.service;
 
 import com.onnyth.onnythserver.dto.*;
 import com.onnyth.onnythserver.exceptions.UserNotFoundException;
-import com.onnyth.onnythserver.models.LifeStat;
-import com.onnyth.onnythserver.models.StatCategory;
+import com.onnyth.onnythserver.models.StatDomain;
 import com.onnyth.onnythserver.models.User;
 import com.onnyth.onnythserver.repository.FriendshipRepository;
-import com.onnyth.onnythserver.repository.LifeStatRepository;
 import com.onnyth.onnythserver.repository.UserRepository;
+import com.onnyth.onnythserver.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -27,7 +26,11 @@ public class LeaderboardService {
 
     private final UserRepository userRepository;
     private final FriendshipRepository friendshipRepository;
-    private final LifeStatRepository lifeStatRepository;
+    private final UserOccupationRepository occupationRepository;
+    private final UserWealthRepository wealthRepository;
+    private final UserPhysiqueRepository physiqueRepository;
+    private final UserWisdomRepository wisdomRepository;
+    private final UserCharismaRepository charismaRepository;
     private final LeaderboardSnapshotService snapshotService;
 
     // ─── Friends Leaderboard (overall) ────────────────────────────────────────
@@ -137,24 +140,21 @@ public class LeaderboardService {
 
     @Transactional(readOnly = true)
     public Page<CategoryLeaderboardEntryResponse> getLeaderboardByCategory(
-            UUID userId, StatCategory category, Pageable pageable) {
+            UUID userId, StatDomain domain, Pageable pageable) {
 
         List<UUID> participantIds = getParticipantIds(userId);
         List<User> allParticipants = userRepository.findAllById(participantIds);
         Map<UUID, User> usersById = allParticipants.stream()
                 .collect(Collectors.toMap(User::getId, Function.identity()));
 
-        // Get stats for all participants in this category
-        List<LifeStat> stats = lifeStatRepository.findAllByUserIdInAndCategory(participantIds, category);
-        Map<UUID, Integer> statValueMap = stats.stream()
-                .collect(Collectors.toMap(LifeStat::getUserId, LifeStat::getValue));
-
-        // Build sortable list: users with stat first (by value DESC), then users
-        // without (value = 0)
-        List<Map.Entry<UUID, Integer>> ranked = new ArrayList<>();
+        // Get domain scores for all participants
+        Map<UUID, Integer> scoreMap = new HashMap<>();
         for (UUID pid : participantIds) {
-            ranked.add(Map.entry(pid, statValueMap.getOrDefault(pid, 0)));
+            scoreMap.put(pid, getDomainScore(pid, domain));
         }
+
+        // Build sortable list by score DESC
+        List<Map.Entry<UUID, Integer>> ranked = new ArrayList<>(scoreMap.entrySet());
         ranked.sort((a, b) -> Integer.compare(b.getValue(), a.getValue()));
 
         // Paginate
@@ -178,7 +178,7 @@ public class LeaderboardService {
                     .fullName(user.getFullName())
                     .profilePic(user.getProfilePic())
                     .categoryValue(entry.getValue())
-                    .category(category.getDisplayName())
+                    .category(domain.getDisplayName())
                     .rankTier(user.getRankTier() != null ? user.getRankTier().getDisplayName() : null)
                     .isCurrentUser(user.getId().equals(userId))
                     .build());
@@ -188,6 +188,21 @@ public class LeaderboardService {
     }
 
     // ─── Private helpers ──────────────────────────────────────────────────────
+
+    private int getDomainScore(UUID userId, StatDomain domain) {
+        return switch (domain) {
+            case OCCUPATION -> occupationRepository.findByUserIdAndIsCurrentTrue(userId)
+                    .map(o -> o.getScore()).orElse(0);
+            case WEALTH -> wealthRepository.findByUserId(userId)
+                    .map(w -> w.getScore()).orElse(0);
+            case PHYSIQUE -> physiqueRepository.findByUserId(userId)
+                    .map(p -> p.getScore()).orElse(0);
+            case WISDOM -> wisdomRepository.findByUserId(userId)
+                    .map(w -> w.getScore()).orElse(0);
+            case CHARISMA -> charismaRepository.findByUserId(userId)
+                    .map(c -> c.getScore()).orElse(0);
+        };
+    }
 
     private List<UUID> getParticipantIds(UUID userId) {
         List<UUID> friendIds = friendshipRepository.findFriendIdsByUserId(userId);

@@ -6,6 +6,7 @@ import com.onnyth.onnythserver.models.*;
 import com.onnyth.onnythserver.repository.FriendRequestRepository;
 import com.onnyth.onnythserver.repository.FriendshipRepository;
 import com.onnyth.onnythserver.repository.UserRepository;
+import com.onnyth.onnythserver.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -29,9 +30,13 @@ public class FriendshipService {
     private final FriendRequestRepository friendRequestRepository;
     private final FriendshipRepository friendshipRepository;
     private final UserRepository userRepository;
-    private final LifeStatService lifeStatService;
     private final RankService rankService;
     private final AchievementUnlockService achievementUnlockService;
+    private final UserOccupationRepository occupationRepository;
+    private final UserWealthRepository wealthRepository;
+    private final UserPhysiqueRepository physiqueRepository;
+    private final UserWisdomRepository wisdomRepository;
+    private final UserCharismaRepository charismaRepository;
 
     // ─── Friend Requests ──────────────────────────────────────────────────────
 
@@ -207,11 +212,8 @@ public class FriendshipService {
         User friend = userRepository.findById(friendId)
                 .orElseThrow(() -> new UserNotFoundException(friendId.toString()));
 
-        List<LifeStatResponse> friendStats = lifeStatService.getUserStats(friendId);
         RankProgressResponse rankProgress = rankService.getRankProgress(friendId);
-
-        List<LifeStatResponse> myStats = lifeStatService.getUserStats(userId);
-        StatComparisonResponse comparison = computeComparison(myStats, friendStats, userId, friendId);
+        StatComparisonResponse comparison = computeComparison(userId, friendId);
 
         return FriendProfileResponse.builder()
                 .userId(friend.getId())
@@ -221,7 +223,6 @@ public class FriendshipService {
                 .rankTier(friend.getRankTier() != null ? friend.getRankTier().getDisplayName() : null)
                 .totalScore(friend.getTotalScore())
                 .rankProgress(rankProgress)
-                .stats(friendStats)
                 .comparison(comparison)
                 .build();
     }
@@ -261,12 +262,7 @@ public class FriendshipService {
                 .build();
     }
 
-    private StatComparisonResponse computeComparison(
-            List<LifeStatResponse> myStats,
-            List<LifeStatResponse> friendStats,
-            UUID userId,
-            UUID friendId) {
-
+    private StatComparisonResponse computeComparison(UUID userId, UUID friendId) {
         User me = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId.toString()));
         User friend = userRepository.findById(friendId)
@@ -274,21 +270,16 @@ public class FriendshipService {
 
         long scoreDiff = me.getTotalScore() - friend.getTotalScore();
 
-        Map<StatCategory, Integer> myStatMap = myStats.stream()
-                .collect(Collectors.toMap(LifeStatResponse::category, LifeStatResponse::value));
-        Map<StatCategory, Integer> friendStatMap = friendStats.stream()
-                .collect(Collectors.toMap(LifeStatResponse::category, LifeStatResponse::value));
-
         List<String> higherIn = new ArrayList<>();
         List<String> lowerIn = new ArrayList<>();
 
-        for (StatCategory category : StatCategory.values()) {
-            int myValue = myStatMap.getOrDefault(category, 0);
-            int friendValue = friendStatMap.getOrDefault(category, 0);
-            if (myValue > friendValue) {
-                higherIn.add(category.getDisplayName());
-            } else if (myValue < friendValue) {
-                lowerIn.add(category.getDisplayName());
+        for (StatDomain domain : StatDomain.values()) {
+            int myScore = getDomainScore(userId, domain);
+            int friendScore = getDomainScore(friendId, domain);
+            if (myScore > friendScore) {
+                higherIn.add(domain.getDisplayName());
+            } else if (myScore < friendScore) {
+                lowerIn.add(domain.getDisplayName());
             }
         }
 
@@ -297,5 +288,20 @@ public class FriendshipService {
                 .higherIn(higherIn)
                 .lowerIn(lowerIn)
                 .build();
+    }
+
+    private int getDomainScore(UUID userId, StatDomain domain) {
+        return switch (domain) {
+            case OCCUPATION -> occupationRepository.findByUserIdAndIsCurrentTrue(userId)
+                    .map(o -> o.getScore()).orElse(0);
+            case WEALTH -> wealthRepository.findByUserId(userId)
+                    .map(w -> w.getScore()).orElse(0);
+            case PHYSIQUE -> physiqueRepository.findByUserId(userId)
+                    .map(p -> p.getScore()).orElse(0);
+            case WISDOM -> wisdomRepository.findByUserId(userId)
+                    .map(w -> w.getScore()).orElse(0);
+            case CHARISMA -> charismaRepository.findByUserId(userId)
+                    .map(c -> c.getScore()).orElse(0);
+        };
     }
 }

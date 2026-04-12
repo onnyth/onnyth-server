@@ -1,7 +1,7 @@
 package com.onnyth.onnythserver.controller;
 
 import com.onnyth.onnythserver.dto.*;
-import com.onnyth.onnythserver.models.StatCategory;
+import com.onnyth.onnythserver.models.StatDomain;
 import com.onnyth.onnythserver.service.ActivityService;
 import com.onnyth.onnythserver.service.ActivityTypeService;
 import com.onnyth.onnythserver.service.LevelService;
@@ -39,7 +39,7 @@ public class ActivityController {
     })
     @GetMapping("/types")
     public ResponseEntity<List<ActivityTypeResponse>> getActivityTypes(
-            @RequestParam(required = false) StatCategory category) {
+            @RequestParam(required = false) StatDomain category) {
         return ResponseEntity.ok(activityTypeService.getActivityTypes(category));
     }
 

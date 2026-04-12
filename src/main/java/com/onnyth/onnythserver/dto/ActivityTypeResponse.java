@@ -1,7 +1,7 @@
 package com.onnyth.onnythserver.dto;
 
 import com.onnyth.onnythserver.models.ActivityType;
-import com.onnyth.onnythserver.models.StatCategory;
+import com.onnyth.onnythserver.models.StatDomain;
 import lombok.Builder;
 
 import java.util.UUID;
@@ -12,7 +12,7 @@ public record ActivityTypeResponse(
         String name,
         String description,
         String icon,
-        StatCategory category,
+        StatDomain category,
         Integer xpReward,
         String frequency,
         Integer cooldownHours

@@ -37,7 +37,7 @@ public class ActivityType {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "category", nullable = false, length = 30)
-    private StatCategory category;
+    private StatDomain category;
 
     @Column(name = "xp_reward", nullable = false)
     private Integer xpReward;

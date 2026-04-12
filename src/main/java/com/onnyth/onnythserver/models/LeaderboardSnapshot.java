@@ -42,5 +42,5 @@ public class LeaderboardSnapshot {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "category", length = 30)
-    private StatCategory category;
+    private StatDomain category;
 }

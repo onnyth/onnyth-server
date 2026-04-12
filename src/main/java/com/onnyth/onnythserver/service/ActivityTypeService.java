@@ -3,7 +3,7 @@ package com.onnyth.onnythserver.service;
 import com.onnyth.onnythserver.dto.ActivityTypeResponse;
 import com.onnyth.onnythserver.exceptions.ActivityTypeNotFoundException;
 import com.onnyth.onnythserver.models.ActivityType;
-import com.onnyth.onnythserver.models.StatCategory;
+import com.onnyth.onnythserver.models.StatDomain;
 import com.onnyth.onnythserver.repository.ActivityTypeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,7 @@ public class ActivityTypeService {
      * Get all active activity types, optionally filtered by category.
      */
     @Transactional(readOnly = true)
-    public List<ActivityTypeResponse> getActivityTypes(StatCategory category) {
+    public List<ActivityTypeResponse> getActivityTypes(StatDomain category) {
         List<ActivityType> types;
         if (category != null) {
             types = activityTypeRepository.findAllByCategoryAndIsActiveTrue(category);

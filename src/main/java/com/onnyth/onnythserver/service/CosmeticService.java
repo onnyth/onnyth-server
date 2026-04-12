@@ -3,7 +3,7 @@ package com.onnyth.onnythserver.service;
 import com.onnyth.onnythserver.dto.CosmeticItemResponse;
 import com.onnyth.onnythserver.exceptions.CosmeticAlreadyOwnedException;
 import com.onnyth.onnythserver.exceptions.CosmeticNotFoundException;
-import com.onnyth.onnythserver.exceptions.InsufficientXpException;
+import com.onnyth.onnythserver.exceptions.InsufficientCoinsException;
 import com.onnyth.onnythserver.exceptions.UserNotFoundException;
 import com.onnyth.onnythserver.models.CosmeticCategory;
 import com.onnyth.onnythserver.models.CosmeticItem;
@@ -73,12 +73,12 @@ public class CosmeticService {
             throw new CosmeticAlreadyOwnedException(itemId.toString());
         }
 
-        if (user.getXp() < item.getPrice()) {
-            throw new InsufficientXpException(user.getXp(), item.getPrice());
+        if (user.getOnnythCoins() < item.getPrice()) {
+            throw new InsufficientCoinsException(user.getOnnythCoins(), item.getPrice());
         }
 
-        // Deduct XP
-        user.setXp(user.getXp() - item.getPrice());
+        // Deduct Onnyth Coins
+        user.setOnnythCoins(user.getOnnythCoins() - item.getPrice());
         userRepository.save(user);
 
         // Record ownership

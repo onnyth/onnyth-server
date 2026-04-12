@@ -1,7 +1,7 @@
 package com.onnyth.onnythserver.repository;
 
 import com.onnyth.onnythserver.models.LeaderboardSnapshot;
-import com.onnyth.onnythserver.models.StatCategory;
+import com.onnyth.onnythserver.models.StatDomain;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;
@@ -13,5 +13,5 @@ public interface LeaderboardSnapshotRepository extends JpaRepository<Leaderboard
     List<LeaderboardSnapshot> findByFriendOwnerIdAndSnapshotDate(UUID friendOwnerId, LocalDate snapshotDate);
 
     List<LeaderboardSnapshot> findByFriendOwnerIdAndSnapshotDateAndCategory(
-            UUID friendOwnerId, LocalDate snapshotDate, StatCategory category);
+            UUID friendOwnerId, LocalDate snapshotDate, StatDomain category);
 }

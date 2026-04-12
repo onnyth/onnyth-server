@@ -67,6 +67,10 @@ public class User {
     private Integer level = 1;
 
     @Builder.Default
+    @Column(name = "onnyth_coins", nullable = false)
+    private Integer onnythCoins = 0;
+
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "rank_tier", nullable = false, length = 20)
     private RankTier rankTier = RankTier.BRONZE;
