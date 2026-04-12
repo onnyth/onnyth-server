@@ -16,6 +16,8 @@ public record ProfileResponse(
         Boolean emailVerified,
         Boolean profileComplete,
         long totalScore,
+        String rankTier,
+        int onnythCoins,
         Instant createdAt,
         Instant updatedAt) {
     /**
@@ -31,6 +33,8 @@ public record ProfileResponse(
                 .emailVerified(user.getEmailVerified())
                 .profileComplete(user.getProfileComplete())
                 .totalScore(user.getTotalScore())
+                .rankTier(user.getRankTier() != null ? user.getRankTier().getDisplayName() : null)
+                .onnythCoins(user.getOnnythCoins() != null ? user.getOnnythCoins() : 0)
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
                 .build();

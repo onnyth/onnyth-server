@@ -59,7 +59,7 @@ public class CosmeticService {
     }
 
     /**
-     * Purchase a cosmetic item — deducts XP from user.
+     * Purchase a cosmetic item — deducts Onnyth Coins from user.
      */
     @Transactional
     public CosmeticItemResponse purchaseItem(UUID userId, UUID itemId) {

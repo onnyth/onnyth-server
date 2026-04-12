@@ -42,6 +42,10 @@ public class UserWealth {
     @Column(name = "monthly_saving_pct")
     private Integer monthlySavingPct;
 
+    @Column(name = "income_currency", nullable = false, length = 3)
+    @Builder.Default
+    private String incomeCurrency = "USD";
+
     @Column(name = "score", nullable = false)
     @Builder.Default
     private Integer score = 0;

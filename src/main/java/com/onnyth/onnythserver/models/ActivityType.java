@@ -9,7 +9,7 @@ import java.util.UUID;
 
 /**
  * Defines an activity that users can log to earn XP.
- * Each activity type belongs to a stat category and has an XP reward,
+ * Each activity type belongs to a stat domain and has an XP reward,
  * frequency, and cooldown period.
  */
 @Getter

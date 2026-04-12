@@ -22,6 +22,7 @@ public record ProfileCardResponse(
         String rankBadgeUrl,
         Integer level,
         String levelTitle,
+        int onnythCoins,
         Integer currentStreak) {
     /**
      * Factory method to create a ProfileCardResponse from a User entity.
@@ -42,6 +43,7 @@ public record ProfileCardResponse(
                 .rankBadgeUrl(tier.getBadgeEmoji())
                 .level(user.getLevel())
                 .levelTitle(LevelService.getTitle(user.getLevel()))
+                .onnythCoins(user.getOnnythCoins() != null ? user.getOnnythCoins() : 0)
                 .currentStreak(currentStreak)
                 .build();
     }
