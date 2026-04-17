@@ -3,6 +3,8 @@ package com.onnyth.onnythserver.models;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -33,7 +35,8 @@ public class FeedEvent {
     @Column(name = "event_type", nullable = false, length = 30)
     private FeedEventType eventType;
 
-    @Column(name = "event_data", columnDefinition = "TEXT")
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "event_data", columnDefinition = "jsonb")
     private String eventData;
 
     @Column(name = "created_at", nullable = false, updatable = false)
