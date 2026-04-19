@@ -13,6 +13,7 @@ public record LoginResponse(
             String email,
             String username,
             String fullName,
-            String profilePic
+            String profilePic,
+            boolean hasProfile
     ) {}
 }

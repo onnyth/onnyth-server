@@ -40,6 +40,12 @@ public class UserCharisma {
     @Column(name = "last_social_sync_at")
     private Instant lastSocialSyncAt;
 
+    @Column(name = "relationship_status", length = 20)
+    private String relationshipStatus;
+
+    @Column(name = "social_circle_size")
+    private Integer socialCircleSize;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     @ColumnDefault("now()")
     @Builder.Default
