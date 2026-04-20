@@ -70,7 +70,7 @@ class RegistrationServiceTest {
 
             assertThat(response.currentStep()).isEqualTo("PHONE");
             assertThat(response.completedSteps()).isEmpty();
-            assertThat(response.draftData()).isNull();
+            assertThat(response.draftData()).isEmpty();
         }
 
         @Test
