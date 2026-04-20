@@ -53,9 +53,6 @@ class SecurityConfigTest {
     @MockitoBean
     private StorageService storageService;
 
-    @MockitoBean
-    private ObjectMapper objectMapper;
-
     // ─── Public routes — must be accessible without a token ──────────────────
 
     @Test
