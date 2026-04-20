@@ -143,7 +143,8 @@ public class SupabaseAuthService {
                             user.getEmail(),
                             user.getUsername(),
                             user.getFullName(),
-                            user.getProfilePic()
+                            user.getProfilePic(),
+                            Boolean.TRUE.equals(user.getProfileComplete())
                     )
             );
 

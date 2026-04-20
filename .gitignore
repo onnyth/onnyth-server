@@ -37,4 +37,10 @@ build/
 .env.local
 .env.*.local
 
+#agents
+.agents/
+
+#supabase
+supabase/.temp
+
 
