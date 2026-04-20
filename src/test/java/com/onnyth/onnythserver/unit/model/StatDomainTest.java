@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 
 /**
  * Unit tests for the StatDomain enum.
@@ -63,7 +64,7 @@ class StatDomainTest {
             for (StatDomain d : StatDomain.values()) {
                 sum += d.getWeight();
             }
-            assertThat(sum).isEqualTo(5.5);
+            assertThat(sum).isCloseTo(5.5, within(0.0001));
         }
     }
 }

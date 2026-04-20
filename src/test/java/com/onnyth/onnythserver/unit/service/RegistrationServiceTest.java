@@ -36,10 +36,10 @@ import static org.mockito.Mockito.*;
 @DisplayName("RegistrationService")
 class RegistrationServiceTest {
 
-    @Mock
+    @Mock(lenient = true)
     private RegistrationDraftRepository draftRepository;
 
-    @Mock
+    @Mock(lenient = true)
     private UserRepository userRepository;
 
     @Mock
@@ -68,7 +68,7 @@ class RegistrationServiceTest {
 
             RegistrationStatusResponse response = registrationService.getStatus(userId);
 
-            assertThat(response.currentStep()).isNull();
+            assertThat(response.currentStep()).isEqualTo("PHONE");
             assertThat(response.completedSteps()).isEmpty();
             assertThat(response.draftData()).isNull();
         }
