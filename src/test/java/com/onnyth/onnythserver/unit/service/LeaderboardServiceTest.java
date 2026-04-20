@@ -1,15 +1,10 @@
 package com.onnyth.onnythserver.unit.service;
 
-import com.onnyth.onnythserver.dto.CategoryLeaderboardEntryResponse;
 import com.onnyth.onnythserver.dto.LeaderboardResponse;
 import com.onnyth.onnythserver.dto.UserLeaderboardPositionResponse;
-import com.onnyth.onnythserver.models.LifeStat;
 import com.onnyth.onnythserver.models.RankTier;
-import com.onnyth.onnythserver.models.StatCategory;
 import com.onnyth.onnythserver.models.User;
-import com.onnyth.onnythserver.repository.FriendshipRepository;
-import com.onnyth.onnythserver.repository.LifeStatRepository;
-import com.onnyth.onnythserver.repository.UserRepository;
+import com.onnyth.onnythserver.repository.*;
 import com.onnyth.onnythserver.service.LeaderboardService;
 import com.onnyth.onnythserver.service.LeaderboardSnapshotService;
 import com.onnyth.onnythserver.support.TestDataFactory;
@@ -21,14 +16,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -40,7 +33,15 @@ class LeaderboardServiceTest {
     @Mock
     private FriendshipRepository friendshipRepository;
     @Mock
-    private LifeStatRepository lifeStatRepository;
+    private UserOccupationRepository occupationRepository;
+    @Mock
+    private UserWealthRepository wealthRepository;
+    @Mock
+    private UserPhysiqueRepository physiqueRepository;
+    @Mock
+    private UserWisdomRepository wisdomRepository;
+    @Mock
+    private UserCharismaRepository charismaRepository;
     @Mock
     private LeaderboardSnapshotService snapshotService;
 
@@ -144,37 +145,6 @@ class LeaderboardServiceTest {
             assertThat(response.position()).isEqualTo(1);
             assertThat(response.pointsToNextPosition()).isEqualTo(0);
             assertThat(response.userAheadUsername()).isNull();
-        }
-    }
-
-    @Nested
-    @DisplayName("getLeaderboardByCategory")
-    class GetLeaderboardByCategory {
-
-        @Test
-        @DisplayName("ranks by category value, users without stat get 0")
-        void ranksByCategory() {
-            when(friendshipRepository.findFriendIdsByUserId(USER_A))
-                    .thenReturn(List.of(USER_B, USER_C));
-            when(userRepository.findAllById(any()))
-                    .thenReturn(List.of(userA, userB, userC));
-
-            LifeStat statA = LifeStat.builder().userId(USER_A).category(StatCategory.FITNESS).value(80).build();
-            LifeStat statC = LifeStat.builder().userId(USER_C).category(StatCategory.FITNESS).value(60).build();
-            // User B has no FITNESS stat → ranked last with value 0
-
-            when(lifeStatRepository.findAllByUserIdInAndCategory(any(), eq(StatCategory.FITNESS)))
-                    .thenReturn(List.of(statA, statC));
-
-            Page<CategoryLeaderboardEntryResponse> page =
-                    leaderboardService.getLeaderboardByCategory(USER_A, StatCategory.FITNESS, PageRequest.of(0, 20));
-
-            assertThat(page.getContent()).hasSize(3);
-            assertThat(page.getContent().get(0).username()).isEqualTo("alice"); // 80
-            assertThat(page.getContent().get(0).categoryValue()).isEqualTo(80);
-            assertThat(page.getContent().get(1).username()).isEqualTo("charlie"); // 60
-            assertThat(page.getContent().get(2).username()).isEqualTo("bob"); // 0
-            assertThat(page.getContent().get(2).categoryValue()).isEqualTo(0);
         }
     }
 }

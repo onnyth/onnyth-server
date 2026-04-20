@@ -6,12 +6,9 @@ import com.onnyth.onnythserver.dto.FriendResponse;
 import com.onnyth.onnythserver.dto.RankProgressResponse;
 import com.onnyth.onnythserver.exceptions.*;
 import com.onnyth.onnythserver.models.*;
-import com.onnyth.onnythserver.repository.FriendRequestRepository;
-import com.onnyth.onnythserver.repository.FriendshipRepository;
-import com.onnyth.onnythserver.repository.UserRepository;
+import com.onnyth.onnythserver.repository.*;
 import com.onnyth.onnythserver.service.AchievementUnlockService;
 import com.onnyth.onnythserver.service.FriendshipService;
-import com.onnyth.onnythserver.service.LifeStatService;
 import com.onnyth.onnythserver.service.RankService;
 import com.onnyth.onnythserver.support.TestDataFactory;
 import org.junit.jupiter.api.DisplayName;
@@ -47,11 +44,19 @@ class FriendshipServiceTest {
     @Mock
     private UserRepository userRepository;
     @Mock
-    private LifeStatService lifeStatService;
-    @Mock
     private RankService rankService;
     @Mock
     private AchievementUnlockService achievementUnlockService;
+    @Mock
+    private UserOccupationRepository occupationRepository;
+    @Mock
+    private UserWealthRepository wealthRepository;
+    @Mock
+    private UserPhysiqueRepository physiqueRepository;
+    @Mock
+    private UserWisdomRepository wisdomRepository;
+    @Mock
+    private UserCharismaRepository charismaRepository;
 
     @InjectMocks
     private FriendshipService friendshipService;
@@ -253,12 +258,17 @@ class FriendshipServiceTest {
             when(friendshipRepository.existsByUserIdAndFriendId(userId, friendId)).thenReturn(true);
             when(userRepository.findById(friendId)).thenReturn(Optional.of(friend));
             when(userRepository.findById(userId)).thenReturn(Optional.of(me));
-            when(lifeStatService.getUserStats(friendId)).thenReturn(List.of());
-            when(lifeStatService.getUserStats(userId)).thenReturn(List.of());
             when(rankService.getRankProgress(friendId)).thenReturn(
                     RankProgressResponse.builder()
                             .currentTier("Silver").currentBadge("🥈")
                             .currentScore(300).build());
+
+            // Domain repos return empty for comparison calculation
+            when(occupationRepository.findByUserIdAndIsCurrentTrue(any())).thenReturn(Optional.empty());
+            when(wealthRepository.findByUserId(any())).thenReturn(Optional.empty());
+            when(physiqueRepository.findByUserId(any())).thenReturn(Optional.empty());
+            when(wisdomRepository.findByUserId(any())).thenReturn(Optional.empty());
+            when(charismaRepository.findByUserId(any())).thenReturn(Optional.empty());
 
             FriendProfileResponse response = friendshipService.getFriendProfile(userId, friendId);
 

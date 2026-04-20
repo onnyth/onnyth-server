@@ -170,8 +170,7 @@ class FriendControllerTest {
                     .userId(FRIEND_ID).username("bob").totalScore(300)
                     .comparison(StatComparisonResponse.builder()
                             .scoreDifference(200).higherIn(List.of("Career"))
-                            .lowerIn(List.of()).build())
-                    .stats(List.of()).build();
+                            .lowerIn(List.of()).build()).build();
             when(friendshipService.getFriendProfile(USER_ID, FRIEND_ID)).thenReturn(response);
 
             mockMvc.perform(get("/api/v1/friends/" + FRIEND_ID + "/profile")

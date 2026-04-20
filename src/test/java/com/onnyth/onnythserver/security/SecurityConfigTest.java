@@ -1,15 +1,12 @@
 package com.onnyth.onnythserver.security;
 
 import com.onnyth.onnythserver.controller.AuthController;
-import com.onnyth.onnythserver.controller.LifeStatController;
 import com.onnyth.onnythserver.controller.ProfileController;
+import com.onnyth.onnythserver.controller.RegistrationController;
 import com.onnyth.onnythserver.controller.UserController;
-import com.onnyth.onnythserver.service.LifeStatService;
-import com.onnyth.onnythserver.service.ProfileService;
-import com.onnyth.onnythserver.service.RankService;
-import com.onnyth.onnythserver.service.SupabaseAuthService;
-import com.onnyth.onnythserver.service.UserService;
+import com.onnyth.onnythserver.service.*;
 import com.onnyth.onnythserver.support.MockJwtDecoderConfig;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,10 +23,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Verifies that the SecurityConfig correctly permits public routes
  * and protects all other routes behind JWT authentication.
- * Uses @WebMvcTest to avoid needing Docker/Testcontainers.
  */
 @WebMvcTest(controllers = { AuthController.class, ProfileController.class, UserController.class,
-        LifeStatController.class })
+        RegistrationController.class })
 @Import({ SecurityConfig.class, MockJwtDecoderConfig.class })
 class SecurityConfigTest {
 
@@ -46,10 +42,19 @@ class SecurityConfigTest {
     private UserService userService;
 
     @MockitoBean
-    private LifeStatService lifeStatService;
+    private RankService rankService;
 
     @MockitoBean
-    private RankService rankService;
+    private RegistrationService registrationService;
+
+    @MockitoBean
+    private RegistrationCommitService registrationCommitService;
+
+    @MockitoBean
+    private StorageService storageService;
+
+    @MockitoBean
+    private ObjectMapper objectMapper;
 
     // ─── Public routes — must be accessible without a token ──────────────────
 
@@ -83,8 +88,6 @@ class SecurityConfigTest {
     @Test
     @DisplayName("POST /api/v1/auth/logout is publicly accessible (not 401)")
     void logout_isPublic() throws Exception {
-        // No Authorization header — verifies the route is publicly accessible
-        // (sending a Bearer token would cause the mock JwtDecoder to return null)
         mockMvc.perform(post("/api/v1/auth/logout"))
                 .andExpect(status().is(not(401)));
     }
@@ -166,39 +169,28 @@ class SecurityConfigTest {
                 .andExpect(status().is(not(403)));
     }
 
-    // ─── Life Stats routes ─ all require JWT ──────────────────────────────────
+    // ─── Registration routes — all require JWT ───────────────────────────────
 
     @Test
-    @DisplayName("POST /api/v1/stats returns 401 without JWT")
-    void saveStat_requiresAuth() throws Exception {
-        mockMvc.perform(post("/api/v1/stats")
-                .contentType("application/json")
-                .content("{\"category\":\"CAREER\",\"value\":75}"))
+    @DisplayName("GET /api/v1/registration/status returns 401 without JWT")
+    void registrationStatus_requiresAuth() throws Exception {
+        mockMvc.perform(get("/api/v1/registration/status"))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    @DisplayName("POST /api/v1/stats/bulk returns 401 without JWT")
-    void saveStatsBulk_requiresAuth() throws Exception {
-        mockMvc.perform(post("/api/v1/stats/bulk")
+    @DisplayName("PUT /api/v1/registration/step/PHONE returns 401 without JWT")
+    void registrationStep_requiresAuth() throws Exception {
+        mockMvc.perform(put("/api/v1/registration/step/PHONE")
                 .contentType("application/json")
-                .content("{\"stats\":[{\"category\":\"CAREER\",\"value\":75}]}"))
+                .content("{\"phone\":\"+1234567890\"}"))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    @DisplayName("GET /api/v1/stats returns 401 without JWT")
-    void getUserStats_requiresAuth() throws Exception {
-        mockMvc.perform(get("/api/v1/stats"))
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    @DisplayName("PUT /api/v1/stats/CAREER returns 401 without JWT")
-    void updateStat_requiresAuth() throws Exception {
-        mockMvc.perform(put("/api/v1/stats/CAREER")
-                .contentType("application/json")
-                .content("{\"newValue\":75}"))
+    @DisplayName("POST /api/v1/registration/complete returns 401 without JWT")
+    void registrationComplete_requiresAuth() throws Exception {
+        mockMvc.perform(post("/api/v1/registration/complete"))
                 .andExpect(status().isUnauthorized());
     }
 

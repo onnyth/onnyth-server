@@ -48,7 +48,7 @@ class QuestServiceTest {
     @InjectMocks
     private QuestService questService;
 
-    private Quest buildQuest(String title, int xpReward, StatCategory category) {
+    private Quest buildQuest(String title, int xpReward, StatDomain category) {
         return Quest.builder()
                 .id(UUID.randomUUID())
                 .title(title)
@@ -68,8 +68,8 @@ class QuestServiceTest {
         @DisplayName("returns active quests with completion status")
         void returnsActiveQuestsWithCompletionStatus() {
             UUID userId = UUID.randomUUID();
-            Quest quest1 = buildQuest("Quest A", 50, StatCategory.FITNESS);
-            Quest quest2 = buildQuest("Quest B", 30, StatCategory.CAREER);
+            Quest quest1 = buildQuest("Quest A", 50, StatDomain.PHYSIQUE);
+            Quest quest2 = buildQuest("Quest B", 30, StatDomain.OCCUPATION);
 
             QuestCompletion completion = QuestCompletion.builder()
                     .userId(userId)
@@ -111,7 +111,7 @@ class QuestServiceTest {
         @DisplayName("returns quest with completion status")
         void returnsQuestWithCompletion() {
             UUID userId = UUID.randomUUID();
-            Quest quest = buildQuest("Test", 50, StatCategory.EDUCATION);
+            Quest quest = buildQuest("Test", 50, StatDomain.WISDOM);
 
             when(questRepository.findById(quest.getId())).thenReturn(Optional.of(quest));
             when(questCompletionRepository.existsByUserIdAndQuestId(userId, quest.getId())).thenReturn(true);
@@ -141,7 +141,7 @@ class QuestServiceTest {
         @DisplayName("completes quest, awards XP, and updates rank")
         void completesQuestAndAwardsXp() {
             UUID userId = UUID.randomUUID();
-            Quest quest = buildQuest("Fitness Quest", 100, StatCategory.FITNESS);
+            Quest quest = buildQuest("Fitness Quest", 100, StatDomain.PHYSIQUE);
             User user = TestDataFactory.aUser().id(userId).totalScore(200L).rankTier(RankTier.SILVER).build();
 
             when(questRepository.findByIdAndStatus(quest.getId(), QuestStatus.ACTIVE)).thenReturn(Optional.of(quest));
@@ -172,7 +172,7 @@ class QuestServiceTest {
         @DisplayName("throws QuestExpiredException when quest past deadline")
         void throwsWhenExpired() {
             UUID userId = UUID.randomUUID();
-            Quest quest = buildQuest("Expired", 50, StatCategory.CAREER);
+            Quest quest = buildQuest("Expired", 50, StatDomain.OCCUPATION);
             quest.setDeadline(Instant.now().minus(1, ChronoUnit.DAYS));
 
             when(questRepository.findByIdAndStatus(quest.getId(), QuestStatus.ACTIVE)).thenReturn(Optional.of(quest));
@@ -185,7 +185,7 @@ class QuestServiceTest {
         @DisplayName("throws QuestAlreadyCompletedException on double completion")
         void throwsOnDoubleCompletion() {
             UUID userId = UUID.randomUUID();
-            Quest quest = buildQuest("Already Done", 50, StatCategory.WEALTH);
+            Quest quest = buildQuest("Already Done", 50, StatDomain.WEALTH);
 
             when(questRepository.findByIdAndStatus(quest.getId(), QuestStatus.ACTIVE)).thenReturn(Optional.of(quest));
             when(questCompletionRepository.existsByUserIdAndQuestId(userId, quest.getId())).thenReturn(true);

@@ -1,14 +1,8 @@
 package com.onnyth.onnythserver.unit.service;
 
-import com.onnyth.onnythserver.events.StatChangedEvent;
 import com.onnyth.onnythserver.exceptions.UserNotFoundException;
-import com.onnyth.onnythserver.models.LifeStat;
-import com.onnyth.onnythserver.models.StatCategory;
-import com.onnyth.onnythserver.models.User;
-import com.onnyth.onnythserver.repository.LifeStatRepository;
-import com.onnyth.onnythserver.repository.UserRepository;
-import com.onnyth.onnythserver.service.AchievementUnlockService;
-import com.onnyth.onnythserver.service.RankService;
+import com.onnyth.onnythserver.models.*;
+import com.onnyth.onnythserver.repository.*;
 import com.onnyth.onnythserver.service.ScoreCalculationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -19,7 +13,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -30,22 +23,37 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 /**
- * Unit tests for ScoreCalculationService.
+ * Unit tests for ScoreCalculationService (domain-based architecture).
  */
 @ExtendWith(MockitoExtension.class)
 class ScoreCalculationServiceTest {
 
     @Mock
-    private LifeStatRepository lifeStatRepository;
-
-    @Mock
     private UserRepository userRepository;
-
     @Mock
-    private RankService rankService;
-
+    private UserOccupationRepository occupationRepository;
     @Mock
-    private AchievementUnlockService achievementUnlockService;
+    private UserWealthRepository wealthRepository;
+    @Mock
+    private UserPhysiqueRepository physiqueRepository;
+    @Mock
+    private SportMedalRepository sportMedalRepository;
+    @Mock
+    private UserWisdomRepository wisdomRepository;
+    @Mock
+    private UserEducationRepository educationRepository;
+    @Mock
+    private UserXfactorRepository xfactorRepository;
+    @Mock
+    private UserCharismaRepository charismaRepository;
+    @Mock
+    private UserSocialAccountRepository socialAccountRepository;
+    @Mock
+    private ProfileLikeRepository profileLikeRepository;
+    @Mock
+    private FollowRepository followRepository;
+    @Mock
+    private ScoreHistoryRepository scoreHistoryRepository;
 
     @InjectMocks
     private ScoreCalculationService scoreCalculationService;
@@ -57,128 +65,155 @@ class ScoreCalculationServiceTest {
         userId = UUID.randomUUID();
     }
 
-    // ─── calculateScore() ────────────────────────────────────────────────────
+    // ─── recalculateOccupation() ────────────────────────────────────────────
 
     @Nested
-    @DisplayName("calculateScore()")
-    class CalculateScore {
+    @DisplayName("recalculateOccupation()")
+    class RecalculateOccupation {
 
         @Test
-        @DisplayName("returns weighted sum of all stats")
-        void returnsWeightedSum() {
-            List<LifeStat> stats = List.of(
-                    LifeStat.builder().category(StatCategory.CAREER).value(100).lastUpdated(Instant.now()).build(),
-                    LifeStat.builder().category(StatCategory.WEALTH).value(100).lastUpdated(Instant.now()).build(),
-                    LifeStat.builder().category(StatCategory.FITNESS).value(100).lastUpdated(Instant.now()).build(),
-                    LifeStat.builder().category(StatCategory.EDUCATION).value(100).lastUpdated(Instant.now()).build(),
-                    LifeStat.builder().category(StatCategory.SOCIAL_INFLUENCE).value(100).lastUpdated(Instant.now())
-                            .build());
+        @DisplayName("returns 0 when no occupation exists")
+        void returnsZero_whenNoOccupation() {
+            when(occupationRepository.findByUserIdAndIsCurrentTrue(userId))
+                    .thenReturn(Optional.empty());
 
-            long score = scoreCalculationService.calculateScore(stats);
+            int score = scoreCalculationService.recalculateOccupation(userId);
 
-            // 100*1.2 + 100*1.0 + 100*1.1 + 100*1.3 + 100*0.9 = 550
-            assertThat(score).isEqualTo(550);
-        }
-
-        @Test
-        @DisplayName("returns 0 for empty stats list")
-        void returnsZeroForEmptyList() {
-            long score = scoreCalculationService.calculateScore(List.of());
             assertThat(score).isEqualTo(0);
         }
 
         @Test
-        @DisplayName("applies correct weight per category")
-        void appliesCorrectWeights() {
-            // Career at 50: 50 * 1.2 = 60
-            List<LifeStat> stats = List.of(
-                    LifeStat.builder().category(StatCategory.CAREER).value(50).lastUpdated(Instant.now()).build());
-            assertThat(scoreCalculationService.calculateScore(stats)).isEqualTo(60);
+        @DisplayName("calculates score with CEO title, 10 years, 3 skills")
+        void calculatesScore_withCeoTitle() {
+            UserOccupation occ = UserOccupation.builder()
+                    .id(UUID.randomUUID())
+                    .userId(userId)
+                    .jobTitle("CEO")
+                    .yearsExperience(10)
+                    .skills(List.of("Leadership", "Strategy", "Finance"))
+                    .isCurrent(true)
+                    .score(0)
+                    .build();
 
-            // Education at 50: 50 * 1.3 = 65
-            stats = List.of(
-                    LifeStat.builder().category(StatCategory.EDUCATION).value(50).lastUpdated(Instant.now()).build());
-            assertThat(scoreCalculationService.calculateScore(stats)).isEqualTo(65);
+            when(occupationRepository.findByUserIdAndIsCurrentTrue(userId))
+                    .thenReturn(Optional.of(occ));
+            when(scoreHistoryRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-            // Social Influence at 50: 50 * 0.9 = 45
-            stats = List.of(
-                    LifeStat.builder().category(StatCategory.SOCIAL_INFLUENCE).value(50).lastUpdated(Instant.now())
-                            .build());
-            assertThat(scoreCalculationService.calculateScore(stats)).isEqualTo(45);
+            int score = scoreCalculationService.recalculateOccupation(userId);
+
+            // CEO=40, company=15, exp=min(10*2,20)=20, skills=min(3*3,15)=9 → 84
+            assertThat(score).isEqualTo(84);
         }
 
         @Test
-        @DisplayName("rounds correctly")
-        void roundsCorrectly() {
-            // Career at 55: 55 * 1.2 = 66.0 → 66
-            List<LifeStat> stats = List.of(
-                    LifeStat.builder().category(StatCategory.CAREER).value(55).lastUpdated(Instant.now()).build());
-            assertThat(scoreCalculationService.calculateScore(stats)).isEqualTo(66);
+        @DisplayName("caps experience at 20 points")
+        void capsExperience() {
+            UserOccupation occ = UserOccupation.builder()
+                    .id(UUID.randomUUID())
+                    .userId(userId)
+                    .jobTitle("Intern")
+                    .yearsExperience(25)
+                    .skills(List.of())
+                    .isCurrent(true)
+                    .score(0)
+                    .build();
 
-            // Social Influence at 55: 55 * 0.9 = 49.5 → 50
-            stats = List.of(
-                    LifeStat.builder().category(StatCategory.SOCIAL_INFLUENCE).value(55).lastUpdated(Instant.now())
-                            .build());
-            assertThat(scoreCalculationService.calculateScore(stats)).isEqualTo(50);
+            when(occupationRepository.findByUserIdAndIsCurrentTrue(userId))
+                    .thenReturn(Optional.of(occ));
+            when(scoreHistoryRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+            int score = scoreCalculationService.recalculateOccupation(userId);
+
+            // intern=5, company=15, exp=20(capped), skills=0 → 40
+            assertThat(score).isEqualTo(40);
         }
     }
 
-    // ─── recalculateUserScore() ──────────────────────────────────────────────
+    // ─── recalculatePhysique() ──────────────────────────────────────────────
 
     @Nested
-    @DisplayName("recalculateUserScore()")
-    class RecalculateUserScore {
+    @DisplayName("recalculatePhysique()")
+    class RecalculatePhysique {
 
         @Test
-        @DisplayName("fetches stats, calculates score, and persists on User")
-        void fetchesCalculatesAndPersists() {
-            User user = User.builder().id(userId).email("test@test.com").build();
-            List<LifeStat> stats = List.of(
-                    LifeStat.builder().category(StatCategory.CAREER).value(80).lastUpdated(Instant.now()).build(),
-                    LifeStat.builder().category(StatCategory.WEALTH).value(60).lastUpdated(Instant.now()).build());
+        @DisplayName("returns 0 when no physique data")
+        void returnsZero_whenNoPhysique() {
+            when(physiqueRepository.findByUserId(userId)).thenReturn(Optional.empty());
+
+            int score = scoreCalculationService.recalculatePhysique(userId);
+
+            assertThat(score).isEqualTo(0);
+        }
+
+        @Test
+        @DisplayName("calculates score for athlete with workouts and medals")
+        void calculatesScore_forAthlete() {
+            UserPhysique physique = UserPhysique.builder()
+                    .id(UUID.randomUUID())
+                    .userId(userId)
+                    .fitnessLevel(FitnessLevel.ATHLETE)
+                    .weeklyWorkouts(5)
+                    .score(0)
+                    .build();
+
+            when(physiqueRepository.findByUserId(userId)).thenReturn(Optional.of(physique));
+            when(sportMedalRepository.findAllByUserId(userId)).thenReturn(List.of());
+            when(scoreHistoryRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+            int score = scoreCalculationService.recalculatePhysique(userId);
+
+            // ATHLETE=30, bodyComp=10(no fat%), workouts=min(5*5,25)=25, medals=0 → 65
+            assertThat(score).isEqualTo(65);
+        }
+    }
+
+    // ─── recalculateAll() ───────────────────────────────────────────────────
+
+    @Nested
+    @DisplayName("recalculateAll()")
+    class RecalculateAll {
+
+        @Test
+        @DisplayName("recalculates all domains and persists weighted total on user")
+        void recalculatesAndPersistsTotal() {
+            User user = User.builder().id(userId).email("test@test.com").totalScore(0L).build();
 
             when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-            when(lifeStatRepository.findAllByUserId(userId)).thenReturn(stats);
             when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
 
-            long score = scoreCalculationService.recalculateUserScore(userId);
+            // All domain repos return empty → each domain = 0
+            when(occupationRepository.findByUserIdAndIsCurrentTrue(userId)).thenReturn(Optional.empty());
+            when(wealthRepository.findByUserId(userId)).thenReturn(Optional.empty());
+            when(physiqueRepository.findByUserId(userId)).thenReturn(Optional.empty());
+            when(physiqueRepository.findByUserId(userId)).thenReturn(Optional.empty());
+            when(wisdomRepository.findByUserId(userId)).thenReturn(Optional.empty());
+            when(educationRepository.findByUserIdAndIsHighestTrue(userId)).thenReturn(Optional.empty());
+            when(xfactorRepository.findAllByUserId(userId)).thenReturn(List.of());
+            when(charismaRepository.findByUserId(userId)).thenReturn(Optional.empty());
+            when(socialAccountRepository.getTotalFollowerCount(userId)).thenReturn(0);
+            when(followRepository.countByFollowingId(userId)).thenReturn(0L);
+            when(profileLikeRepository.countByLikedId(userId)).thenReturn(0L);
+            when(socialAccountRepository.findAllByUserId(userId)).thenReturn(List.of());
 
-            // 80*1.2 + 60*1.0 = 96 + 60 = 156
-            assertThat(score).isEqualTo(156);
-            assertThat(user.getTotalScore()).isEqualTo(156);
+            long totalScore = scoreCalculationService.recalculateAll(userId);
+
+            assertThat(totalScore).isEqualTo(0L);
+            assertThat(user.getTotalScore()).isEqualTo(0L);
             verify(userRepository).save(user);
-            verify(rankService).updateUserRank(userId);
         }
 
         @Test
         @DisplayName("throws UserNotFoundException when user does not exist")
         void throwsUserNotFound() {
+            // All domain repos return empty so individual recalculations proceed
+            when(occupationRepository.findByUserIdAndIsCurrentTrue(userId)).thenReturn(Optional.empty());
+            when(occupationRepository.findByUserIdAndIsCurrentTrue(userId)).thenReturn(Optional.empty());
+
+            // recalculateWealth calls userRepository.findById internally
             when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> scoreCalculationService.recalculateUserScore(userId))
+            assertThatThrownBy(() -> scoreCalculationService.recalculateAll(userId))
                     .isInstanceOf(UserNotFoundException.class);
-        }
-    }
-
-    // ─── onStatChanged() ────────────────────────────────────────────────────
-
-    @Nested
-    @DisplayName("onStatChanged()")
-    class OnStatChanged {
-
-        @Test
-        @DisplayName("recalculates score when StatChangedEvent received")
-        void recalculatesOnEvent() {
-            User user = User.builder().id(userId).email("test@test.com").build();
-            when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-            when(lifeStatRepository.findAllByUserId(userId)).thenReturn(List.of());
-            when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
-
-            scoreCalculationService.onStatChanged(new StatChangedEvent(userId));
-
-            verify(userRepository).save(user);
-            verify(rankService).updateUserRank(userId);
-            assertThat(user.getTotalScore()).isEqualTo(0);
         }
     }
 }

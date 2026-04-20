@@ -117,7 +117,7 @@ class AuthControllerTest {
                 @DisplayName("returns 200 with tokens and user info on success")
                 void returns200_onSuccess() throws Exception {
                         LoginResponse.UserInfo userInfo = new LoginResponse.UserInfo(
-                                        UUID.randomUUID(), "user@example.com", "username", "Full Name", null);
+                                        UUID.randomUUID(), "user@example.com", "username", "Full Name", null, true);
                         LoginResponse response = new LoginResponse("access-token", "refresh-token", 9999999L, userInfo);
 
                         when(supabaseAuthService.login(any(AuthRequest.class))).thenReturn(response);

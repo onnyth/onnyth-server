@@ -1,7 +1,7 @@
 package com.onnyth.onnythserver.controller;
 
 import com.onnyth.onnythserver.dto.*;
-import com.onnyth.onnythserver.models.StatCategory;
+import com.onnyth.onnythserver.models.StatDomain;
 import com.onnyth.onnythserver.security.SecurityConfig;
 import com.onnyth.onnythserver.service.LeaderboardService;
 import com.onnyth.onnythserver.support.MockJwtDecoderConfig;
@@ -67,13 +67,13 @@ class LeaderboardControllerTest {
                 void returnsCategoryLeaderboard() throws Exception {
                         CategoryLeaderboardEntryResponse entry = CategoryLeaderboardEntryResponse.builder()
                                         .position(1).userId(USER_ID).username("alice").categoryValue(80)
-                                        .category("Fitness").isCurrentUser(true).build();
+                                        .category("Physique").isCurrentUser(true).build();
 
-                        when(leaderboardService.getLeaderboardByCategory(eq(USER_ID), eq(StatCategory.FITNESS), any()))
+                        when(leaderboardService.getLeaderboardByCategory(eq(USER_ID), eq(StatDomain.PHYSIQUE), any()))
                                         .thenReturn(new PageImpl<>(List.of(entry)));
 
                         mockMvc.perform(get("/api/v1/leaderboard")
-                                        .param("category", "FITNESS")
+                                        .param("category", "PHYSIQUE")
                                         .with(jwt().jwt(j -> j.subject(USER_ID.toString()))))
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$.content[0].categoryValue").value(80));
