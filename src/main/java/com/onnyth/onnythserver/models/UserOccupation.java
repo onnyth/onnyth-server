@@ -33,11 +33,29 @@ public class UserOccupation {
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
+    /** Structured job title sourced from a dataset (e.g., O*NET). Null if user typed manually. */
     @Column(name = "job_title", length = 100)
     private String jobTitle;
 
+    /** Raw job title typed by the user when not found in dataset. Used as fallback display value. */
+    @Column(name = "raw_job_title", length = 150)
+    private String rawJobTitle;
+
+    /** Structured company name sourced from a dataset. Null if user typed manually. */
     @Column(name = "company_name", length = 150)
     private String companyName;
+
+    /** Raw company name typed by the user when not found in dataset. Used as fallback display value. */
+    @Column(name = "raw_company_name", length = 200)
+    private String rawCompanyName;
+
+    /**
+     * True when both jobTitle and companyName were selected from a structured dataset.
+     * Unverified entries receive a lower score multiplier in ScoreCalculationService.
+     */
+    @Column(name = "is_verified", nullable = false)
+    @Builder.Default
+    private Boolean isVerified = false;
 
     @Column(name = "industry", length = 50)
     private String industry;

@@ -39,6 +39,10 @@ public class UserWealth {
     @Column(name = "net_worth_bracket", length = 30)
     private String netWorthBracket;
 
+    /** Monthly spending bracket using the same IncomeBracket taxonomy. */
+    @Column(name = "monthly_spending_bracket", length = 30)
+    private String monthlySpendingBracket;
+
     @Column(name = "monthly_saving_pct")
     private Integer monthlySavingPct;
 

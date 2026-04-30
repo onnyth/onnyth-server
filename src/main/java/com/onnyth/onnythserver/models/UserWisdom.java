@@ -33,10 +33,36 @@ public class UserWisdom {
     @Column(name = "user_id", nullable = false, unique = true)
     private UUID userId;
 
+    /**
+     * Predefined habit IDs selected by the user (e.g., "READING", "EXERCISE", "MEDITATION").
+     * Max 5 selections. Stored as JSONB array of string keys.
+     * Previously named 'hobbies' — column name retained for DB compatibility.
+     */
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "hobbies", nullable = false, columnDefinition = "jsonb")
     @Builder.Default
-    private List<String> hobbies = new ArrayList<>();
+    private List<String> habitIds = new ArrayList<>();
+
+    /**
+     * ISO 639-1 language codes spoken by the user (e.g., ["en", "fr", "ar"]).
+     * Max 5 selections.
+     */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "languages", nullable = false, columnDefinition = "jsonb")
+    @Builder.Default
+    private List<String> languages = new ArrayList<>();
+
+    /** Standardized education level key (e.g., BACHELORS, MASTERS, PHD). */
+    @Column(name = "education_level", length = 30)
+    private String educationLevel;
+
+    /** Name of the institution (from Hipo dataset, or manually typed as fallback). */
+    @Column(name = "institution_name", length = 200)
+    private String institutionName;
+
+    /** Year of graduation or expected graduation. */
+    @Column(name = "graduation_year")
+    private Integer graduationYear;
 
     @Column(name = "score", nullable = false)
     @Builder.Default
