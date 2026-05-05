@@ -107,6 +107,38 @@ public class ProfileController {
                 return ResponseEntity.ok(profileService.getProfileCard(userId));
         }
 
+        @Operation(summary = "Get another user's profile card (viewer mode)")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Profile card retrieved successfully"),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+                        @ApiResponse(responseCode = "404", description = "User not found")
+        })
+        @GetMapping("/{userId}/card")
+        public ResponseEntity<ProfileCardResponse> getPublicProfileCard(
+                        @AuthenticationPrincipal Jwt jwt,
+                        @PathVariable UUID userId) {
+                // onnythCoins is intentionally omitted by client when in viewer mode
+                return ResponseEntity.ok(profileService.getProfileCard(userId));
+        }
+
+        @Operation(summary = "Set active background color")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Background color updated"),
+                        @ApiResponse(responseCode = "400", description = "Invalid hex color"),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized")
+        })
+        @PutMapping("/background-color")
+        public ResponseEntity<ProfileCardResponse> setBackgroundColor(
+                        @AuthenticationPrincipal Jwt jwt,
+                        @RequestBody Map<String, String> body) {
+                UUID userId = UUID.fromString(jwt.getSubject());
+                String hex = body.getOrDefault("color", "").trim();
+                if (!hex.matches("#[0-9A-Fa-f]{6}")) {
+                        return ResponseEntity.badRequest().build();
+                }
+                return ResponseEntity.ok(profileService.setActiveBackgroundColor(userId, hex));
+        }
+
         @Operation(summary = "Get current user's rank progress")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Rank progress retrieved successfully"),

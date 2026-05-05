@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -32,4 +33,16 @@ public interface UserRepository extends JpaRepository<User, UUID> {
             @Param("query") String query,
             @Param("excludeUserId") UUID excludeUserId,
             Pageable pageable);
+
+    /** All users ordered by score descending — used by world rank computation. */
+    @Query("SELECT u FROM User u ORDER BY u.totalScore DESC")
+    List<User> findAllOrderedByScoreDesc();
+
+    /** All users in a specific country ordered by score descending. */
+    @Query("SELECT u FROM User u WHERE u.country = :country ORDER BY u.totalScore DESC")
+    List<User> findByCountryOrderByScoreDesc(@Param("country") String country);
+
+    /** Distinct country codes with at least one user. */
+    @Query("SELECT DISTINCT u.country FROM User u WHERE u.country IS NOT NULL")
+    List<String> findDistinctCountries();
 }
