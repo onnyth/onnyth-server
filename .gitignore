@@ -36,11 +36,27 @@ build/
 .env
 .env.local
 .env.*.local
+.env.production
 
-#agents
+# Agents
 .agents/
 
-#supabase
+# Supabase
 supabase/.temp
 
+### macOS ###
+.DS_Store
+*.swp
+*~
 
+### Logs ###
+*.log
+logs/
+
+### Docker ###
+docker-compose.override.yml
+
+### Misc ###
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+Thumbs.db

@@ -13,4 +13,6 @@ public interface UserWealthRepository extends JpaRepository<UserWealth, UUID> {
     Optional<UserWealth> findByUserId(UUID userId);
 
     boolean existsByUserId(UUID userId);
+
+    void deleteByUserId(UUID userId);
 }

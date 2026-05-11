@@ -11,4 +11,6 @@ import java.util.UUID;
 public interface UserStreakRepository extends JpaRepository<UserStreak, UUID> {
 
     Optional<UserStreak> findByUserId(UUID userId);
+
+    void deleteByUserId(UUID userId);
 }

@@ -13,4 +13,6 @@ public interface UserPhysiqueRepository extends JpaRepository<UserPhysique, UUID
     Optional<UserPhysique> findByUserId(UUID userId);
 
     boolean existsByUserId(UUID userId);
+
+    void deleteByUserId(UUID userId);
 }

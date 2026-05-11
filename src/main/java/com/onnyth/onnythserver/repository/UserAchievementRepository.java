@@ -16,4 +16,6 @@ public interface UserAchievementRepository extends JpaRepository<UserAchievement
     int countByUserId(UUID userId);
 
     boolean existsByUserIdAndAchievementId(UUID userId, UUID achievementId);
+
+    void deleteAllByUserId(UUID userId);
 }

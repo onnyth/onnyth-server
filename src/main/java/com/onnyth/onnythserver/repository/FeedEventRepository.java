@@ -21,4 +21,6 @@ public interface FeedEventRepository extends JpaRepository<FeedEvent, UUID> {
            "(SELECT f.friendId FROM Friendship f WHERE f.userId = :userId) " +
            "ORDER BY fe.createdAt DESC")
     Page<FeedEvent> findFriendFeed(@Param("userId") UUID userId, Pageable pageable);
+
+    void deleteAllByUserId(UUID userId);
 }

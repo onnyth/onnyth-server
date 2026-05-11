@@ -16,4 +16,6 @@ public interface UserCosmeticRepository extends JpaRepository<UserCosmetic, UUID
     Optional<UserCosmetic> findByUserIdAndCosmeticItemId(UUID userId, UUID cosmeticItemId);
 
     boolean existsByUserIdAndCosmeticItemId(UUID userId, UUID cosmeticItemId);
+
+    void deleteAllByUserId(UUID userId);
 }

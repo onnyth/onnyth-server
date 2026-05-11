@@ -18,4 +18,6 @@ public interface RegistrationDraftRepository extends JpaRepository<RegistrationD
     @Modifying
     @Query("DELETE FROM RegistrationDraft d WHERE d.expiresAt < :now")
     int deleteExpiredDrafts(Instant now);
+
+    void deleteByUserId(UUID userId);
 }

@@ -32,4 +32,8 @@ public interface ProfileVoteRepository extends JpaRepository<ProfileVote, String
             FROM ProfileVote v WHERE v.targetId = :targetId
             """)
     int computeNetVoteScore(@Param("targetId") UUID targetId);
+
+    void deleteAllByVoterId(UUID voterId);
+
+    void deleteAllByTargetId(UUID targetId);
 }
