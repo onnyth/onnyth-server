@@ -16,4 +16,6 @@ public interface UserOccupationRepository extends JpaRepository<UserOccupation, 
     List<UserOccupation> findAllByUserId(UUID userId);
 
     boolean existsByUserId(UUID userId);
+
+    void deleteAllByUserId(UUID userId);
 }

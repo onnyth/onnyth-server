@@ -6,7 +6,13 @@ import com.onnyth.onnythserver.exceptions.UserNotFoundException;
 import com.onnyth.onnythserver.exceptions.UsernameAlreadyExistsException;
 import com.onnyth.onnythserver.models.RankTier;
 import com.onnyth.onnythserver.models.User;
+import com.onnyth.onnythserver.repository.UserCharismaRepository;
+import com.onnyth.onnythserver.repository.UserOccupationRepository;
+import com.onnyth.onnythserver.repository.UserPhysiqueRepository;
 import com.onnyth.onnythserver.repository.UserRepository;
+import com.onnyth.onnythserver.repository.UserStreakRepository;
+import com.onnyth.onnythserver.repository.UserWealthRepository;
+import com.onnyth.onnythserver.repository.UserWisdomRepository;
 import com.onnyth.onnythserver.service.ProfileService;
 import com.onnyth.onnythserver.service.StorageService;
 import com.onnyth.onnythserver.support.TestDataFactory;
@@ -38,6 +44,24 @@ class ProfileServiceTest {
 
     @Mock
     private StorageService storageService;
+
+    @Mock
+    private UserStreakRepository userStreakRepository;
+
+    @Mock
+    private UserOccupationRepository occupationRepository;
+
+    @Mock
+    private UserWealthRepository wealthRepository;
+
+    @Mock
+    private UserPhysiqueRepository physiqueRepository;
+
+    @Mock
+    private UserWisdomRepository wisdomRepository;
+
+    @Mock
+    private UserCharismaRepository charismaRepository;
 
     @InjectMocks
     private ProfileService profileService;
@@ -312,6 +336,12 @@ class ProfileServiceTest {
         @DisplayName("returns ProfileCardResponse when user exists")
         void returnsProfileCard_whenUserExists() {
             when(userRepository.findById(userId)).thenReturn(Optional.of(testUser));
+            when(userStreakRepository.findByUserId(userId)).thenReturn(Optional.empty());
+            when(occupationRepository.findByUserIdAndIsCurrentTrue(userId)).thenReturn(Optional.empty());
+            when(wealthRepository.findByUserId(userId)).thenReturn(Optional.empty());
+            when(physiqueRepository.findByUserId(userId)).thenReturn(Optional.empty());
+            when(wisdomRepository.findByUserId(userId)).thenReturn(Optional.empty());
+            when(charismaRepository.findByUserId(userId)).thenReturn(Optional.empty());
 
             var result = profileService.getProfileCard(userId);
 

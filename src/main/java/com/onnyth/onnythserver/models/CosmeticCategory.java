@@ -9,5 +9,9 @@ public enum CosmeticCategory {
     BADGE_FRAME,
     AVATAR_SKIN,
     GLOW_EFFECT,
-    BANNER
+    BANNER,
+    /** Full-page profile background (color or texture). */
+    BACKGROUND,
+    /** Decorative ring / frame around the profile picture circle. */
+    FRAME
 }

@@ -97,6 +97,8 @@ public class CosmeticService {
 
     /**
      * Equip a cosmetic item.
+     * For FRAME and BACKGROUND categories, also updates the active cosmetic reference
+     * on the User entity so the profile card reflects the change immediately.
      */
     @Transactional
     public List<CosmeticItemResponse> equipItem(UUID userId, UUID itemId) {
@@ -106,8 +108,21 @@ public class CosmeticService {
         userCosmetic.setIsEquipped(true);
         userCosmeticRepository.save(userCosmetic);
 
-        log.info("Cosmetic equipped: userId={}, itemId={}", userId, itemId);
+        // Sync active cosmetic reference on User for fast profile card reads
+        CosmeticItem item = cosmeticItemRepository.findById(itemId).orElse(null);
+        if (item != null) {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new UserNotFoundException(userId.toString()));
+            if (item.getCategory() == CosmeticCategory.FRAME) {
+                user.setActiveFrameCosmetic(item);
+            } else if (item.getCategory() == CosmeticCategory.BACKGROUND) {
+                user.setActiveBackgroundCosmetic(item);
+                user.setActiveBackgroundColor(null); // cosmetic overrides solid color
+            }
+            userRepository.save(user);
+        }
 
+        log.info("Cosmetic equipped: userId={}, itemId={}", userId, itemId);
         return getInventory(userId);
     }
 

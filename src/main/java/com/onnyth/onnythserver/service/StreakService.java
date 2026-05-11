@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -19,11 +20,22 @@ public class StreakService {
 
     private static final List<Integer> MILESTONE_STREAKS = List.of(7, 14, 30, 50, 100);
 
+    /** Bonus XP awarded at each streak milestone */
+    private static final Map<Integer, Integer> MILESTONE_REWARDS = Map.of(
+            7, 50,
+            14, 100,
+            30, 200,
+            50, 300,
+            100, 500
+    );
+
     private final UserStreakRepository userStreakRepository;
+    private final XpService xpService;
 
     /**
      * Record an activity for streak tracking.
      * Returns true if the streak was updated (not already counted today).
+     * Also awards bonus XP if the user hits a milestone streak.
      */
     @Transactional
     public boolean recordActivity(UUID userId) {
@@ -60,6 +72,14 @@ public class StreakService {
         log.info("Streak updated: userId={}, currentStreak={}, longest={}",
                 userId, streak.getCurrentStreak(), streak.getLongestStreak());
 
+        // Award milestone bonus XP
+        if (isStreakMilestone(streak.getCurrentStreak())) {
+            int bonusXp = getMilestoneReward(streak.getCurrentStreak());
+            xpService.awardXp(userId, bonusXp);
+            log.info("Streak milestone reached: userId={}, streak={}, bonusXP={}",
+                    userId, streak.getCurrentStreak(), bonusXp);
+        }
+
         return true;
     }
 
@@ -68,6 +88,13 @@ public class StreakService {
      */
     public boolean isStreakMilestone(int currentStreak) {
         return MILESTONE_STREAKS.contains(currentStreak);
+    }
+
+    /**
+     * Get the XP reward for a streak milestone.
+     */
+    public int getMilestoneReward(int currentStreak) {
+        return MILESTONE_REWARDS.getOrDefault(currentStreak, 0);
     }
 
     /**
@@ -86,11 +113,25 @@ public class StreakService {
                 (streak.getLastActivityDate().equals(today) ||
                  streak.getLastActivityDate().equals(today.minusDays(1)));
 
+        // Calculate next milestone
+        Integer nextMilestone = null;
+        int nextMilestoneReward = 0;
+        for (int ms : MILESTONE_STREAKS) {
+            if (ms > streak.getCurrentStreak()) {
+                nextMilestone = ms;
+                nextMilestoneReward = MILESTONE_REWARDS.getOrDefault(ms, 0);
+                break;
+            }
+        }
+
         return StreakResponse.builder()
                 .currentStreak(streak.getCurrentStreak())
                 .longestStreak(streak.getLongestStreak())
                 .lastActivityDate(streak.getLastActivityDate())
                 .isActive(isActive)
+                .nextMilestone(nextMilestone)
+                .nextMilestoneReward(nextMilestoneReward)
                 .build();
     }
 }
+

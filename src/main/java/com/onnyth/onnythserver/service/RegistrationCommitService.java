@@ -132,11 +132,11 @@ public class RegistrationCommitService {
         Map<String, Object> occData = getStepData(draftData, "OCCUPATION");
         if (occData == null || occData.isEmpty()) return;
 
-        // Check if a current occupation already exists
         var builder = UserOccupation.builder()
                 .userId(userId)
                 .isCurrent(true);
 
+        // Structured (dataset-selected) values
         String jobTitle = (String) occData.get("jobTitle");
         if (jobTitle != null && !jobTitle.isBlank()) {
             builder.jobTitle(jobTitle.trim());
@@ -145,6 +145,30 @@ public class RegistrationCommitService {
         String companyName = (String) occData.get("companyName");
         if (companyName != null && !companyName.isBlank()) {
             builder.companyName(companyName.trim());
+        }
+
+        // Raw fallback values (user typed manually — lower score)
+        String rawJobTitle = (String) occData.get("rawJobTitle");
+        if (rawJobTitle != null && !rawJobTitle.isBlank()) {
+            builder.rawJobTitle(rawJobTitle.trim());
+        }
+
+        String rawCompanyName = (String) occData.get("rawCompanyName");
+        if (rawCompanyName != null && !rawCompanyName.isBlank()) {
+            builder.rawCompanyName(rawCompanyName.trim());
+        }
+
+        // isVerified: true only if both job title and company came from structured dataset
+        Object isVerified = occData.get("isVerified");
+        if (isVerified instanceof Boolean bool) {
+            builder.isVerified(bool);
+        } else {
+            // Infer verification: verified if structured values present and no raw fallback
+            boolean inferred = (jobTitle != null && !jobTitle.isBlank())
+                    && (companyName != null && !companyName.isBlank())
+                    && (rawJobTitle == null || rawJobTitle.isBlank())
+                    && (rawCompanyName == null || rawCompanyName.isBlank());
+            builder.isVerified(inferred);
         }
 
         Object skillsObj = occData.get("skills");
@@ -171,6 +195,16 @@ public class RegistrationCommitService {
         String incomeBracket = (String) wealthData.get("incomeBracket");
         if (incomeBracket != null && !incomeBracket.isBlank()) {
             builder.incomeBracket(incomeBracket.trim());
+        }
+
+        String netWorthBracket = (String) wealthData.get("netWorthBracket");
+        if (netWorthBracket != null && !netWorthBracket.isBlank()) {
+            builder.netWorthBracket(netWorthBracket.trim());
+        }
+
+        String monthlySpendingBracket = (String) wealthData.get("monthlySpendingBracket");
+        if (monthlySpendingBracket != null && !monthlySpendingBracket.isBlank()) {
+            builder.monthlySpendingBracket(monthlySpendingBracket.trim());
         }
 
         Object savingPct = wealthData.get("monthlySavingPct");
@@ -224,14 +258,44 @@ public class RegistrationCommitService {
         var builder = UserWisdom.builder()
                 .userId(userId);
 
-        Object hobbiesObj = wisdomData.get("languages");
-        if (hobbiesObj instanceof List<?> hobbiesList) {
-            List<String> hobbies = hobbiesList.stream()
+        // Languages: ISO 639-1 codes from multi-select pill grid
+        Object languagesObj = wisdomData.get("languages");
+        if (languagesObj instanceof List<?> langList) {
+            List<String> languages = langList.stream()
                     .filter(s -> s instanceof String)
-                    .map(s -> ((String) s).trim())
+                    .map(s -> ((String) s).trim().toLowerCase())
                     .filter(s -> !s.isEmpty())
                     .collect(Collectors.toList());
-            builder.hobbies(hobbies);
+            builder.languages(languages);
+        }
+
+        // Habit IDs: predefined taxonomy keys from pill grid (max 5)
+        Object habitsObj = wisdomData.get("habitIds");
+        if (habitsObj instanceof List<?> habitList) {
+            List<String> habitIds = habitList.stream()
+                    .filter(s -> s instanceof String)
+                    .map(s -> ((String) s).trim().toUpperCase())
+                    .filter(s -> !s.isEmpty())
+                    .collect(Collectors.toList());
+            builder.habitIds(habitIds);
+        }
+
+        // Education level: standardized key (e.g., BACHELORS, MASTERS)
+        String educationLevel = (String) wisdomData.get("educationLevel");
+        if (educationLevel != null && !educationLevel.isBlank()) {
+            builder.educationLevel(educationLevel.trim().toUpperCase());
+        }
+
+        // Institution: from Hipo dataset or manually typed
+        String institutionName = (String) wisdomData.get("institutionName");
+        if (institutionName != null && !institutionName.isBlank()) {
+            builder.institutionName(institutionName.trim());
+        }
+
+        // Graduation year
+        Object gradYearObj = wisdomData.get("graduationYear");
+        if (gradYearObj instanceof Number num) {
+            builder.graduationYear(num.intValue());
         }
 
         userWisdomRepository.save(builder.build());

@@ -19,7 +19,7 @@ import java.util.UUID;
  *   OCCUPATION: job_title_tier(0-40) + company_factor(0-25) + experience(0-20) + skills(0-15)
  *   WEALTH:     income_bracket(0-40) + onnyth_coins(0-35) + savings(0-15) + verified(0-10)
  *   PHYSIQUE:   fitness_level(0-30) + body_comp(0-25) + workouts(0-25) + medals(0-20)
- *   WISDOM:     education(0-35) + hobbies(0-15) + xfactors(0-50)
+ *   WISDOM:     education(0-35) + habits(0-15) + xfactors(0-50)
  *   CHARISMA:   social_followers(0-35) + onnyth_followers(0-30) + profile_likes(0-20) + verified(0-15)
  */
 @Service
@@ -125,10 +125,10 @@ public class ScoreCalculationService {
         UserEducation highest = educationRepository.findByUserIdAndIsHighestTrue(userId).orElse(null);
         int educationPts = highest != null ? highest.getLevel().getScoreContribution() : 0; // 0-35
 
-        // Hobbies score
+        // Habits + Languages score
         int hobbiesPts = 0;
-        if (wisdom != null && wisdom.getHobbies() != null) {
-            hobbiesPts = Math.min(wisdom.getHobbies().size() * 5, 15);                  // 0-15
+        if (wisdom != null && wisdom.getHabitIds() != null) {
+            hobbiesPts = Math.min(wisdom.getHabitIds().size() * 3, 15);                  // 0-15
         }
 
         // XFactor score

@@ -13,4 +13,6 @@ public interface UserWisdomRepository extends JpaRepository<UserWisdom, UUID> {
     Optional<UserWisdom> findByUserId(UUID userId);
 
     boolean existsByUserId(UUID userId);
+
+    void deleteByUserId(UUID userId);
 }

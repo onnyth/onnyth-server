@@ -9,6 +9,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -87,6 +88,43 @@ public class User {
     @CollectionTable(name = "user_displayed_achievements", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "achievement_id")
     private List<UUID> displayedAchievements = new ArrayList<>();
+
+    // ─── Ranking (periodically computed by RankingService) ────────────────────
+
+    /** Global rank among all users by totalScore. Null until first ranking job runs. */
+    @Column(name = "world_rank")
+    private Integer worldRank;
+
+    /** Rank within the user's country. Null until country is set and ranking runs. */
+    @Column(name = "country_rank")
+    private Integer countryRank;
+
+    /** ISO 3166-1 alpha-2 country code (e.g. "AE", "US", "IN"). */
+    @Column(name = "country", length = 2)
+    private String country;
+
+    // ─── Social Votes ─────────────────────────────────────────────────────────
+
+    /** Net vote score: upvotes minus downvotes from other users. */
+    @Builder.Default
+    @Column(name = "vote_score", nullable = false)
+    private Integer voteScore = 0;
+
+    // ─── Active Cosmetics ─────────────────────────────────────────────────────
+
+    /** Solid hex background color (e.g. "#22162B"). Used when no background cosmetic is equipped. */
+    @Column(name = "active_background_color", length = 7)
+    private String activeBackgroundColor;
+
+    /** Equipped frame cosmetic (decorative ring around profile pic). */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "active_frame_cosmetic_id")
+    private CosmeticItem activeFrameCosmetic;
+
+    /** Equipped background cosmetic (full-page image/texture). Overrides activeBackgroundColor when set. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "active_background_cosmetic_id")
+    private CosmeticItem activeBackgroundCosmetic;
 
     @ColumnDefault("now()")
     @Column(name = "created_at", nullable = false, updatable = false, insertable = false)

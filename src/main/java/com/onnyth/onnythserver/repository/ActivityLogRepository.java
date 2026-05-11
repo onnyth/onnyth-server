@@ -20,4 +20,6 @@ public interface ActivityLogRepository extends JpaRepository<ActivityLog, UUID> 
 
     Optional<ActivityLog> findFirstByUserIdAndActivityTypeIdAndLoggedAtAfterOrderByLoggedAtDesc(
             UUID userId, UUID activityTypeId, Instant after);
+
+    void deleteAllByUserId(UUID userId);
 }

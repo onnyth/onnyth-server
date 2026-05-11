@@ -13,4 +13,6 @@ public interface UserCharismaRepository extends JpaRepository<UserCharisma, UUID
     Optional<UserCharisma> findByUserId(UUID userId);
 
     boolean existsByUserId(UUID userId);
+
+    void deleteByUserId(UUID userId);
 }

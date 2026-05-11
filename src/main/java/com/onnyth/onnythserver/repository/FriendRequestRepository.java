@@ -19,4 +19,8 @@ public interface FriendRequestRepository extends JpaRepository<FriendRequest, UU
     boolean existsBySenderIdAndReceiverIdAndStatus(UUID senderId, UUID receiverId, FriendRequestStatus status);
 
     Optional<FriendRequest> findBySenderIdAndReceiverId(UUID senderId, UUID receiverId);
+
+    void deleteAllBySenderId(UUID senderId);
+
+    void deleteAllByReceiverId(UUID receiverId);
 }

@@ -11,4 +11,6 @@ public interface QuestCompletionRepository extends JpaRepository<QuestCompletion
     List<QuestCompletion> findAllByUserId(UUID userId);
 
     boolean existsByUserIdAndQuestId(UUID userId, UUID questId);
+
+    void deleteAllByUserId(UUID userId);
 }

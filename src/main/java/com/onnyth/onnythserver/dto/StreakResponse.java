@@ -9,6 +9,8 @@ public record StreakResponse(
         Integer currentStreak,
         Integer longestStreak,
         LocalDate lastActivityDate,
-        Boolean isActive
+        Boolean isActive,
+        Integer nextMilestone,
+        Integer nextMilestoneReward
 ) {
 }

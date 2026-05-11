@@ -1,0 +1,20 @@
+# ==========================================
+# Railway Deployment Configuration
+# ==========================================
+# Docs: https://docs.railway.app/reference/config-as-code
+
+[build]
+# Use Dockerfile for building
+dockerfilePath = "Dockerfile"
+
+[deploy]
+# Railway's health check endpoint
+healthcheckPath = "/actuator/health"
+healthcheckTimeout = 60
+
+# Restart policy
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 5
+
+# Number of replicas (1 for MVP)
+numReplicas = 1

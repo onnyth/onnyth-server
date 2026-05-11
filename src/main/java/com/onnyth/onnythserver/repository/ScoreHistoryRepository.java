@@ -14,4 +14,6 @@ public interface ScoreHistoryRepository extends JpaRepository<ScoreHistory, UUID
     List<ScoreHistory> findAllByUserIdOrderByChangedAtDesc(UUID userId);
 
     List<ScoreHistory> findAllByUserIdAndDomainOrderByChangedAtDesc(UUID userId, StatDomain domain);
+
+    void deleteAllByUserId(UUID userId);
 }

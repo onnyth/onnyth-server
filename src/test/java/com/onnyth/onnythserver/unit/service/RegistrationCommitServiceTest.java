@@ -59,6 +59,7 @@ class RegistrationCommitServiceTest {
 
     /**
      * Build a fully-populated draft with all required steps + some optional steps.
+     * Uses the new structured field names from the onboarding redesign.
      */
     private RegistrationDraft buildCompleteDraft() {
         RegistrationDraft draft = RegistrationDraft.builder()
@@ -76,16 +77,23 @@ class RegistrationCommitServiceTest {
         draft.mergeStepData(RegistrationStep.OCCUPATION, Map.of(
                 "jobTitle", "Software Engineer",
                 "companyName", "Onnyth",
+                "isVerified", true,
                 "skills", List.of("Java", "Spring")));
         draft.mergeStepData(RegistrationStep.WEALTH, Map.of(
                 "incomeBracket", "50K-100K",
+                "netWorthBracket", "100K_500K",
+                "monthlySpendingBracket", "25K_50K",
                 "monthlySavingPct", 20));
         draft.mergeStepData(RegistrationStep.PHYSIQUE, Map.of(
                 "heightCm", 180.0,
                 "weightKg", 75.5,
                 "fitnessLevel", "INTERMEDIATE"));
         draft.mergeStepData(RegistrationStep.WISDOM, Map.of(
-                "languages", List.of("English", "Spanish")));
+                "languages", List.of("en", "fr"),
+                "habitIds", List.of("READING", "EXERCISE"),
+                "educationLevel", "bachelors",
+                "institutionName", "MIT",
+                "graduationYear", 2020));
         draft.mergeStepData(RegistrationStep.CHARISMA, Map.of(
                 "relationshipStatus", "single",
                 "socialCircleSize", 150));
@@ -207,6 +215,235 @@ class RegistrationCommitServiceTest {
                     occ.getSkills().contains("Java") &&
                     occ.getSkills().contains("Spring") &&
                     occ.getJobTitle().equals("Software Engineer")));
+        }
+    }
+
+    // ─── Occupation: verification & raw fallback ─────────────────────────────
+
+    @Nested
+    @DisplayName("persistOccupationStep() — verification")
+    class OccupationVerification {
+
+        @Test
+        @DisplayName("isVerified=true persisted when explicitly set in draft")
+        void persistsIsVerified_whenTrue() {
+            RegistrationDraft draft = buildCompleteDraft(); // includes isVerified=true
+
+            when(registrationService.getDraft(userId)).thenReturn(Optional.of(draft));
+            when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+            when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            commitService.commitRegistration(userId);
+
+            verify(userOccupationRepository).save(argThat(occ ->
+                    Boolean.TRUE.equals(occ.getIsVerified())));
+        }
+
+        @Test
+        @DisplayName("rawJobTitle and rawCompanyName persisted when provided")
+        void persistsRawFallbackFields() {
+            RegistrationDraft draft = RegistrationDraft.builder()
+                    .userId(userId).currentStep(RegistrationStep.OCCUPATION).build();
+            draft.mergeStepData(RegistrationStep.PHONE, Map.of("phone", "+1"));
+            draft.mergeStepData(RegistrationStep.NAME,
+                    Map.of("username", "u", "displayName", "D"));
+            draft.mergeStepData(RegistrationStep.OCCUPATION, Map.of(
+                    "rawJobTitle", "My Custom Role",
+                    "rawCompanyName", "My Startup",
+                    "isVerified", false));
+
+            when(registrationService.getDraft(userId)).thenReturn(Optional.of(draft));
+            when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+            when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            commitService.commitRegistration(userId);
+
+            verify(userOccupationRepository).save(argThat(occ ->
+                    "My Custom Role".equals(occ.getRawJobTitle()) &&
+                    "My Startup".equals(occ.getRawCompanyName()) &&
+                    Boolean.FALSE.equals(occ.getIsVerified())));
+        }
+
+        @Test
+        @DisplayName("isVerified inferred as true when both structured fields present and no raw fallback")
+        void inferredVerified_whenStructuredPresentAndNoRaw() {
+            RegistrationDraft draft = RegistrationDraft.builder()
+                    .userId(userId).currentStep(RegistrationStep.OCCUPATION).build();
+            draft.mergeStepData(RegistrationStep.PHONE, Map.of("phone", "+1"));
+            draft.mergeStepData(RegistrationStep.NAME,
+                    Map.of("username", "u", "displayName", "D"));
+            // No 'isVerified' key — let service infer it
+            draft.mergeStepData(RegistrationStep.OCCUPATION, Map.of(
+                    "jobTitle", "Software Engineer",
+                    "companyName", "Google"));
+
+            when(registrationService.getDraft(userId)).thenReturn(Optional.of(draft));
+            when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+            when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            commitService.commitRegistration(userId);
+
+            verify(userOccupationRepository).save(argThat(occ ->
+                    Boolean.TRUE.equals(occ.getIsVerified()) &&
+                    "Software Engineer".equals(occ.getJobTitle()) &&
+                    "Google".equals(occ.getCompanyName())));
+        }
+    }
+
+    // ─── Wealth: bracket fields ──────────────────────────────────────────────
+
+    @Nested
+    @DisplayName("persistWealthStep() — bracket fields")
+    class WealthBracketFields {
+
+        @Test
+        @DisplayName("persists monthlySpendingBracket and netWorthBracket")
+        void persistsBracketFields() {
+            RegistrationDraft draft = buildCompleteDraft();
+
+            when(registrationService.getDraft(userId)).thenReturn(Optional.of(draft));
+            when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+            when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            commitService.commitRegistration(userId);
+
+            verify(userWealthRepository).save(argThat(wealth ->
+                    "25K_50K".equals(wealth.getMonthlySpendingBracket()) &&
+                    "100K_500K".equals(wealth.getNetWorthBracket()) &&
+                    "50K-100K".equals(wealth.getIncomeBracket())));
+        }
+
+        @Test
+        @DisplayName("skips wealth save when monthlySpendingBracket absent (still saves income bracket)")
+        void monthlySpendingBracket_isOptional() {
+            RegistrationDraft draft = RegistrationDraft.builder()
+                    .userId(userId).currentStep(RegistrationStep.WEALTH).build();
+            draft.mergeStepData(RegistrationStep.PHONE, Map.of("phone", "+1"));
+            draft.mergeStepData(RegistrationStep.NAME,
+                    Map.of("username", "u", "displayName", "D"));
+            draft.mergeStepData(RegistrationStep.WEALTH, Map.of("incomeBracket", "25K_50K"));
+
+            when(registrationService.getDraft(userId)).thenReturn(Optional.of(draft));
+            when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+            when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            commitService.commitRegistration(userId);
+
+            // monthlySpendingBracket will be null since it wasn't provided
+            verify(userWealthRepository).save(argThat(wealth ->
+                    "25K_50K".equals(wealth.getIncomeBracket()) &&
+                    wealth.getMonthlySpendingBracket() == null));
+        }
+    }
+
+    // ─── Wisdom: structured fields ───────────────────────────────────────────
+
+    @Nested
+    @DisplayName("persistWisdomStep() — structured fields")
+    class WisdomStructuredFields {
+
+        @Test
+        @DisplayName("persists languages, habitIds, educationLevel, institutionName, graduationYear")
+        void persistsAllWisdomFields() {
+            RegistrationDraft draft = buildCompleteDraft();
+
+            when(registrationService.getDraft(userId)).thenReturn(Optional.of(draft));
+            when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+            when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            commitService.commitRegistration(userId);
+
+            verify(userWisdomRepository).save(argThat(wisdom ->
+                    wisdom.getLanguages().containsAll(List.of("en", "fr")) &&
+                    wisdom.getHabitIds().containsAll(List.of("READING", "EXERCISE")) &&
+                    "BACHELORS".equals(wisdom.getEducationLevel()) &&
+                    "MIT".equals(wisdom.getInstitutionName()) &&
+                    Integer.valueOf(2020).equals(wisdom.getGraduationYear())));
+        }
+
+        @Test
+        @DisplayName("educationLevel is uppercased on persist")
+        void educationLevel_isUppercased() {
+            RegistrationDraft draft = RegistrationDraft.builder()
+                    .userId(userId).currentStep(RegistrationStep.WISDOM).build();
+            draft.mergeStepData(RegistrationStep.PHONE, Map.of("phone", "+1"));
+            draft.mergeStepData(RegistrationStep.NAME,
+                    Map.of("username", "u", "displayName", "D"));
+            draft.mergeStepData(RegistrationStep.WISDOM, Map.of(
+                    "educationLevel", "masters",  // lowercase input
+                    "languages", List.of("en")));
+
+            when(registrationService.getDraft(userId)).thenReturn(Optional.of(draft));
+            when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+            when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            commitService.commitRegistration(userId);
+
+            verify(userWisdomRepository).save(argThat(wisdom ->
+                    "MASTERS".equals(wisdom.getEducationLevel())));
+        }
+
+        @Test
+        @DisplayName("language codes are lowercased on persist")
+        void languageCodes_areLowercased() {
+            RegistrationDraft draft = RegistrationDraft.builder()
+                    .userId(userId).currentStep(RegistrationStep.WISDOM).build();
+            draft.mergeStepData(RegistrationStep.PHONE, Map.of("phone", "+1"));
+            draft.mergeStepData(RegistrationStep.NAME,
+                    Map.of("username", "u", "displayName", "D"));
+            draft.mergeStepData(RegistrationStep.WISDOM, Map.of(
+                    "languages", List.of("EN", "FR")));
+
+            when(registrationService.getDraft(userId)).thenReturn(Optional.of(draft));
+            when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+            when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            commitService.commitRegistration(userId);
+
+            verify(userWisdomRepository).save(argThat(wisdom ->
+                    wisdom.getLanguages().contains("en") &&
+                    wisdom.getLanguages().contains("fr")));
+        }
+
+        @Test
+        @DisplayName("habitIds are uppercased on persist")
+        void habitIds_areUppercased() {
+            RegistrationDraft draft = RegistrationDraft.builder()
+                    .userId(userId).currentStep(RegistrationStep.WISDOM).build();
+            draft.mergeStepData(RegistrationStep.PHONE, Map.of("phone", "+1"));
+            draft.mergeStepData(RegistrationStep.NAME,
+                    Map.of("username", "u", "displayName", "D"));
+            draft.mergeStepData(RegistrationStep.WISDOM, Map.of(
+                    "habitIds", List.of("reading", "exercise")));
+
+            when(registrationService.getDraft(userId)).thenReturn(Optional.of(draft));
+            when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+            when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            commitService.commitRegistration(userId);
+
+            verify(userWisdomRepository).save(argThat(wisdom ->
+                    wisdom.getHabitIds().contains("READING") &&
+                    wisdom.getHabitIds().contains("EXERCISE")));
+        }
+
+        @Test
+        @DisplayName("wisdom save skipped when wisdom data is empty")
+        void wisdomSkipped_whenEmpty() {
+            RegistrationDraft draft = RegistrationDraft.builder()
+                    .userId(userId).currentStep(RegistrationStep.NAME).build();
+            draft.mergeStepData(RegistrationStep.PHONE, Map.of("phone", "+1"));
+            draft.mergeStepData(RegistrationStep.NAME,
+                    Map.of("username", "u", "displayName", "D"));
+            // No WISDOM step data at all
+
+            when(registrationService.getDraft(userId)).thenReturn(Optional.of(draft));
+            when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+            when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            commitService.commitRegistration(userId);
+
+            verify(userWisdomRepository, never()).save(any());
         }
     }
 }

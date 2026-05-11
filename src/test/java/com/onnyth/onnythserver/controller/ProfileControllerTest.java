@@ -288,6 +288,80 @@ class ProfileControllerTest {
                 }
         }
 
+        // ─── GET /api/v1/profile/{userId}/card ────────────────────────────────────
+
+        @Nested
+        @DisplayName("GET /api/v1/profile/{userId}/card")
+        class GetPublicProfileCard {
+
+                @Test
+                @DisplayName("returns 200 with public profile card when authenticated")
+                void returns200_withPublicProfileCard() throws Exception {
+                        UUID targetId = UUID.randomUUID();
+                        ProfileCardResponse card = ProfileCardResponse.builder()
+                                        .userId(targetId)
+                                        .username("publicuser")
+                                        .fullName("Public User")
+                                        .totalScore(100)
+                                        .build();
+
+                        when(profileService.getProfileCard(targetId)).thenReturn(card);
+
+                        mockMvc.perform(get("/api/v1/profile/" + targetId + "/card")
+                                        .with(jwt().jwt(j -> j.subject(USER_ID.toString()))))
+                                        .andExpect(status().isOk())
+                                        .andExpect(jsonPath("$.userId").value(targetId.toString()))
+                                        .andExpect(jsonPath("$.username").value("publicuser"));
+                }
+
+                @Test
+                @DisplayName("returns 404 when target user not found")
+                void returns404_whenTargetUserNotFound() throws Exception {
+                        UUID targetId = UUID.randomUUID();
+                        when(profileService.getProfileCard(targetId))
+                                        .thenThrow(new UserNotFoundException(targetId.toString()));
+
+                        mockMvc.perform(get("/api/v1/profile/" + targetId + "/card")
+                                        .with(jwt().jwt(j -> j.subject(USER_ID.toString()))))
+                                        .andExpect(status().isNotFound());
+                }
+        }
+
+        // ─── PUT /api/v1/profile/background-color ────────────────────────────────
+
+        @Nested
+        @DisplayName("PUT /api/v1/profile/background-color")
+        class SetBackgroundColor {
+
+                @Test
+                @DisplayName("returns 200 when valid hex color provided")
+                void returns200_withValidHex() throws Exception {
+                        ProfileCardResponse card = ProfileCardResponse.builder()
+                                        .userId(USER_ID)
+                                        .activeBackgroundColor("#1A2B3C")
+                                        .build();
+
+                        when(profileService.setActiveBackgroundColor(USER_ID, "#1A2B3C")).thenReturn(card);
+
+                        mockMvc.perform(put("/api/v1/profile/background-color")
+                                        .with(jwt().jwt(j -> j.subject(USER_ID.toString())))
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content("{\"color\":\"#1A2B3C\"}"))
+                                        .andExpect(status().isOk())
+                                        .andExpect(jsonPath("$.activeBackgroundColor").value("#1A2B3C"));
+                }
+
+                @Test
+                @DisplayName("returns 400 when invalid hex provided")
+                void returns400_withInvalidHex() throws Exception {
+                        mockMvc.perform(put("/api/v1/profile/background-color")
+                                        .with(jwt().jwt(j -> j.subject(USER_ID.toString())))
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content("{\"color\":\"invalid\"}"))
+                                        .andExpect(status().isBadRequest());
+                }
+        }
+
         // ─── GET /api/v1/profile/rank ─────────────────────────────────────────────
 
         @Nested
