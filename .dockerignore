@@ -1,7 +1,6 @@
 .git
 .github
 .gitignore
-.mvn
 target
 *.md
 .env
