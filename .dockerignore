@@ -1,8 +1,76 @@
+# ==========================================
+# Git
+# ==========================================
 .git
-.github
 .gitignore
-target
-*.md
+.gitattributes
+
+# ==========================================
+# Maven build output (rebuilt inside the image)
+# ==========================================
+target/
+.mvn/wrapper/maven-wrapper.jar
+
+# ==========================================
+# IDE files
+# ==========================================
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+# ==========================================
+# Environment / secrets (never bake into image)
+# ==========================================
 .env
-.env.*
-supabase
+.env.local
+.env.*.local
+.env.example
+
+# ==========================================
+# Docker files themselves
+# ==========================================
+Dockerfile
+docker-compose.yml
+docker-compose.override.yml
+.dockerignore
+
+# ==========================================
+# Docs / misc
+# ==========================================
+HELP.md
+README.md
+*.md
+
+# ==========================================
+# Agents / tooling metadata
+# ==========================================
+.agents/
+.github/
+
+# ==========================================
+# Supabase local dev artifacts
+# ==========================================
+supabase/.temp
+supabase/.branches
+
+# ==========================================
+# OS junk
+# ==========================================
+.DS_Store
+Thumbs.db
+
+# ==========================================
+# Logs
+# ==========================================
+*.log
+logs/
+

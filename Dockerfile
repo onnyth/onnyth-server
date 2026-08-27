@@ -1,42 +1,49 @@
-FROM eclipse-temurin:21-jdk-alpine AS builder
+# Stage 1: Build
+FROM maven:3.9-eclipse-temurin-21 AS builder
 
-WORKDIR /app
+WORKDIR /build
 
-# Copy Maven wrapper and pom.xml for dependency caching
-COPY mvnw pom.xml ./
-COPY .mvn .mvn
+# Copy pom.xml only (layer caching optimization)
+COPY pom.xml .
 
 # Download dependencies (cached layer)
-RUN chmod +x mvnw && ./mvnw dependency:go-offline -B
+RUN mvn dependency:go-offline -B
 
 # Copy source code
-COPY src src
+COPY src ./src
 
-# Build the application (skip tests — they run in CI)
-RUN ./mvnw clean package -DskipTests -B
+# Build the application
+# Skip tests here for faster builds; they should run in CI
+RUN mvn clean package -DskipTests -q \
+    && JAR_PATH="$(ls target/*.jar | grep -v '\\.original$' | head -n 1)" \
+    && cp "$JAR_PATH" target/app.jar
 
-# ── Runtime stage ──────────────────────────────────────
+# Stage 2: Runtime
 FROM eclipse-temurin:21-jre-alpine
+
+# Runtime healthcheck uses wget
+RUN apk add --no-cache wget
+
+# Create non-root user for security
+RUN addgroup -S spring && adduser -S spring -G spring
 
 WORKDIR /app
 
-# Create non-root user for security
-RUN addgroup -S onnyth && adduser -S onnyth -G onnyth
-USER onnyth
+# Copy jar from builder stage
+COPY --from=builder /build/target/app.jar app.jar
 
-# Copy built JAR from builder
-COPY --from=builder /app/target/*.jar app.jar
+# Change ownership to spring user
+RUN chown -R spring:spring /app
 
-# Railway injects PORT env var
-EXPOSE ${PORT:-8080}
+# Use spring user
+USER spring
 
-# Health check for Railway
-HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
-    CMD wget --quiet --tries=1 --spider http://localhost:${PORT:-8080}/actuator/health || exit 1
+# Expose port
+EXPOSE 8080
 
-ENTRYPOINT ["java", \
-    "-XX:+UseContainerSupport", \
-    "-XX:MaxRAMPercentage=75.0", \
-    "-Djava.security.egd=file:/dev/./urandom", \
-    "-Dserver.port=${PORT:-8080}", \
-    "-jar", "app.jar"]
+# Health check - uses Spring Boot Actuator /actuator/health
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD wget --quiet --tries=1 --spider http://localhost:8080/actuator/health || exit 1
+
+# Run Spring Boot app
+ENTRYPOINT ["java", "-jar", "app.jar"]
