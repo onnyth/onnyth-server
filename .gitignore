@@ -43,6 +43,7 @@ build/
 
 # Supabase
 supabase/.temp
+supabase/.branches
 
 ### macOS ###
 .DS_Store

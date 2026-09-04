@@ -1,25 +1,4 @@
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: onnyth-postgres
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-onnyth_dev}
-      POSTGRES_USER: ${POSTGRES_USER:-onnyth}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-onnyth_password}
-    ports:
-      - "5432:5432"
-    volumes:
-      # Persist data across container restarts
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-onnyth} -d ${POSTGRES_DB:-onnyth_dev}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-    networks:
-      - onnyth-network
-
   app:
     build:
       context: .
@@ -27,18 +6,23 @@ services:
     container_name: onnyth-app
     ports:
       - "8080:8080"
-    depends_on:
-      postgres:
-        condition: service_healthy
+    # Lets the container reach the Postgres/API started on the host by `supabase start`
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
-      # App expects DATABASE_* placeholders from application.properties
-      DATABASE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-onnyth_dev}
-      DATABASE_USERNAME: ${POSTGRES_USER:-onnyth}
-      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-onnyth_password}
+      # App expects DATABASE_* placeholders from application.properties.
+      # NOTE: hardcoded to host.docker.internal (not ${DATABASE_URL:-...}) because docker compose
+      # also reads .env for substitution, and .env's DATABASE_URL/SUPABASE_URL point at 127.0.0.1
+      # for the ./mvnw spring-boot:run (host) workflow - which would resolve to the container
+      # itself here, not the host running `supabase start`. Only creds/keys are shared from .env.
+      DATABASE_URL: jdbc:postgresql://host.docker.internal:54322/postgres
+      DATABASE_USERNAME: ${DATABASE_USERNAME:-postgres}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-postgres}
       JPA_SHOW_SQL: ${JPA_SHOW_SQL:-false}
 
-      # Supabase/JWT source config
-      SUPABASE_URL: ${SUPABASE_URL:-https://your-project.supabase.co}
+      # Supabase/JWT source config - keys from `supabase status -o env`, URL hardcoded for the
+      # same host.docker.internal reason as DATABASE_URL above
+      SUPABASE_URL: http://host.docker.internal:54321
       SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-your-anon-key}
       SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-${SUPABASE_ANON_KEY:-your-anon-key}}
       SUPABASE_STORAGE_BUCKET: ${SUPABASE_STORAGE_BUCKET:-profile-pics}
@@ -59,14 +43,3 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-
-    networks:
-      - onnyth-network
-
-volumes:
-  postgres_data:
-    driver: local
-
-networks:
-  onnyth-network:
-    driver: bridge
