@@ -6,7 +6,7 @@ import com.onnyth.onnythserver.models.RegistrationStep;
 import com.onnyth.onnythserver.user.domain.model.User;
 import com.onnyth.onnythserver.service.RegistrationCommitService;
 import com.onnyth.onnythserver.service.RegistrationService;
-import com.onnyth.onnythserver.service.StorageService;
+import com.onnyth.onnythserver.profile.adapter.out.storage.StorageServiceAdapter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -33,7 +33,7 @@ public class RegistrationController {
 
     private final RegistrationService registrationService;
     private final RegistrationCommitService commitService;
-    private final StorageService storageService;
+    private final StorageServiceAdapter storageService;
     private final ObjectMapper objectMapper;
 
     @Operation(summary = "Get registration status for crash recovery")

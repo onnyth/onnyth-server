@@ -1,11 +1,13 @@
 package com.onnyth.onnythserver.security;
 
 import com.onnyth.onnythserver.controller.AuthController;
-import com.onnyth.onnythserver.controller.ProfileController;
+import com.onnyth.onnythserver.profile.adapter.in.rest.ProfileController;
 import com.onnyth.onnythserver.controller.RegistrationController;
 import com.onnyth.onnythserver.user.adapter.in.rest.UserController;
 import com.onnyth.onnythserver.user.application.usecase.UserUseCaseService;
 import com.onnyth.onnythserver.service.*;
+import com.onnyth.onnythserver.profile.application.usecase.ProfileUseCaseService;
+import com.onnyth.onnythserver.profile.adapter.out.storage.StorageServiceAdapter;
 import com.onnyth.onnythserver.support.MockJwtDecoderConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -37,7 +39,7 @@ class SecurityConfigTest {
     private SupabaseAuthService supabaseAuthService;
 
     @MockitoBean
-    private ProfileService profileService;
+    private ProfileUseCaseService profileService;
 
     @MockitoBean
     private UserUseCaseService userUseCaseService;
@@ -52,7 +54,7 @@ class SecurityConfigTest {
     private RegistrationCommitService registrationCommitService;
 
     @MockitoBean
-    private StorageService storageService;
+    private StorageServiceAdapter storageService;
 
     // ─── Public routes — must be accessible without a token ──────────────────
 

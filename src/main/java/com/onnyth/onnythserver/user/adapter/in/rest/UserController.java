@@ -1,7 +1,7 @@
 package com.onnyth.onnythserver.user.adapter.in.rest;
 
-import com.onnyth.onnythserver.dto.ProfileCardResponse;
-import com.onnyth.onnythserver.service.ProfileService;
+import com.onnyth.onnythserver.profile.adapter.in.rest.dto.ProfileCardResponse;
+import com.onnyth.onnythserver.profile.application.usecase.ProfileUseCaseService;
 import com.onnyth.onnythserver.user.application.usecase.UserUseCaseService;
 import com.onnyth.onnythserver.user.domain.model.User;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ import java.util.UUID;
 public class UserController {
 
     private final UserUseCaseService userUseCaseService;
-    private final ProfileService profileService;
+    private final ProfileUseCaseService profileService;
 
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers() {

@@ -1,7 +1,7 @@
 package com.onnyth.onnythserver.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.onnyth.onnythserver.dto.ProfileUpdateRequest;
+import com.onnyth.onnythserver.profile.adapter.in.rest.dto.ProfileUpdateRequest;
 import com.onnyth.onnythserver.user.domain.model.User;
 import com.onnyth.onnythserver.user.application.port.UserRepository;
 import com.onnyth.onnythserver.support.PostgresTestContainer;

@@ -1,10 +1,10 @@
 package com.onnyth.onnythserver.user.adapter.in.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.onnyth.onnythserver.dto.ProfileCardResponse;
+import com.onnyth.onnythserver.profile.adapter.in.rest.dto.ProfileCardResponse;
 import com.onnyth.onnythserver.user.application.exception.UserNotFoundException;
 import com.onnyth.onnythserver.user.domain.model.User;
-import com.onnyth.onnythserver.service.ProfileService;
+import com.onnyth.onnythserver.profile.application.usecase.ProfileUseCaseService;
 import com.onnyth.onnythserver.user.application.usecase.UserUseCaseService;
 import com.onnyth.onnythserver.support.TestDataFactory;
 import org.junit.jupiter.api.DisplayName;
@@ -48,7 +48,7 @@ class UserControllerTest {
     private UserUseCaseService userUseCaseService;
 
     @MockitoBean
-    private ProfileService profileService;
+    private ProfileUseCaseService profileService;
 
     private static final UUID USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
 
