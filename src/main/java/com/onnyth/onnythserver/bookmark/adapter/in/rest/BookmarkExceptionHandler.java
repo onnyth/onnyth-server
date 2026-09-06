@@ -1,6 +1,8 @@
 package com.onnyth.onnythserver.bookmark.adapter.in.rest;
 
 import com.onnyth.onnythserver.bookmark.application.exception.BookmarkNotFoundException;
+import com.onnyth.onnythserver.bookmark.application.exception.IdempotencyConflictException;
+import com.onnyth.onnythserver.bookmark.application.exception.MissingIdempotencyKeyException;
 import com.onnyth.onnythserver.dto.ApiErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -26,6 +28,36 @@ public class BookmarkExceptionHandler {
                 Instant.now()
         );
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(MissingIdempotencyKeyException.class)
+    public ResponseEntity<ApiErrorResponse> handleMissingIdempotencyKey(
+            MissingIdempotencyKeyException ex,
+            HttpServletRequest request
+    ) {
+        ApiErrorResponse error = new ApiErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI(),
+                Instant.now()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(IdempotencyConflictException.class)
+    public ResponseEntity<ApiErrorResponse> handleIdempotencyConflict(
+            IdempotencyConflictException ex,
+            HttpServletRequest request
+    ) {
+        ApiErrorResponse error = new ApiErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                HttpStatus.CONFLICT.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI(),
+                Instant.now()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
 }
 

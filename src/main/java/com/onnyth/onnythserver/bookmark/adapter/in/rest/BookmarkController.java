@@ -3,6 +3,7 @@ package com.onnyth.onnythserver.bookmark.adapter.in.rest;
 import com.onnyth.onnythserver.bookmark.adapter.in.rest.dto.*;
 import com.onnyth.onnythserver.bookmark.application.command.CreateBookmarkCommand;
 import com.onnyth.onnythserver.bookmark.application.command.UpdateBookmarkCommand;
+import com.onnyth.onnythserver.bookmark.application.exception.MissingIdempotencyKeyException;
 import com.onnyth.onnythserver.bookmark.application.usecase.BookmarkUseCaseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -34,19 +35,21 @@ public class BookmarkController {
     @Operation(summary = "Create bookmark", description = "Creates a new bookmark and returns the persisted bookmark details")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Bookmark created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid bookmark request")
+            @ApiResponse(responseCode = "400", description = "Invalid bookmark request or missing Idempotency-Key header"),
+            @ApiResponse(responseCode = "409", description = "Idempotency-Key already used with a different request body")
     })
     @PostMapping
-    public ResponseEntity<BookmarkResponse> create(@Valid @RequestBody BookmarkCreateRequest request) {
-        CreateBookmarkCommand command = new CreateBookmarkCommand(
-                request.url(),
-                request.title(),
-                request.tags()
-        );
+    public ResponseEntity<CreateBookmarkResponse> create(
+            @Valid @RequestBody CreateBookmarkRequest request,
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey
+    ) {
+        if (idempotencyKey == null || idempotencyKey.isBlank()) {
+            throw new MissingIdempotencyKeyException();
+        }
 
-        BookmarkResponse response = BookmarkResponse.fromDomain(
-                bookmarkUseCaseService.createBookmark(command)
-        );
+        CreateBookmarkCommand createBookmarkCommand = CreateBookmarkCommand.of(request.url(), request.title(), request.tags());
+
+        CreateBookmarkResponse response = bookmarkUseCaseService.createBookmark(createBookmarkCommand, idempotencyKey);
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -64,9 +67,9 @@ public class BookmarkController {
             @ApiResponse(responseCode = "404", description = "Bookmark not found")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<BookmarkResponse> getBookmarkById(@PathVariable UUID id) {
+    public ResponseEntity<CreateBookmarkResponse> getBookmarkById(@PathVariable UUID id) {
         return bookmarkUseCaseService.findBookmarkById(id)
-                .map(BookmarkResponse::fromDomain)
+                .map(CreateBookmarkResponse::fromDomain)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -93,7 +96,7 @@ public class BookmarkController {
             @ApiResponse(responseCode = "404", description = "Bookmark not found")
     })
     @PutMapping("/{id}")
-    public ResponseEntity<BookmarkResponse> update(
+    public ResponseEntity<CreateBookmarkResponse> update(
             @PathVariable UUID id,
             @Valid @RequestBody BookmarkUpdateRequest request
     ) {
@@ -103,7 +106,7 @@ public class BookmarkController {
                 request.tags()
         );
 
-        return ResponseEntity.ok(BookmarkResponse.fromDomain(
+        return ResponseEntity.ok(CreateBookmarkResponse.fromDomain(
                 bookmarkUseCaseService.updateBookmark(id, command)
         ));
     }

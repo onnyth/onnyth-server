@@ -1,8 +1,9 @@
 package com.onnyth.onnythserver.bookmark.adapter.in.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.onnyth.onnythserver.bookmark.adapter.in.rest.dto.BookmarkCreateRequest;
+import com.onnyth.onnythserver.bookmark.adapter.in.rest.dto.CreateBookmarkRequest;
 import com.onnyth.onnythserver.bookmark.adapter.in.rest.dto.BookmarkUpdateRequest;
+import com.onnyth.onnythserver.bookmark.adapter.in.rest.dto.CreateBookmarkResponse;
 import com.onnyth.onnythserver.bookmark.application.command.CreateBookmarkCommand;
 import com.onnyth.onnythserver.bookmark.application.command.UpdateBookmarkCommand;
 import com.onnyth.onnythserver.bookmark.application.exception.BookmarkNotFoundException;
@@ -29,8 +30,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -67,7 +67,7 @@ class BookmarkControllerTest {
         @Test
         @DisplayName("returns 201 with bookmark response and location header")
         void returns201OnSuccess() throws Exception {
-            BookmarkCreateRequest request = new BookmarkCreateRequest(
+            CreateBookmarkRequest request = new CreateBookmarkRequest(
                     "https://onnyth.com/article",
                     "Useful article",
                     Set.of("wellness", "productivity")
@@ -82,10 +82,11 @@ class BookmarkControllerTest {
                     .updatedAt(Instant.parse("2026-08-08T10:15:30Z"))
                     .build();
 
-            when(bookmarkUseCaseService.createBookmark(any(CreateBookmarkCommand.class))).thenReturn(bookmark);
+            when(bookmarkUseCaseService.createBookmark(any(CreateBookmarkCommand.class), anyString())).thenReturn(CreateBookmarkResponse.fromDomain(bookmark));
 
             mockMvc.perform(post("/api/v1/bookmarks")
                             .contentType(MediaType.APPLICATION_JSON)
+                            .header("Idempotency-Key", "11111111-1111-1111-1111-111111111111")
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isCreated())
                     .andExpect(header().string("Location", "http://localhost/api/v1/bookmarks/" + BOOKMARK_ID))
@@ -95,9 +96,28 @@ class BookmarkControllerTest {
         }
 
         @Test
+        @DisplayName("returns 400 when Idempotency-Key header is missing")
+        void returns400WhenIdempotencyKeyMissing() throws Exception {
+            CreateBookmarkRequest request = new CreateBookmarkRequest(
+                    "https://onnyth.com/article",
+                    "Useful article",
+                    Set.of("wellness", "productivity")
+            );
+
+            mockMvc.perform(post("/api/v1/bookmarks")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.message").value("Idempotency-Key header is required"));
+
+            verifyNoInteractions(bookmarkUseCaseService);
+        }
+
+        @Test
         @DisplayName("returns 400 when request payload is invalid")
         void returns400OnInvalidRequest() throws Exception {
-            BookmarkCreateRequest request = new BookmarkCreateRequest(
+            CreateBookmarkRequest request = new CreateBookmarkRequest(
                     "not-a-url",
                     "Useful article",
                     Set.of("wellness")
@@ -136,7 +156,7 @@ class BookmarkControllerTest {
         @Test
         @DisplayName("returns 400 when title exceeds max length")
         void returns400WhenTitleTooLong() throws Exception {
-            BookmarkCreateRequest request = new BookmarkCreateRequest(
+            CreateBookmarkRequest request = new CreateBookmarkRequest(
                     "https://onnyth.com/article",
                     "a".repeat(256),
                     Set.of("wellness")
@@ -154,7 +174,7 @@ class BookmarkControllerTest {
         @Test
         @DisplayName("returns 400 when a tag exceeds max length")
         void returns400WhenTagTooLong() throws Exception {
-            BookmarkCreateRequest request = new BookmarkCreateRequest(
+            CreateBookmarkRequest request = new CreateBookmarkRequest(
                     "https://onnyth.com/article",
                     "Useful article",
                     Set.of("a".repeat(51))
@@ -188,10 +208,11 @@ class BookmarkControllerTest {
                     .updatedAt(Instant.parse("2026-08-08T10:15:30Z"))
                     .build();
 
-            when(bookmarkUseCaseService.createBookmark(any(CreateBookmarkCommand.class))).thenReturn(bookmark);
+            when(bookmarkUseCaseService.createBookmark(any(CreateBookmarkCommand.class), anyString())).thenReturn(CreateBookmarkResponse.fromDomain(bookmark));
 
             mockMvc.perform(post("/api/v1/bookmarks")
                             .contentType(MediaType.APPLICATION_JSON)
+                            .header("Idempotency-Key", "22222222-2222-2222-2222-222222222222")
                             .content(payload))
                     .andExpect(status().isCreated());
         }

@@ -8,7 +8,7 @@ import java.util.List;
 
 @Builder
 public record BookmarkPageResponse(
-        List<BookmarkResponse> content,
+        List<CreateBookmarkResponse> content,
         long totalElements,
         int totalPages,
         int currentPage,
@@ -16,7 +16,7 @@ public record BookmarkPageResponse(
 ) {
     public static BookmarkPageResponse fromPage(Page<Bookmark> page) {
         return BookmarkPageResponse.builder()
-                .content(page.getContent().stream().map(BookmarkResponse::fromDomain).toList())
+                .content(page.getContent().stream().map(CreateBookmarkResponse::fromDomain).toList())
                 .totalElements(page.getTotalElements())
                 .totalPages(page.getTotalPages())
                 .currentPage(page.getNumber())
