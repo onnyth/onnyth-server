@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size;
 
 import java.util.Set;
 
-public record BookmarkCreateRequest(
+public record CreateBookmarkRequest(
         @NotBlank(message = "URL is required")
         @ValidUri(message = "must be a valid URI")
         String url,

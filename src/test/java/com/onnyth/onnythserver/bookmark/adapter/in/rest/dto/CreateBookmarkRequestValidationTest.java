@@ -12,7 +12,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class BookmarkCreateRequestValidationTest {
+class CreateBookmarkRequestValidationTest {
 
     private static ValidatorFactory validatorFactory;
     private static Validator validator;
@@ -30,7 +30,7 @@ class BookmarkCreateRequestValidationTest {
 
     @Test
     void acceptsValidPayload() {
-        BookmarkCreateRequest request = new BookmarkCreateRequest(
+        CreateBookmarkRequest request = new CreateBookmarkRequest(
                 "https://onnyth.com/article",
                 "Useful article",
                 Set.of("productivity", "wellness")
@@ -41,7 +41,7 @@ class BookmarkCreateRequestValidationTest {
 
     @Test
     void rejectsInvalidUrl() {
-        BookmarkCreateRequest request = new BookmarkCreateRequest(
+        CreateBookmarkRequest request = new CreateBookmarkRequest(
                 "onnyth.com/article",
                 "Useful article",
                 Set.of("productivity")
@@ -52,7 +52,7 @@ class BookmarkCreateRequestValidationTest {
 
     @Test
     void rejectsTitleAbove255Characters() {
-        BookmarkCreateRequest request = new BookmarkCreateRequest(
+        CreateBookmarkRequest request = new CreateBookmarkRequest(
                 "https://onnyth.com/article",
                 "a".repeat(256),
                 Set.of("productivity")
@@ -63,7 +63,7 @@ class BookmarkCreateRequestValidationTest {
 
     @Test
     void rejectsBlankTagAndTooLongTag() {
-        BookmarkCreateRequest request = new BookmarkCreateRequest(
+        CreateBookmarkRequest request = new CreateBookmarkRequest(
                 "https://onnyth.com/article",
                 "Useful article",
                 Set.of("   ", "a".repeat(51))

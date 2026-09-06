@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Builder
-public record BookmarkResponse(
+public record CreateBookmarkResponse(
         UUID id,
         String url,
         String title,
@@ -16,8 +16,8 @@ public record BookmarkResponse(
         Instant createdAt,
         Instant updatedAt
 ) {
-    public static BookmarkResponse fromDomain(Bookmark bookmark) {
-        return BookmarkResponse.builder()
+    public static CreateBookmarkResponse fromDomain(Bookmark bookmark) {
+        return CreateBookmarkResponse.builder()
                 .id(bookmark.getId())
                 .url(bookmark.getUrl())
                 .title(bookmark.getTitle())
