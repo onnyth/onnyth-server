@@ -1,5 +1,6 @@
 package com.onnyth.onnythserver.user.application.usecase;
 
+import com.onnyth.onnythserver.lifestats.application.port.*;
 import com.onnyth.onnythserver.profile.application.port.ProfileVoteRepository;
 import com.onnyth.onnythserver.repository.*;
 import com.onnyth.onnythserver.user.application.exception.UserNotFoundException;

@@ -4,6 +4,7 @@ import com.onnyth.onnythserver.user.application.port.UserRepository;
 import com.onnyth.onnythserver.user.domain.model.User;
 
 import com.onnyth.onnythserver.dto.FriendProfileResponse;
+import com.onnyth.onnythserver.lifestats.application.port.*;
 import com.onnyth.onnythserver.dto.FriendRequestResponse;
 import com.onnyth.onnythserver.dto.FriendResponse;
 import com.onnyth.onnythserver.dto.RankProgressResponse;

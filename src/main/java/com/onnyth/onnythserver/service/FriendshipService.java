@@ -3,6 +3,7 @@ package com.onnyth.onnythserver.service;
 import com.onnyth.onnythserver.dto.*;
 import com.onnyth.onnythserver.exceptions.*;
 import com.onnyth.onnythserver.user.application.exception.UserNotFoundException;
+import com.onnyth.onnythserver.lifestats.application.port.*;
 import com.onnyth.onnythserver.models.*;
 import com.onnyth.onnythserver.repository.FriendRequestRepository;
 import com.onnyth.onnythserver.repository.FriendshipRepository;

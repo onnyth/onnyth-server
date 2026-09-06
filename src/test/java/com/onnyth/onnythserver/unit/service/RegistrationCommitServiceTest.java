@@ -3,6 +3,8 @@ import com.onnyth.onnythserver.user.application.port.UserRepository;
 import com.onnyth.onnythserver.user.domain.model.User;
 
 import com.onnyth.onnythserver.exceptions.IncompleteRegistrationException;
+import com.onnyth.onnythserver.lifestats.application.port.*;
+import com.onnyth.onnythserver.lifestats.domain.model.*;
 import com.onnyth.onnythserver.user.application.exception.UserNotFoundException;
 import com.onnyth.onnythserver.models.*;
 import com.onnyth.onnythserver.repository.*;

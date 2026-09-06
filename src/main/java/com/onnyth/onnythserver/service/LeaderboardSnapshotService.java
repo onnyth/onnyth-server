@@ -1,5 +1,6 @@
 package com.onnyth.onnythserver.service;
 
+import com.onnyth.onnythserver.lifestats.application.port.*;
 import com.onnyth.onnythserver.models.LeaderboardSnapshot;
 import com.onnyth.onnythserver.models.StatDomain;
 import com.onnyth.onnythserver.user.domain.model.User;

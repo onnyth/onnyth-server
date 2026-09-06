@@ -1,6 +1,8 @@
 package com.onnyth.onnythserver.service;
 
 import com.onnyth.onnythserver.user.application.exception.UserNotFoundException;
+import com.onnyth.onnythserver.lifestats.application.port.*;
+import com.onnyth.onnythserver.lifestats.domain.model.*;
 import com.onnyth.onnythserver.models.*;
 import com.onnyth.onnythserver.user.domain.model.User;
 import com.onnyth.onnythserver.user.application.port.UserRepository;
@@ -60,7 +62,8 @@ public class ScoreCalculationService {
         int skillsBonus = Math.min((occ.getSkills() != null ? occ.getSkills().size() : 0) * 3, 15);               // 0-15
 
         int newScore = Math.min(titleTier + companyFactor + experiencePts + skillsBonus, 100);
-        return persistDomainScore(userId, occ, occ.getScore(), newScore, StatDomain.OCCUPATION);
+        return persistDomainScore(userId, occ, occ.getScore(), newScore, StatDomain.OCCUPATION,
+                occupationRepository::save);
     }
 
     /**
@@ -89,7 +92,8 @@ public class ScoreCalculationService {
         int newScore = Math.min(incomePts + coinsPts + savingsPts + verifiedPts, 100);
 
         if (wealth != null) {
-            return persistDomainScore(userId, wealth, wealth.getScore(), newScore, StatDomain.WEALTH);
+            return persistDomainScore(userId, wealth, wealth.getScore(), newScore, StatDomain.WEALTH,
+                    wealthRepository::save);
         }
         return newScore;
     }
@@ -113,7 +117,8 @@ public class ScoreCalculationService {
         int medalPts = calculateMedalScore(medals);                                      // 0-20
 
         int newScore = Math.min(fitnessLevelPts + bodyCompPts + workoutPts + medalPts, 100);
-        return persistDomainScore(userId, physique, physique.getScore(), newScore, StatDomain.PHYSIQUE);
+        return persistDomainScore(userId, physique, physique.getScore(), newScore, StatDomain.PHYSIQUE,
+                physiqueRepository::save);
     }
 
     /**
@@ -140,7 +145,8 @@ public class ScoreCalculationService {
         int newScore = Math.min(educationPts + hobbiesPts + xfactorPts, 100);
 
         if (wisdom != null) {
-            return persistDomainScore(userId, wisdom, wisdom.getScore(), newScore, StatDomain.WISDOM);
+            return persistDomainScore(userId, wisdom, wisdom.getScore(), newScore, StatDomain.WISDOM,
+                    wisdomRepository::save);
         }
         return newScore;
     }
@@ -172,8 +178,18 @@ public class ScoreCalculationService {
         int newScore = Math.min(socialFollowersPts + onnythFollowersPts + profileLikesPts + verifiedPts, 100);
 
         if (charisma != null) {
+            int oldProfileLikes = charisma.getOnnythProfileLikes() != null ? charisma.getOnnythProfileLikes() : 0;
             charisma.setOnnythProfileLikes((int) profileLikes); // sync denormalized counter
-            return persistDomainScore(userId, charisma, charisma.getScore(), newScore, StatDomain.CHARISMA);
+
+            if (charisma.getScore() != newScore) {
+                return persistDomainScore(userId, charisma, charisma.getScore(), newScore, StatDomain.CHARISMA,
+                        charismaRepository::save);
+            }
+
+            if (oldProfileLikes != charisma.getOnnythProfileLikes()) {
+                charismaRepository.save(charisma);
+            }
+            return newScore;
         }
         return newScore;
     }
@@ -291,16 +307,22 @@ public class ScoreCalculationService {
 
     /**
      * Persist a domain score change and record history.
-     * Works generically for any entity that has setScore/getScore.
      */
-    private <T> int persistDomainScore(UUID userId, Object entity, int oldScore, int newScore, StatDomain domain) {
+    private <T> int persistDomainScore(
+            UUID userId,
+            T stat,
+            int oldScore,
+            int newScore,
+            StatDomain domain,
+            java.util.function.Consumer<T> persister) {
         if (oldScore != newScore) {
-            // Set score via reflection-like approach — each entity has setScore
-            if (entity instanceof UserOccupation e) e.setScore(newScore);
-            else if (entity instanceof UserWealth e) e.setScore(newScore);
-            else if (entity instanceof UserPhysique e) e.setScore(newScore);
-            else if (entity instanceof UserWisdom e) e.setScore(newScore);
-            else if (entity instanceof UserCharisma e) e.setScore(newScore);
+            if (stat instanceof UserOccupation e) e.setScore(newScore);
+            else if (stat instanceof UserWealth e) e.setScore(newScore);
+            else if (stat instanceof UserPhysique e) e.setScore(newScore);
+            else if (stat instanceof UserWisdom e) e.setScore(newScore);
+            else if (stat instanceof UserCharisma e) e.setScore(newScore);
+
+            persister.accept(stat);
 
             scoreHistoryRepository.save(ScoreHistory.builder()
                     .userId(userId)
