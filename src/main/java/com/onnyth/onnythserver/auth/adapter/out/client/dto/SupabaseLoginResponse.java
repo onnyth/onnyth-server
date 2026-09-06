@@ -1,4 +1,4 @@
-package com.onnyth.onnythserver.dto.supabase;
+package com.onnyth.onnythserver.auth.adapter.out.client.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

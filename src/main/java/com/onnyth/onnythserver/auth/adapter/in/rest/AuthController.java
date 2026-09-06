@@ -1,7 +1,7 @@
-package com.onnyth.onnythserver.controller;
+package com.onnyth.onnythserver.auth.adapter.in.rest;
 
-import com.onnyth.onnythserver.dto.*;
-import com.onnyth.onnythserver.service.SupabaseAuthService;
+import com.onnyth.onnythserver.auth.adapter.in.rest.dto.*;
+import com.onnyth.onnythserver.auth.application.usecase.SupabaseAuthUseCaseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final SupabaseAuthService supabaseAuthService;
+    private final SupabaseAuthUseCaseService supabaseAuthService;
 
     @PostMapping("/signup")
     public ResponseEntity<SignupResponse> signUp(@RequestBody AuthRequest authRequest) {

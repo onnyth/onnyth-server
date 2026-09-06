@@ -1,13 +1,13 @@
-package com.onnyth.onnythserver.service;
+package com.onnyth.onnythserver.auth.application.usecase;
 
-import com.onnyth.onnythserver.dto.AuthRequest;
-import com.onnyth.onnythserver.dto.LoginResponse;
-import com.onnyth.onnythserver.dto.RefreshTokenResponse;
-import com.onnyth.onnythserver.dto.SignupResponse;
-import com.onnyth.onnythserver.dto.supabase.SupabaseLoginResponse;
-import com.onnyth.onnythserver.dto.supabase.SupabaseRefreshTokenResponse;
-import com.onnyth.onnythserver.dto.supabase.SupabaseSignupResponse;
-import com.onnyth.onnythserver.exceptions.*;
+import com.onnyth.onnythserver.auth.adapter.in.rest.dto.AuthRequest;
+import com.onnyth.onnythserver.auth.adapter.in.rest.dto.LoginResponse;
+import com.onnyth.onnythserver.auth.adapter.in.rest.dto.RefreshTokenResponse;
+import com.onnyth.onnythserver.auth.adapter.in.rest.dto.SignupResponse;
+import com.onnyth.onnythserver.auth.adapter.out.client.dto.SupabaseLoginResponse;
+import com.onnyth.onnythserver.auth.adapter.out.client.dto.SupabaseRefreshTokenResponse;
+import com.onnyth.onnythserver.auth.adapter.out.client.dto.SupabaseSignupResponse;
+import com.onnyth.onnythserver.auth.application.exception.*;
 import com.onnyth.onnythserver.user.application.exception.EmailAlreadyExistsException;
 import com.onnyth.onnythserver.shared.exception.LogoutFailedException;
 import com.onnyth.onnythserver.user.domain.model.User;
@@ -27,9 +27,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Service
-public class SupabaseAuthService {
+public class SupabaseAuthUseCaseService {
 
-    private static final Logger logger = LoggerFactory.getLogger(SupabaseAuthService.class);
+    private static final Logger logger = LoggerFactory.getLogger(SupabaseAuthUseCaseService.class);
 
     private final RestTemplate restTemplate;
     private final UserRepository userRepository;
@@ -40,7 +40,7 @@ public class SupabaseAuthService {
     @Value("${supabase.anon-key}")
     private String supabaseAnonKey;
 
-    public SupabaseAuthService(RestTemplate restTemplate, UserRepository userRepository) {
+    public SupabaseAuthUseCaseService(RestTemplate restTemplate, UserRepository userRepository) {
         this.restTemplate = restTemplate;
         this.userRepository = userRepository;
     }

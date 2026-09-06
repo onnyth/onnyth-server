@@ -1,4 +1,4 @@
-package com.onnyth.onnythserver.exceptions;
+package com.onnyth.onnythserver.auth.application.exception;
 
 import com.onnyth.onnythserver.shared.exception.ApiException;
 

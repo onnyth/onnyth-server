@@ -1,17 +1,18 @@
-package com.onnyth.onnythserver.controller;
+package com.onnyth.onnythserver.auth.adapter.in.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.onnyth.onnythserver.dto.AuthRequest;
-import com.onnyth.onnythserver.dto.LoginResponse;
-import com.onnyth.onnythserver.dto.RefreshTokenRequest;
-import com.onnyth.onnythserver.dto.RefreshTokenResponse;
-import com.onnyth.onnythserver.dto.SignupResponse;
+import com.onnyth.onnythserver.auth.adapter.in.rest.dto.AuthRequest;
+import com.onnyth.onnythserver.auth.adapter.in.rest.dto.LoginResponse;
+import com.onnyth.onnythserver.auth.adapter.in.rest.dto.RefreshTokenRequest;
+import com.onnyth.onnythserver.auth.adapter.in.rest.dto.RefreshTokenResponse;
+import com.onnyth.onnythserver.auth.adapter.in.rest.dto.SignupResponse;
 import com.onnyth.onnythserver.user.application.exception.EmailAlreadyExistsException;
-import com.onnyth.onnythserver.exceptions.InvalidSigninRequestException;
-import com.onnyth.onnythserver.exceptions.InvalidSignupRequestException;
-import com.onnyth.onnythserver.exceptions.SupabaseUnavailableException;
+import com.onnyth.onnythserver.auth.application.exception.InvalidSigninRequestException;
+import com.onnyth.onnythserver.auth.application.exception.InvalidSignupRequestException;
+import com.onnyth.onnythserver.auth.application.exception.SupabaseUnavailableException;
 import com.onnyth.onnythserver.shared.exception.LogoutFailedException;
-import com.onnyth.onnythserver.service.SupabaseAuthService;
+import com.onnyth.onnythserver.auth.application.usecase.SupabaseAuthUseCaseService;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -48,7 +49,7 @@ class AuthControllerTest {
         private ObjectMapper objectMapper;
 
         @MockitoBean
-        private SupabaseAuthService supabaseAuthService;
+        private SupabaseAuthUseCaseService supabaseAuthService;
 
         // ─── POST /api/v1/auth/signup ─────────────────────────────────────────────
 

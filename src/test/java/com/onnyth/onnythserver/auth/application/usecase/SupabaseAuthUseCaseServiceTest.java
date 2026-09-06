@@ -1,22 +1,21 @@
-package com.onnyth.onnythserver.unit.service;
+package com.onnyth.onnythserver.auth.application.usecase;
 
-import com.onnyth.onnythserver.dto.AuthRequest;
-import com.onnyth.onnythserver.dto.LoginResponse;
-import com.onnyth.onnythserver.dto.RefreshTokenResponse;
-import com.onnyth.onnythserver.dto.SignupResponse;
-import com.onnyth.onnythserver.dto.supabase.SupabaseLoginResponse;
-import com.onnyth.onnythserver.dto.supabase.SupabaseRefreshTokenResponse;
-import com.onnyth.onnythserver.dto.supabase.SupabaseSignupResponse;
-import com.onnyth.onnythserver.dto.supabase.SupabaseUser;
+import com.onnyth.onnythserver.auth.adapter.in.rest.dto.AuthRequest;
+import com.onnyth.onnythserver.auth.adapter.in.rest.dto.LoginResponse;
+import com.onnyth.onnythserver.auth.adapter.in.rest.dto.RefreshTokenResponse;
+import com.onnyth.onnythserver.auth.adapter.in.rest.dto.SignupResponse;
+import com.onnyth.onnythserver.auth.adapter.out.client.dto.SupabaseLoginResponse;
+import com.onnyth.onnythserver.auth.adapter.out.client.dto.SupabaseRefreshTokenResponse;
+import com.onnyth.onnythserver.auth.adapter.out.client.dto.SupabaseSignupResponse;
+import com.onnyth.onnythserver.auth.adapter.out.client.dto.SupabaseUser;
 import com.onnyth.onnythserver.user.application.exception.EmailAlreadyExistsException;
-import com.onnyth.onnythserver.exceptions.InvalidRefreshTokenException;
-import com.onnyth.onnythserver.exceptions.InvalidSigninRequestException;
-import com.onnyth.onnythserver.exceptions.InvalidSignupRequestException;
-import com.onnyth.onnythserver.exceptions.SupabaseUnavailableException;
+import com.onnyth.onnythserver.auth.application.exception.InvalidRefreshTokenException;
+import com.onnyth.onnythserver.auth.application.exception.InvalidSigninRequestException;
+import com.onnyth.onnythserver.auth.application.exception.InvalidSignupRequestException;
+import com.onnyth.onnythserver.auth.application.exception.SupabaseUnavailableException;
 import com.onnyth.onnythserver.shared.exception.LogoutFailedException;
 import com.onnyth.onnythserver.user.domain.model.User;
 import com.onnyth.onnythserver.user.application.port.UserRepository;
-import com.onnyth.onnythserver.service.SupabaseAuthService;
 import com.onnyth.onnythserver.support.TestDataFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -41,11 +40,11 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 /**
- * Unit tests for SupabaseAuthService — mocks RestTemplate and UserRepository
+ * Unit tests for SupabaseAuthUseCaseService — mocks RestTemplate and UserRepository
  * to test all auth flows in isolation.
  */
 @ExtendWith(MockitoExtension.class)
-class SupabaseAuthServiceTest {
+class SupabaseAuthUseCaseServiceTest {
 
         @Mock
         private RestTemplate restTemplate;
@@ -53,14 +52,14 @@ class SupabaseAuthServiceTest {
         @Mock
         private UserRepository userRepository;
 
-        private SupabaseAuthService supabaseAuthService;
+        private SupabaseAuthUseCaseService supabaseAuthService;
 
         private static final String SUPABASE_URL = "https://test.supabase.co";
         private static final String ANON_KEY = "test-anon-key";
 
         @BeforeEach
         void setUp() {
-                supabaseAuthService = new SupabaseAuthService(restTemplate, userRepository);
+                supabaseAuthService = new SupabaseAuthUseCaseService(restTemplate, userRepository);
                 ReflectionTestUtils.setField(supabaseAuthService, "supabaseUrl", SUPABASE_URL);
                 ReflectionTestUtils.setField(supabaseAuthService, "supabaseAnonKey", ANON_KEY);
         }

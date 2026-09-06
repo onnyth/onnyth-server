@@ -1,4 +1,4 @@
-package com.onnyth.onnythserver.dto;
+package com.onnyth.onnythserver.auth.adapter.in.rest.dto;
 
 public record SignupResponse(
         String message,

@@ -1,11 +1,12 @@
 package com.onnyth.onnythserver.security;
 
-import com.onnyth.onnythserver.controller.AuthController;
+import com.onnyth.onnythserver.auth.adapter.in.rest.AuthController;
 import com.onnyth.onnythserver.profile.adapter.in.rest.ProfileController;
 import com.onnyth.onnythserver.controller.RegistrationController;
 import com.onnyth.onnythserver.user.adapter.in.rest.UserController;
 import com.onnyth.onnythserver.user.application.usecase.UserUseCaseService;
 import com.onnyth.onnythserver.service.*;
+import com.onnyth.onnythserver.auth.application.usecase.SupabaseAuthUseCaseService;
 import com.onnyth.onnythserver.profile.application.usecase.ProfileUseCaseService;
 import com.onnyth.onnythserver.profile.adapter.out.storage.StorageServiceAdapter;
 import com.onnyth.onnythserver.support.MockJwtDecoderConfig;
@@ -36,7 +37,7 @@ class SecurityConfigTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private SupabaseAuthService supabaseAuthService;
+    private SupabaseAuthUseCaseService supabaseAuthService;
 
     @MockitoBean
     private ProfileUseCaseService profileService;
