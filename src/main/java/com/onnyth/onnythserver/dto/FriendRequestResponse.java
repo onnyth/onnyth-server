@@ -1,7 +1,7 @@
 package com.onnyth.onnythserver.dto;
 
 import com.onnyth.onnythserver.models.FriendRequest;
-import com.onnyth.onnythserver.models.User;
+import com.onnyth.onnythserver.user.domain.model.User;
 import lombok.Builder;
 
 import java.time.Instant;

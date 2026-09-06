@@ -1,7 +1,7 @@
 package com.onnyth.onnythserver.service;
 
-import com.onnyth.onnythserver.models.User;
-import com.onnyth.onnythserver.repository.UserRepository;
+import com.onnyth.onnythserver.user.domain.model.User;
+import com.onnyth.onnythserver.user.application.port.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;

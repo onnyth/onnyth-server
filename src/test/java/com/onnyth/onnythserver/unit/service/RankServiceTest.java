@@ -1,10 +1,10 @@
 package com.onnyth.onnythserver.unit.service;
 
 import com.onnyth.onnythserver.dto.RankProgressResponse;
-import com.onnyth.onnythserver.exceptions.UserNotFoundException;
+import com.onnyth.onnythserver.user.application.exception.UserNotFoundException;
 import com.onnyth.onnythserver.models.RankTier;
-import com.onnyth.onnythserver.models.User;
-import com.onnyth.onnythserver.repository.UserRepository;
+import com.onnyth.onnythserver.user.domain.model.User;
+import com.onnyth.onnythserver.user.application.port.UserRepository;
 import com.onnyth.onnythserver.service.RankService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

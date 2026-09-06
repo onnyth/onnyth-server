@@ -1,6 +1,6 @@
 package com.onnyth.onnythserver.support;
 
-import com.onnyth.onnythserver.models.User;
+import com.onnyth.onnythserver.user.domain.model.User;
 
 import java.util.UUID;
 

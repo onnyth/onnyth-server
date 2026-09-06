@@ -2,9 +2,9 @@ package com.onnyth.onnythserver.unit.service;
 
 import com.onnyth.onnythserver.dto.VoteResponse;
 import com.onnyth.onnythserver.models.ProfileVote;
-import com.onnyth.onnythserver.models.User;
+import com.onnyth.onnythserver.user.domain.model.User;
 import com.onnyth.onnythserver.repository.ProfileVoteRepository;
-import com.onnyth.onnythserver.repository.UserRepository;
+import com.onnyth.onnythserver.user.application.port.UserRepository;
 import com.onnyth.onnythserver.service.ProfileVoteService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

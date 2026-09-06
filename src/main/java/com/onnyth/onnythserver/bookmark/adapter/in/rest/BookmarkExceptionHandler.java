@@ -3,7 +3,7 @@ package com.onnyth.onnythserver.bookmark.adapter.in.rest;
 import com.onnyth.onnythserver.bookmark.application.exception.BookmarkNotFoundException;
 import com.onnyth.onnythserver.bookmark.application.exception.IdempotencyConflictException;
 import com.onnyth.onnythserver.bookmark.application.exception.MissingIdempotencyKeyException;
-import com.onnyth.onnythserver.dto.ApiErrorResponse;
+import com.onnyth.onnythserver.shared.exception.ApiErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

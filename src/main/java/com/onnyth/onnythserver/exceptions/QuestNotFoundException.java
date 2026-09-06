@@ -1,5 +1,7 @@
 package com.onnyth.onnythserver.exceptions;
 
+import com.onnyth.onnythserver.shared.exception.ApiException;
+
 import org.springframework.http.HttpStatus;
 
 public class QuestNotFoundException extends ApiException {

@@ -1,4 +1,5 @@
 package com.onnyth.onnythserver.models;
+import com.onnyth.onnythserver.user.adapter.out.persistence.UserEntity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -23,7 +24,7 @@ public class Post {
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "user_id")
-    private User user;
+    private UserEntity user;
 
     @Column(name = "caption", length = Integer.MAX_VALUE)
     private String caption;

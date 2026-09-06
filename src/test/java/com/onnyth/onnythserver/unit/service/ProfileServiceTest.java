@@ -2,14 +2,14 @@ package com.onnyth.onnythserver.unit.service;
 
 import com.onnyth.onnythserver.dto.ProfileResponse;
 import com.onnyth.onnythserver.dto.ProfileUpdateRequest;
-import com.onnyth.onnythserver.exceptions.UserNotFoundException;
-import com.onnyth.onnythserver.exceptions.UsernameAlreadyExistsException;
+import com.onnyth.onnythserver.user.application.exception.UserNotFoundException;
+import com.onnyth.onnythserver.user.application.exception.UsernameAlreadyExistsException;
 import com.onnyth.onnythserver.models.RankTier;
-import com.onnyth.onnythserver.models.User;
+import com.onnyth.onnythserver.user.domain.model.User;
 import com.onnyth.onnythserver.repository.UserCharismaRepository;
 import com.onnyth.onnythserver.repository.UserOccupationRepository;
 import com.onnyth.onnythserver.repository.UserPhysiqueRepository;
-import com.onnyth.onnythserver.repository.UserRepository;
+import com.onnyth.onnythserver.user.application.port.UserRepository;
 import com.onnyth.onnythserver.repository.UserStreakRepository;
 import com.onnyth.onnythserver.repository.UserWealthRepository;
 import com.onnyth.onnythserver.repository.UserWisdomRepository;

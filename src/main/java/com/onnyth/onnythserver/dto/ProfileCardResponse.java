@@ -1,7 +1,7 @@
 package com.onnyth.onnythserver.dto;
 
 import com.onnyth.onnythserver.models.RankTier;
-import com.onnyth.onnythserver.models.User;
+import com.onnyth.onnythserver.user.domain.model.User;
 import com.onnyth.onnythserver.service.LevelService;
 import lombok.Builder;
 

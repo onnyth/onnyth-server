@@ -1,4 +1,5 @@
 package com.onnyth.onnythserver.unit.service;
+import com.onnyth.onnythserver.user.domain.model.User;
 
 import com.onnyth.onnythserver.dto.AchievementResponse;
 import com.onnyth.onnythserver.dto.AchievementStatsResponse;
@@ -9,7 +10,7 @@ import com.onnyth.onnythserver.models.*;
 import com.onnyth.onnythserver.repository.AchievementRepository;
 import com.onnyth.onnythserver.repository.FriendshipRepository;
 import com.onnyth.onnythserver.repository.UserAchievementRepository;
-import com.onnyth.onnythserver.repository.UserRepository;
+import com.onnyth.onnythserver.user.application.port.UserRepository;
 import com.onnyth.onnythserver.service.AchievementProgressCalculator;
 import com.onnyth.onnythserver.service.AchievementService;
 import com.onnyth.onnythserver.support.TestDataFactory;

@@ -1,6 +1,6 @@
 package com.onnyth.onnythserver.bookmark.adapter.in.rest.dto;
 
-import com.onnyth.onnythserver.validation.ValidUri;
+import com.onnyth.onnythserver.shared.validation.ValidUri;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 

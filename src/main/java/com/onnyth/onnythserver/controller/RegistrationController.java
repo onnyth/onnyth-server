@@ -3,7 +3,7 @@ package com.onnyth.onnythserver.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.onnyth.onnythserver.dto.registration.*;
 import com.onnyth.onnythserver.models.RegistrationStep;
-import com.onnyth.onnythserver.models.User;
+import com.onnyth.onnythserver.user.domain.model.User;
 import com.onnyth.onnythserver.service.RegistrationCommitService;
 import com.onnyth.onnythserver.service.RegistrationService;
 import com.onnyth.onnythserver.service.StorageService;

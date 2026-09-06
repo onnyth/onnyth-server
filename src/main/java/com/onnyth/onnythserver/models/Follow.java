@@ -1,4 +1,5 @@
 package com.onnyth.onnythserver.models;
+import com.onnyth.onnythserver.user.adapter.out.persistence.UserEntity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -20,13 +21,13 @@ public class Follow {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "follower_id", nullable = false)
-    private User follower;
+    private UserEntity follower;
 
     @MapsId("followingId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "following_id", nullable = false)
-    private User following;
+    private UserEntity following;
 
     @Column(name = "created_at")
     private Instant createdAt;

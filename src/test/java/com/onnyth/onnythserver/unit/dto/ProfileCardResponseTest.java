@@ -2,7 +2,7 @@ package com.onnyth.onnythserver.unit.dto;
 
 import com.onnyth.onnythserver.dto.ProfileCardResponse;
 import com.onnyth.onnythserver.models.RankTier;
-import com.onnyth.onnythserver.models.User;
+import com.onnyth.onnythserver.user.domain.model.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

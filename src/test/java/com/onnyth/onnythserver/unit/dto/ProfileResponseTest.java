@@ -1,7 +1,7 @@
 package com.onnyth.onnythserver.unit.dto;
 
 import com.onnyth.onnythserver.dto.ProfileResponse;
-import com.onnyth.onnythserver.models.User;
+import com.onnyth.onnythserver.user.domain.model.User;
 import com.onnyth.onnythserver.support.TestDataFactory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -3,7 +3,8 @@ package com.onnyth.onnythserver.security;
 import com.onnyth.onnythserver.controller.AuthController;
 import com.onnyth.onnythserver.controller.ProfileController;
 import com.onnyth.onnythserver.controller.RegistrationController;
-import com.onnyth.onnythserver.controller.UserController;
+import com.onnyth.onnythserver.user.adapter.in.rest.UserController;
+import com.onnyth.onnythserver.user.application.usecase.UserUseCaseService;
 import com.onnyth.onnythserver.service.*;
 import com.onnyth.onnythserver.support.MockJwtDecoderConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -39,7 +40,7 @@ class SecurityConfigTest {
     private ProfileService profileService;
 
     @MockitoBean
-    private UserService userService;
+    private UserUseCaseService userUseCaseService;
 
     @MockitoBean
     private RankService rankService;

@@ -2,10 +2,12 @@ package com.onnyth.onnythserver.service;
 
 import com.onnyth.onnythserver.dto.*;
 import com.onnyth.onnythserver.exceptions.*;
+import com.onnyth.onnythserver.user.application.exception.UserNotFoundException;
 import com.onnyth.onnythserver.models.*;
 import com.onnyth.onnythserver.repository.FriendRequestRepository;
 import com.onnyth.onnythserver.repository.FriendshipRepository;
-import com.onnyth.onnythserver.repository.UserRepository;
+import com.onnyth.onnythserver.user.application.port.UserRepository;
+import com.onnyth.onnythserver.user.domain.model.User;
 import com.onnyth.onnythserver.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

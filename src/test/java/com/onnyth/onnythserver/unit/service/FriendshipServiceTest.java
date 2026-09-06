@@ -1,4 +1,7 @@
 package com.onnyth.onnythserver.unit.service;
+import com.onnyth.onnythserver.user.application.exception.UserNotFoundException;
+import com.onnyth.onnythserver.user.application.port.UserRepository;
+import com.onnyth.onnythserver.user.domain.model.User;
 
 import com.onnyth.onnythserver.dto.FriendProfileResponse;
 import com.onnyth.onnythserver.dto.FriendRequestResponse;

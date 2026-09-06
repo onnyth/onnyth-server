@@ -1,4 +1,5 @@
 package com.onnyth.onnythserver.models;
+import com.onnyth.onnythserver.user.adapter.out.persistence.UserEntity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -28,7 +29,7 @@ public class Comment {
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "user_id")
-    private User user;
+    private UserEntity user;
 
     @Column(name = "text", length = Integer.MAX_VALUE)
     private String text;

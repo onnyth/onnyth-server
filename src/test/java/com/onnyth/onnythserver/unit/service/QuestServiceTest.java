@@ -1,4 +1,5 @@
 package com.onnyth.onnythserver.unit.service;
+import com.onnyth.onnythserver.user.domain.model.User;
 
 import com.onnyth.onnythserver.dto.QuestCompletionResponse;
 import com.onnyth.onnythserver.dto.QuestListResponse;
@@ -9,7 +10,7 @@ import com.onnyth.onnythserver.exceptions.QuestNotFoundException;
 import com.onnyth.onnythserver.models.*;
 import com.onnyth.onnythserver.repository.QuestCompletionRepository;
 import com.onnyth.onnythserver.repository.QuestRepository;
-import com.onnyth.onnythserver.repository.UserRepository;
+import com.onnyth.onnythserver.user.application.port.UserRepository;
 import com.onnyth.onnythserver.service.QuestService;
 import com.onnyth.onnythserver.service.RankService;
 import com.onnyth.onnythserver.support.TestDataFactory;
