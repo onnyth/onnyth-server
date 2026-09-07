@@ -1,12 +1,16 @@
-package com.onnyth.onnythserver.service;
+package com.onnyth.onnythserver.leaderboard.application.usecase;
 
-import com.onnyth.onnythserver.lifestats.application.port.*;
-import com.onnyth.onnythserver.models.LeaderboardSnapshot;
+import com.onnyth.onnythserver.leaderboard.application.port.LeaderboardSnapshotRepository;
+import com.onnyth.onnythserver.leaderboard.domain.model.LeaderboardSnapshot;
+import com.onnyth.onnythserver.lifestats.application.port.UserCharismaRepository;
+import com.onnyth.onnythserver.lifestats.application.port.UserOccupationRepository;
+import com.onnyth.onnythserver.lifestats.application.port.UserPhysiqueRepository;
+import com.onnyth.onnythserver.lifestats.application.port.UserWealthRepository;
+import com.onnyth.onnythserver.lifestats.application.port.UserWisdomRepository;
 import com.onnyth.onnythserver.models.StatDomain;
-import com.onnyth.onnythserver.user.domain.model.User;
-import com.onnyth.onnythserver.user.application.port.UserRepository;
 import com.onnyth.onnythserver.friendship.application.port.FriendshipRepository;
-import com.onnyth.onnythserver.repository.*;
+import com.onnyth.onnythserver.user.application.port.UserRepository;
+import com.onnyth.onnythserver.user.domain.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -16,14 +20,20 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class LeaderboardSnapshotService {
+public class LeaderboardSnapshotUseCaseService {
 
     private final LeaderboardSnapshotRepository snapshotRepository;
     private final FriendshipRepository friendshipRepository;
@@ -48,15 +58,15 @@ public class LeaderboardSnapshotService {
         int snapshotCount = 0;
         for (User owner : allUsers) {
             List<UUID> friendIds = friendshipRepository.findFriendIdsByUserId(owner.getId());
-            if (friendIds.isEmpty())
+            if (friendIds.isEmpty()) {
                 continue;
+            }
 
             List<UUID> participantIds = new ArrayList<>(friendIds);
             participantIds.add(owner.getId());
 
             List<User> participants = userRepository.findAllById(participantIds);
 
-            // --- Overall (total score) snapshot ---
             participants.sort(Comparator.comparingLong(User::getTotalScore).reversed());
             for (int i = 0; i < participants.size(); i++) {
                 User participant = participants.get(i);
@@ -66,12 +76,11 @@ public class LeaderboardSnapshotService {
                         .position(i + 1)
                         .score(participant.getTotalScore())
                         .snapshotDate(today)
-                        .category(null) // null = overall
+                        .category(null)
                         .build());
                 snapshotCount++;
             }
 
-            // --- Domain-specific snapshots ---
             Map<UUID, User> usersById = participants.stream()
                     .collect(Collectors.toMap(User::getId, Function.identity()));
 
@@ -86,6 +95,9 @@ public class LeaderboardSnapshotService {
 
                 for (int i = 0; i < ranked.size(); i++) {
                     Map.Entry<UUID, Integer> entry = ranked.get(i);
+                    if (!usersById.containsKey(entry.getKey())) {
+                        continue;
+                    }
                     snapshotRepository.save(LeaderboardSnapshot.builder()
                             .userId(entry.getKey())
                             .friendOwnerId(owner.getId())
@@ -115,12 +127,10 @@ public class LeaderboardSnapshotService {
             return Map.of();
         }
 
-        // Filter to overall snapshots (category IS NULL)
         Map<UUID, Integer> oldPositions = snapshots.stream()
-                .filter(s -> s.getCategory() == null)
+                .filter(snapshot -> snapshot.getCategory() == null)
                 .collect(Collectors.toMap(LeaderboardSnapshot::getUserId, LeaderboardSnapshot::getPosition));
 
-        // Compute current positions
         List<User> participants = userRepository.findAllById(participantIds);
         participants.sort(Comparator.comparingLong(User::getTotalScore).reversed());
 
@@ -130,7 +140,6 @@ public class LeaderboardSnapshotService {
             int currentPosition = i + 1;
             Integer oldPosition = oldPositions.get(uid);
             if (oldPosition != null) {
-                // positive change = moved up (old position was higher number)
                 changes.put(uid, oldPosition - currentPosition);
             }
         }
@@ -153,25 +162,23 @@ public class LeaderboardSnapshotService {
         }
 
         return snapshots.stream()
-                .filter(s -> s.getCategory() == null)
+                .filter(snapshot -> snapshot.getCategory() == null)
                 .map(LeaderboardSnapshot::getUserId)
                 .collect(Collectors.toSet());
     }
 
-    // ─── Private helpers ──────────────────────────────────────────────────────
-
     private int getDomainScore(UUID userId, StatDomain domain) {
         return switch (domain) {
             case OCCUPATION -> occupationRepository.findByUserIdAndIsCurrentTrue(userId)
-                    .map(o -> o.getScore()).orElse(0);
+                    .map(occupation -> occupation.getScore()).orElse(0);
             case WEALTH -> wealthRepository.findByUserId(userId)
-                    .map(w -> w.getScore()).orElse(0);
+                    .map(wealth -> wealth.getScore()).orElse(0);
             case PHYSIQUE -> physiqueRepository.findByUserId(userId)
-                    .map(p -> p.getScore()).orElse(0);
+                    .map(physique -> physique.getScore()).orElse(0);
             case WISDOM -> wisdomRepository.findByUserId(userId)
-                    .map(w -> w.getScore()).orElse(0);
+                    .map(wisdom -> wisdom.getScore()).orElse(0);
             case CHARISMA -> charismaRepository.findByUserId(userId)
-                    .map(c -> c.getScore()).orElse(0);
+                    .map(charisma -> charisma.getScore()).orElse(0);
         };
     }
 
@@ -180,4 +187,3 @@ public class LeaderboardSnapshotService {
         return today.with(TemporalAdjusters.previous(DayOfWeek.SUNDAY));
     }
 }
-

@@ -1,10 +1,10 @@
-package com.onnyth.onnythserver.controller;
+package com.onnyth.onnythserver.leaderboard.adapter.in.rest;
 
-import com.onnyth.onnythserver.dto.CategoryLeaderboardEntryResponse;
-import com.onnyth.onnythserver.dto.LeaderboardResponse;
-import com.onnyth.onnythserver.dto.UserLeaderboardPositionResponse;
+import com.onnyth.onnythserver.leaderboard.adapter.in.rest.dto.CategoryLeaderboardEntryResponse;
+import com.onnyth.onnythserver.leaderboard.adapter.in.rest.dto.LeaderboardResponse;
+import com.onnyth.onnythserver.leaderboard.adapter.in.rest.dto.UserLeaderboardPositionResponse;
+import com.onnyth.onnythserver.leaderboard.application.usecase.LeaderboardUseCaseService;
 import com.onnyth.onnythserver.models.StatDomain;
-import com.onnyth.onnythserver.service.LeaderboardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
@@ -23,7 +26,7 @@ import java.util.UUID;
 @Tag(name = "Leaderboard", description = "Friends leaderboard, position tracking, and category filters")
 public class LeaderboardController {
 
-    private final LeaderboardService leaderboardService;
+    private final LeaderboardUseCaseService leaderboardService;
 
     @Operation(summary = "Get friends leaderboard", description = "Returns paginated leaderboard of friends + self, sorted by total score (or filtered by category)")
     @GetMapping
@@ -32,7 +35,6 @@ public class LeaderboardController {
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) StatDomain category,
             @AuthenticationPrincipal Jwt jwt) {
-
         UUID userId = UUID.fromString(jwt.getSubject());
         size = Math.min(size, 50);
         PageRequest pageable = PageRequest.of(page, size);
@@ -51,7 +53,6 @@ public class LeaderboardController {
     @GetMapping("/my-position")
     public ResponseEntity<UserLeaderboardPositionResponse> getMyPosition(
             @AuthenticationPrincipal Jwt jwt) {
-
         UUID userId = UUID.fromString(jwt.getSubject());
         return ResponseEntity.ok(leaderboardService.getUserPosition(userId));
     }

@@ -1,4 +1,4 @@
-package com.onnyth.onnythserver.dto;
+package com.onnyth.onnythserver.leaderboard.adapter.in.rest.dto;
 
 import lombok.Builder;
 

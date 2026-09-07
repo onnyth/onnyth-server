@@ -1,13 +1,18 @@
-package com.onnyth.onnythserver.service;
+package com.onnyth.onnythserver.leaderboard.application.usecase;
 
-import com.onnyth.onnythserver.dto.*;
-import com.onnyth.onnythserver.lifestats.application.port.*;
-import com.onnyth.onnythserver.user.application.exception.UserNotFoundException;
+import com.onnyth.onnythserver.leaderboard.adapter.in.rest.dto.CategoryLeaderboardEntryResponse;
+import com.onnyth.onnythserver.leaderboard.adapter.in.rest.dto.LeaderboardEntryResponse;
+import com.onnyth.onnythserver.leaderboard.adapter.in.rest.dto.LeaderboardResponse;
+import com.onnyth.onnythserver.leaderboard.adapter.in.rest.dto.UserLeaderboardPositionResponse;
+import com.onnyth.onnythserver.lifestats.application.port.UserCharismaRepository;
+import com.onnyth.onnythserver.lifestats.application.port.UserOccupationRepository;
+import com.onnyth.onnythserver.lifestats.application.port.UserPhysiqueRepository;
+import com.onnyth.onnythserver.lifestats.application.port.UserWealthRepository;
+import com.onnyth.onnythserver.lifestats.application.port.UserWisdomRepository;
 import com.onnyth.onnythserver.models.StatDomain;
-import com.onnyth.onnythserver.user.domain.model.User;
 import com.onnyth.onnythserver.friendship.application.port.FriendshipRepository;
 import com.onnyth.onnythserver.user.application.port.UserRepository;
-import com.onnyth.onnythserver.repository.*;
+import com.onnyth.onnythserver.user.domain.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -16,14 +21,20 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class LeaderboardService {
+public class LeaderboardUseCaseService {
 
     private final UserRepository userRepository;
     private final FriendshipRepository friendshipRepository;
@@ -32,19 +43,15 @@ public class LeaderboardService {
     private final UserPhysiqueRepository physiqueRepository;
     private final UserWisdomRepository wisdomRepository;
     private final UserCharismaRepository charismaRepository;
-    private final LeaderboardSnapshotService snapshotService;
-
-    // ─── Friends Leaderboard (overall) ────────────────────────────────────────
+    private final LeaderboardSnapshotUseCaseService snapshotService;
 
     @Transactional(readOnly = true)
     public LeaderboardResponse getFriendsLeaderboard(UUID userId, Pageable pageable) {
         List<UUID> participantIds = getParticipantIds(userId);
         List<User> allParticipants = new ArrayList<>(userRepository.findAllById(participantIds));
 
-        // Sort by totalScore DESC
         allParticipants.sort(Comparator.comparingLong(User::getTotalScore).reversed());
 
-        // Find current user position and score across ALL participants
         int currentUserPosition = 0;
         long currentUserScore = 0;
         for (int i = 0; i < allParticipants.size(); i++) {
@@ -55,11 +62,9 @@ public class LeaderboardService {
             }
         }
 
-        // Get position changes from snapshot
         Map<UUID, Integer> positionChanges = snapshotService.getPositionChanges(userId, participantIds);
         Set<UUID> snapshotUserIds = snapshotService.getSnapshotUserIds(userId);
 
-        // Apply pagination
         int start = (int) pageable.getOffset();
         int end = Math.min(start + pageable.getPageSize(), allParticipants.size());
         List<User> pageContent = start < allParticipants.size()
@@ -90,13 +95,11 @@ public class LeaderboardService {
 
         return LeaderboardResponse.builder()
                 .entries(entries)
-                .totalFriends(allParticipants.size() - 1) // exclude self
+                .totalFriends(allParticipants.size() - 1)
                 .currentUserPosition(currentUserPosition)
                 .currentUserScore(currentUserScore)
                 .build();
     }
-
-    // ─── User Position ────────────────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public UserLeaderboardPositionResponse getUserPosition(UUID userId) {
@@ -115,13 +118,12 @@ public class LeaderboardService {
             }
         }
 
-        // Find user ahead
         String userAheadUsername = null;
         UUID userAheadId = null;
         long pointsToNext = 0;
 
         if (position > 1) {
-            User ahead = allParticipants.get(position - 2); // 0-indexed, position-1 is self, position-2 is ahead
+            User ahead = allParticipants.get(position - 2);
             userAheadUsername = ahead.getUsername();
             userAheadId = ahead.getId();
             pointsToNext = ahead.getTotalScore() - myScore;
@@ -137,28 +139,22 @@ public class LeaderboardService {
                 .build();
     }
 
-    // ─── Category Leaderboard ─────────────────────────────────────────────────
-
     @Transactional(readOnly = true)
     public Page<CategoryLeaderboardEntryResponse> getLeaderboardByCategory(
             UUID userId, StatDomain domain, Pageable pageable) {
-
         List<UUID> participantIds = getParticipantIds(userId);
         List<User> allParticipants = userRepository.findAllById(participantIds);
         Map<UUID, User> usersById = allParticipants.stream()
                 .collect(Collectors.toMap(User::getId, Function.identity()));
 
-        // Get domain scores for all participants
         Map<UUID, Integer> scoreMap = new HashMap<>();
         for (UUID pid : participantIds) {
             scoreMap.put(pid, getDomainScore(pid, domain));
         }
 
-        // Build sortable list by score DESC
         List<Map.Entry<UUID, Integer>> ranked = new ArrayList<>(scoreMap.entrySet());
-        ranked.sort((a, b) -> Integer.compare(b.getValue(), a.getValue()));
+        ranked.sort((left, right) -> Integer.compare(right.getValue(), left.getValue()));
 
-        // Paginate
         int start = (int) pageable.getOffset();
         int end = Math.min(start + pageable.getPageSize(), ranked.size());
         List<Map.Entry<UUID, Integer>> pageContent = start < ranked.size()
@@ -169,8 +165,9 @@ public class LeaderboardService {
         for (int i = 0; i < pageContent.size(); i++) {
             Map.Entry<UUID, Integer> entry = pageContent.get(i);
             User user = usersById.get(entry.getKey());
-            if (user == null)
+            if (user == null) {
                 continue;
+            }
 
             entries.add(CategoryLeaderboardEntryResponse.builder()
                     .position(start + i + 1)
@@ -188,20 +185,18 @@ public class LeaderboardService {
         return new PageImpl<>(entries, pageable, ranked.size());
     }
 
-    // ─── Private helpers ──────────────────────────────────────────────────────
-
     private int getDomainScore(UUID userId, StatDomain domain) {
         return switch (domain) {
             case OCCUPATION -> occupationRepository.findByUserIdAndIsCurrentTrue(userId)
-                    .map(o -> o.getScore()).orElse(0);
+                    .map(occupation -> occupation.getScore()).orElse(0);
             case WEALTH -> wealthRepository.findByUserId(userId)
-                    .map(w -> w.getScore()).orElse(0);
+                    .map(wealth -> wealth.getScore()).orElse(0);
             case PHYSIQUE -> physiqueRepository.findByUserId(userId)
-                    .map(p -> p.getScore()).orElse(0);
+                    .map(physique -> physique.getScore()).orElse(0);
             case WISDOM -> wisdomRepository.findByUserId(userId)
-                    .map(w -> w.getScore()).orElse(0);
+                    .map(wisdom -> wisdom.getScore()).orElse(0);
             case CHARISMA -> charismaRepository.findByUserId(userId)
-                    .map(c -> c.getScore()).orElse(0);
+                    .map(charisma -> charisma.getScore()).orElse(0);
         };
     }
 

@@ -1,15 +1,16 @@
-package com.onnyth.onnythserver.unit.service;
-import com.onnyth.onnythserver.user.application.port.UserRepository;
+package com.onnyth.onnythserver.leaderboard.application.usecase;
 
-import com.onnyth.onnythserver.dto.LeaderboardResponse;
-import com.onnyth.onnythserver.lifestats.application.port.*;
-import com.onnyth.onnythserver.dto.UserLeaderboardPositionResponse;
+import com.onnyth.onnythserver.leaderboard.adapter.in.rest.dto.LeaderboardResponse;
+import com.onnyth.onnythserver.leaderboard.adapter.in.rest.dto.UserLeaderboardPositionResponse;
+import com.onnyth.onnythserver.lifestats.application.port.UserCharismaRepository;
+import com.onnyth.onnythserver.lifestats.application.port.UserOccupationRepository;
+import com.onnyth.onnythserver.lifestats.application.port.UserPhysiqueRepository;
+import com.onnyth.onnythserver.lifestats.application.port.UserWealthRepository;
+import com.onnyth.onnythserver.lifestats.application.port.UserWisdomRepository;
 import com.onnyth.onnythserver.ranking.domain.model.RankTier;
+import com.onnyth.onnythserver.user.application.port.UserRepository;
 import com.onnyth.onnythserver.user.domain.model.User;
 import com.onnyth.onnythserver.friendship.application.port.FriendshipRepository;
-import com.onnyth.onnythserver.repository.*;
-import com.onnyth.onnythserver.service.LeaderboardService;
-import com.onnyth.onnythserver.service.LeaderboardSnapshotService;
 import com.onnyth.onnythserver.support.TestDataFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -21,15 +22,18 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("LeaderboardService")
-class LeaderboardServiceTest {
+@DisplayName("LeaderboardUseCaseService")
+class LeaderboardUseCaseServiceTest {
 
     @Mock
     private UserRepository userRepository;
@@ -46,16 +50,18 @@ class LeaderboardServiceTest {
     @Mock
     private UserCharismaRepository charismaRepository;
     @Mock
-    private LeaderboardSnapshotService snapshotService;
+    private LeaderboardSnapshotUseCaseService snapshotService;
 
     @InjectMocks
-    private LeaderboardService leaderboardService;
+    private LeaderboardUseCaseService leaderboardService;
 
     private static final UUID USER_A = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final UUID USER_B = UUID.fromString("00000000-0000-0000-0000-000000000002");
     private static final UUID USER_C = UUID.fromString("00000000-0000-0000-0000-000000000003");
 
-    private User userA, userB, userC;
+    private User userA;
+    private User userB;
+    private User userC;
 
     @BeforeEach
     void setUp() {
@@ -84,7 +90,6 @@ class LeaderboardServiceTest {
             LeaderboardResponse response = leaderboardService.getFriendsLeaderboard(USER_A, PageRequest.of(0, 20));
 
             assertThat(response.entries()).hasSize(3);
-            // Charlie (700) first, Alice (500) second, Bob (300) third
             assertThat(response.entries().get(0).username()).isEqualTo("charlie");
             assertThat(response.entries().get(0).position()).isEqualTo(1);
             assertThat(response.entries().get(1).username()).isEqualTo("alice");
@@ -127,10 +132,10 @@ class LeaderboardServiceTest {
 
             UserLeaderboardPositionResponse response = leaderboardService.getUserPosition(USER_A);
 
-            assertThat(response.position()).isEqualTo(2); // Charlie is #1
+            assertThat(response.position()).isEqualTo(2);
             assertThat(response.totalParticipants()).isEqualTo(3);
             assertThat(response.score()).isEqualTo(500L);
-            assertThat(response.pointsToNextPosition()).isEqualTo(200L); // 700 - 500
+            assertThat(response.pointsToNextPosition()).isEqualTo(200L);
             assertThat(response.userAheadUsername()).isEqualTo("charlie");
             assertThat(response.userAheadId()).isEqualTo(USER_C);
         }
