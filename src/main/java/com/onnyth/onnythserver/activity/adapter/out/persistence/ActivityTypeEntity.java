@@ -1,17 +1,25 @@
-package com.onnyth.onnythserver.models;
+package com.onnyth.onnythserver.activity.adapter.out.persistence;
 
-import jakarta.persistence.*;
-import lombok.*;
+import com.onnyth.onnythserver.activity.domain.model.ActivityFrequency;
+import com.onnyth.onnythserver.models.StatDomain;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
 import java.util.UUID;
 
-/**
- * Defines an activity that users can log to earn XP.
- * Each activity type belongs to a stat domain and has an XP reward,
- * frequency, and cooldown period.
- */
 @Getter
 @Setter
 @Entity
@@ -19,7 +27,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "activity_types")
-public class ActivityType {
+public class ActivityTypeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

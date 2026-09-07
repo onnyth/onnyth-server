@@ -1,7 +1,6 @@
-package com.onnyth.onnythserver.exceptions;
+package com.onnyth.onnythserver.activity.application.exception;
 
 import com.onnyth.onnythserver.shared.exception.ApiException;
-
 import org.springframework.http.HttpStatus;
 
 public class ActivityCooldownException extends ApiException {

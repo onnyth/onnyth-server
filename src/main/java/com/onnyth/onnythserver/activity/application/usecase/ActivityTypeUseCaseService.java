@@ -1,10 +1,10 @@
-package com.onnyth.onnythserver.service;
+package com.onnyth.onnythserver.activity.application.usecase;
 
-import com.onnyth.onnythserver.dto.ActivityTypeResponse;
-import com.onnyth.onnythserver.exceptions.ActivityTypeNotFoundException;
-import com.onnyth.onnythserver.models.ActivityType;
+import com.onnyth.onnythserver.activity.adapter.in.rest.dto.ActivityTypeResponse;
+import com.onnyth.onnythserver.activity.application.exception.ActivityTypeNotFoundException;
+import com.onnyth.onnythserver.activity.application.port.ActivityTypeRepository;
+import com.onnyth.onnythserver.activity.domain.model.ActivityType;
 import com.onnyth.onnythserver.models.StatDomain;
-import com.onnyth.onnythserver.repository.ActivityTypeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,7 +16,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ActivityTypeService {
+public class ActivityTypeUseCaseService {
 
     private final ActivityTypeRepository activityTypeRepository;
 

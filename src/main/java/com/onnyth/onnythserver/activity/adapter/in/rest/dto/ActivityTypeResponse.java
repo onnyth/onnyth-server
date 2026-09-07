@@ -1,6 +1,6 @@
-package com.onnyth.onnythserver.dto;
+package com.onnyth.onnythserver.activity.adapter.in.rest.dto;
 
-import com.onnyth.onnythserver.models.ActivityType;
+import com.onnyth.onnythserver.activity.domain.model.ActivityType;
 import com.onnyth.onnythserver.models.StatDomain;
 import lombok.Builder;
 

@@ -1,14 +1,14 @@
-package com.onnyth.onnythserver.controller;
+package com.onnyth.onnythserver.activity.adapter.in.rest;
 
-import com.onnyth.onnythserver.dto.ActivityLogResponse;
-import com.onnyth.onnythserver.dto.ActivityStatusResponse;
-import com.onnyth.onnythserver.dto.ActivityTypeResponse;
-import com.onnyth.onnythserver.dto.LogActivityRequest;
-import com.onnyth.onnythserver.models.StatDomain;
-import com.onnyth.onnythserver.service.ActivityService;
-import com.onnyth.onnythserver.service.ActivityTypeService;
+import com.onnyth.onnythserver.activity.adapter.in.rest.dto.ActivityLogResponse;
+import com.onnyth.onnythserver.activity.adapter.in.rest.dto.ActivityStatusResponse;
+import com.onnyth.onnythserver.activity.adapter.in.rest.dto.ActivityTypeResponse;
+import com.onnyth.onnythserver.activity.adapter.in.rest.dto.LogActivityRequest;
+import com.onnyth.onnythserver.activity.application.usecase.ActivityTypeUseCaseService;
+import com.onnyth.onnythserver.activity.application.usecase.ActivityUseCaseService;
 import com.onnyth.onnythserver.leveling.adapter.in.rest.dto.LevelProgressResponse;
 import com.onnyth.onnythserver.leveling.application.usecase.LevelUseCaseService;
+import com.onnyth.onnythserver.models.StatDomain;
 import com.onnyth.onnythserver.streak.adapter.in.rest.dto.StreakResponse;
 import com.onnyth.onnythserver.streak.application.usecase.StreakUseCaseService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,7 +22,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.UUID;
@@ -33,8 +38,8 @@ import java.util.UUID;
 @Tag(name = "Activities", description = "Activity logging, types, history, and status")
 public class ActivityController {
 
-    private final ActivityService activityService;
-    private final ActivityTypeService activityTypeService;
+    private final ActivityUseCaseService activityService;
+    private final ActivityTypeUseCaseService activityTypeService;
     private final LevelUseCaseService levelService;
     private final StreakUseCaseService streakService;
 

@@ -1,18 +1,18 @@
-package com.onnyth.onnythserver.service;
+package com.onnyth.onnythserver.activity.application.usecase;
 
-import com.onnyth.onnythserver.dto.ActivityLogResponse;
-import com.onnyth.onnythserver.dto.ActivityStatusResponse;
-import com.onnyth.onnythserver.dto.ActivityTypeResponse;
-import com.onnyth.onnythserver.exceptions.ActivityCooldownException;
-import com.onnyth.onnythserver.user.application.exception.UserNotFoundException;
-import com.onnyth.onnythserver.models.ActivityLog;
-import com.onnyth.onnythserver.models.ActivityType;
-import com.onnyth.onnythserver.user.domain.model.User;
-import com.onnyth.onnythserver.repository.ActivityLogRepository;
-import com.onnyth.onnythserver.repository.ActivityTypeRepository;
-import com.onnyth.onnythserver.user.application.port.UserRepository;
+import com.onnyth.onnythserver.activity.adapter.in.rest.dto.ActivityLogResponse;
+import com.onnyth.onnythserver.activity.adapter.in.rest.dto.ActivityStatusResponse;
+import com.onnyth.onnythserver.activity.adapter.in.rest.dto.ActivityTypeResponse;
+import com.onnyth.onnythserver.activity.application.exception.ActivityCooldownException;
+import com.onnyth.onnythserver.activity.application.port.ActivityLogRepository;
+import com.onnyth.onnythserver.activity.application.port.ActivityTypeRepository;
+import com.onnyth.onnythserver.activity.domain.model.ActivityLog;
+import com.onnyth.onnythserver.activity.domain.model.ActivityType;
 import com.onnyth.onnythserver.leveling.application.usecase.LevelUseCaseService;
 import com.onnyth.onnythserver.streak.application.usecase.StreakUseCaseService;
+import com.onnyth.onnythserver.user.application.exception.UserNotFoundException;
+import com.onnyth.onnythserver.user.application.port.UserRepository;
+import com.onnyth.onnythserver.user.domain.model.User;
 import com.onnyth.onnythserver.xp.application.usecase.XpUseCaseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,12 +34,12 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ActivityService {
+public class ActivityUseCaseService {
 
     private final ActivityLogRepository activityLogRepository;
     private final ActivityTypeRepository activityTypeRepository;
     private final UserRepository userRepository;
-    private final ActivityTypeService activityTypeService;
+    private final ActivityTypeUseCaseService activityTypeUseCaseService;
     private final XpUseCaseService xpService;
     private final LevelUseCaseService levelService;
     private final StreakUseCaseService streakService;
@@ -49,14 +49,11 @@ public class ActivityService {
      */
     @Transactional
     public ActivityLogResponse logActivity(UUID userId, UUID activityTypeId) {
-        // Validate user
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId.toString()));
 
-        // Validate activity type
-        ActivityType activityType = activityTypeService.getActiveActivityType(activityTypeId);
+        ActivityType activityType = activityTypeUseCaseService.getActiveActivityType(activityTypeId);
 
-        // Check cooldown
         Instant cooldownThreshold = Instant.now().minus(activityType.getCooldownHours(), ChronoUnit.HOURS);
         activityLogRepository.findFirstByUserIdAndActivityTypeIdAndLoggedAtAfterOrderByLoggedAtDesc(
                 userId, activityTypeId, cooldownThreshold
@@ -66,22 +63,16 @@ public class ActivityService {
                     "Activity '" + activityType.getName() + "' is on cooldown. Available at: " + availableAt);
         });
 
-        // Persist activity log
         ActivityLog activityLog = ActivityLog.builder()
                 .userId(userId)
                 .activityTypeId(activityTypeId)
                 .xpEarned(activityType.getXpReward())
                 .loggedAt(Instant.now())
                 .build();
-        activityLogRepository.save(activityLog);
+        activityLog = activityLogRepository.save(activityLog);
 
-        // Award XP (triggers level check via event)
         long newTotalXp = xpService.awardXp(userId, activityType.getXpReward());
-
-        // Refresh user to get updated level
         user = userRepository.findById(userId).orElse(user);
-
-        // Update streak
         boolean streakUpdated = streakService.recordActivity(userId);
 
         log.info("Activity logged: userId={}, type={}, xp={}", userId, activityType.getName(), activityType.getXpReward());
@@ -126,17 +117,15 @@ public class ActivityService {
 
         List<ActivityLog> todayLogs = activityLogRepository.findAllByUserIdAndLoggedAtBetween(userId, startOfDay, endOfDay);
 
-        // Get activity types for today's logs
         Map<UUID, ActivityType> typeMap = activityTypeRepository.findAllByIsActiveTrue().stream()
-                .collect(Collectors.toMap(ActivityType::getId, t -> t));
+                .collect(Collectors.toMap(ActivityType::getId, type -> type));
 
         List<ActivityTypeResponse> loggedToday = todayLogs.stream()
-                .map(l -> typeMap.get(l.getActivityTypeId()))
+                .map(log -> typeMap.get(log.getActivityTypeId()))
                 .filter(java.util.Objects::nonNull)
                 .map(ActivityTypeResponse::fromEntity)
                 .toList();
 
-        // Calculate cooldowns
         List<ActivityStatusResponse.CooldownEntry> cooldowns = new ArrayList<>();
         for (ActivityLog todayLog : todayLogs) {
             ActivityType type = typeMap.get(todayLog.getActivityTypeId());

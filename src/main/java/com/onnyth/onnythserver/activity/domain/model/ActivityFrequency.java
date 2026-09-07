@@ -1,4 +1,4 @@
-package com.onnyth.onnythserver.models;
+package com.onnyth.onnythserver.activity.domain.model;
 
 /**
  * Frequency at which an activity can be logged.
