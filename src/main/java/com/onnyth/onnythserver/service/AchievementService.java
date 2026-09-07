@@ -9,7 +9,7 @@ import com.onnyth.onnythserver.models.AchievementCategory;
 import com.onnyth.onnythserver.user.domain.model.User;
 import com.onnyth.onnythserver.models.UserAchievement;
 import com.onnyth.onnythserver.repository.AchievementRepository;
-import com.onnyth.onnythserver.repository.FriendshipRepository;
+import com.onnyth.onnythserver.friendship.application.port.FriendshipRepository;
 import com.onnyth.onnythserver.repository.UserAchievementRepository;
 import com.onnyth.onnythserver.user.application.port.UserRepository;
 import lombok.RequiredArgsConstructor;

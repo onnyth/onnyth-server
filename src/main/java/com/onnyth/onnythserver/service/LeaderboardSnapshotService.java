@@ -5,6 +5,7 @@ import com.onnyth.onnythserver.models.LeaderboardSnapshot;
 import com.onnyth.onnythserver.models.StatDomain;
 import com.onnyth.onnythserver.user.domain.model.User;
 import com.onnyth.onnythserver.user.application.port.UserRepository;
+import com.onnyth.onnythserver.friendship.application.port.FriendshipRepository;
 import com.onnyth.onnythserver.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

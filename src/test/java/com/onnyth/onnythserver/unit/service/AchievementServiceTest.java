@@ -8,7 +8,7 @@ import com.onnyth.onnythserver.exceptions.BadgeNotFoundException;
 import com.onnyth.onnythserver.exceptions.BadgeNotUnlockedException;
 import com.onnyth.onnythserver.models.*;
 import com.onnyth.onnythserver.repository.AchievementRepository;
-import com.onnyth.onnythserver.repository.FriendshipRepository;
+import com.onnyth.onnythserver.friendship.application.port.FriendshipRepository;
 import com.onnyth.onnythserver.repository.UserAchievementRepository;
 import com.onnyth.onnythserver.user.application.port.UserRepository;
 import com.onnyth.onnythserver.service.AchievementProgressCalculator;

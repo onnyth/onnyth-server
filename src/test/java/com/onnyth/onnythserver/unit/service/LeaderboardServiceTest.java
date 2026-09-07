@@ -6,6 +6,7 @@ import com.onnyth.onnythserver.lifestats.application.port.*;
 import com.onnyth.onnythserver.dto.UserLeaderboardPositionResponse;
 import com.onnyth.onnythserver.ranking.domain.model.RankTier;
 import com.onnyth.onnythserver.user.domain.model.User;
+import com.onnyth.onnythserver.friendship.application.port.FriendshipRepository;
 import com.onnyth.onnythserver.repository.*;
 import com.onnyth.onnythserver.service.LeaderboardService;
 import com.onnyth.onnythserver.service.LeaderboardSnapshotService;

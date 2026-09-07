@@ -7,6 +7,7 @@ import com.onnyth.onnythserver.lifestats.application.port.*;
 import com.onnyth.onnythserver.lifestats.domain.model.*;
 import com.onnyth.onnythserver.models.*;
 import com.onnyth.onnythserver.scoring.application.port.ScoreHistoryRepository;
+import com.onnyth.onnythserver.friendship.application.port.FollowRepository;
 import com.onnyth.onnythserver.repository.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

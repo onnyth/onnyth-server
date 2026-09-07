@@ -1,10 +1,10 @@
 package com.onnyth.onnythserver.service;
 
 import com.onnyth.onnythserver.dto.UserSearchResponse;
-import com.onnyth.onnythserver.models.FriendRequestStatus;
+import com.onnyth.onnythserver.friendship.domain.model.FriendRequestStatus;
 import com.onnyth.onnythserver.user.domain.model.User;
-import com.onnyth.onnythserver.repository.FriendRequestRepository;
-import com.onnyth.onnythserver.repository.FriendshipRepository;
+import com.onnyth.onnythserver.friendship.application.port.FriendRequestRepository;
+import com.onnyth.onnythserver.friendship.application.port.FriendshipRepository;
 import com.onnyth.onnythserver.user.application.port.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
