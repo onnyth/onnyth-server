@@ -1,4 +1,4 @@
-package com.onnyth.onnythserver.models;
+package com.onnyth.onnythserver.feed.domain.model;
 
 /**
  * Types of events that appear in the activity feed.

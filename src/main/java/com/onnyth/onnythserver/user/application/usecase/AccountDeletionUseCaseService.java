@@ -2,12 +2,12 @@ package com.onnyth.onnythserver.user.application.usecase;
 
 import com.onnyth.onnythserver.activity.application.port.ActivityLogRepository;
 import com.onnyth.onnythserver.achievement.application.port.UserAchievementRepository;
+import com.onnyth.onnythserver.feed.application.port.FeedEventRepository;
 import com.onnyth.onnythserver.friendship.application.port.FriendRequestRepository;
 import com.onnyth.onnythserver.friendship.application.port.FriendshipRepository;
 import com.onnyth.onnythserver.lifestats.application.port.*;
 import com.onnyth.onnythserver.profile.application.port.ProfileVoteRepository;
 import com.onnyth.onnythserver.quest.application.port.QuestCompletionRepository;
-import com.onnyth.onnythserver.repository.FeedEventRepository;
 import com.onnyth.onnythserver.repository.RegistrationDraftRepository;
 import com.onnyth.onnythserver.scoring.application.port.ScoreHistoryRepository;
 import com.onnyth.onnythserver.store.application.port.UserCosmeticRepository;

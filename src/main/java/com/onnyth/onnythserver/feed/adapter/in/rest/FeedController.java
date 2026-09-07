@@ -1,7 +1,7 @@
-package com.onnyth.onnythserver.controller;
+package com.onnyth.onnythserver.feed.adapter.in.rest;
 
-import com.onnyth.onnythserver.dto.FeedEventResponse;
-import com.onnyth.onnythserver.service.FeedService;
+import com.onnyth.onnythserver.feed.adapter.in.rest.dto.FeedEventResponse;
+import com.onnyth.onnythserver.feed.application.usecase.FeedUseCaseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -22,7 +22,7 @@ import java.util.UUID;
 @Tag(name = "Feed", description = "Social activity feed — see what friends are doing")
 public class FeedController {
 
-    private final FeedService feedService;
+    private final FeedUseCaseService feedService;
 
     @Operation(summary = "Get friend feed", description = "Returns paginated feed of friend activities, level-ups, achievements, and streaks")
     @ApiResponses(value = {

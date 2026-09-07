@@ -1,6 +1,6 @@
-package com.onnyth.onnythserver.dto;
+package com.onnyth.onnythserver.feed.adapter.in.rest.dto;
 
-import com.onnyth.onnythserver.models.FeedEventType;
+import com.onnyth.onnythserver.feed.domain.model.FeedEventType;
 import lombok.Builder;
 
 import java.time.Instant;

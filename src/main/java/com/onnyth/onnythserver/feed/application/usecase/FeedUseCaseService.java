@@ -1,11 +1,11 @@
-package com.onnyth.onnythserver.service;
+package com.onnyth.onnythserver.feed.application.usecase;
 
-import com.onnyth.onnythserver.dto.FeedEventResponse;
-import com.onnyth.onnythserver.models.FeedEvent;
-import com.onnyth.onnythserver.models.FeedEventType;
-import com.onnyth.onnythserver.user.domain.model.User;
-import com.onnyth.onnythserver.repository.FeedEventRepository;
+import com.onnyth.onnythserver.feed.adapter.in.rest.dto.FeedEventResponse;
+import com.onnyth.onnythserver.feed.application.port.FeedEventRepository;
+import com.onnyth.onnythserver.feed.domain.model.FeedEvent;
+import com.onnyth.onnythserver.feed.domain.model.FeedEventType;
 import com.onnyth.onnythserver.user.application.port.UserRepository;
+import com.onnyth.onnythserver.user.domain.model.User;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class FeedService {
+public class FeedUseCaseService {
 
     private final FeedEventRepository feedEventRepository;
     private final UserRepository userRepository;

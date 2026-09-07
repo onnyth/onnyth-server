@@ -1,7 +1,19 @@
-package com.onnyth.onnythserver.models;
+package com.onnyth.onnythserver.feed.adapter.out.persistence;
 
-import jakarta.persistence.*;
-import lombok.*;
+import com.onnyth.onnythserver.feed.domain.model.FeedEventType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -21,7 +33,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "feed_events")
-public class FeedEvent {
+public class FeedEventEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
