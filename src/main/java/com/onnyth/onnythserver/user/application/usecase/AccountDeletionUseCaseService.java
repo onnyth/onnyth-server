@@ -8,7 +8,7 @@ import com.onnyth.onnythserver.friendship.application.port.FriendRequestReposito
 import com.onnyth.onnythserver.friendship.application.port.FriendshipRepository;
 import com.onnyth.onnythserver.repository.QuestCompletionRepository;
 import com.onnyth.onnythserver.repository.RegistrationDraftRepository;
-import com.onnyth.onnythserver.repository.UserAchievementRepository;
+import com.onnyth.onnythserver.achievement.application.port.UserAchievementRepository;
 import com.onnyth.onnythserver.repository.UserCosmeticRepository;
 import com.onnyth.onnythserver.scoring.application.port.ScoreHistoryRepository;
 import com.onnyth.onnythserver.streak.application.port.UserStreakRepository;

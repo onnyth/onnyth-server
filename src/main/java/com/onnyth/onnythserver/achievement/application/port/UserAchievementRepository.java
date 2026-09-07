@@ -1,13 +1,14 @@
-package com.onnyth.onnythserver.repository;
+package com.onnyth.onnythserver.achievement.application.port;
 
-import com.onnyth.onnythserver.models.UserAchievement;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.onnyth.onnythserver.achievement.domain.model.UserAchievement;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface UserAchievementRepository extends JpaRepository<UserAchievement, UUID> {
+public interface UserAchievementRepository {
+
+    UserAchievement save(UserAchievement userAchievement);
 
     List<UserAchievement> findAllByUserId(UUID userId);
 

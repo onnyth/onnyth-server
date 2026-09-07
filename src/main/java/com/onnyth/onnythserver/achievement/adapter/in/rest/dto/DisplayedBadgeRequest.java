@@ -1,4 +1,4 @@
-package com.onnyth.onnythserver.dto;
+package com.onnyth.onnythserver.achievement.adapter.in.rest.dto;
 
 import jakarta.validation.constraints.Size;
 

@@ -1,9 +1,10 @@
-package com.onnyth.onnythserver.service;
+package com.onnyth.onnythserver.achievement.application.usecase;
 
-import com.onnyth.onnythserver.models.Achievement;
-import com.onnyth.onnythserver.models.UserAchievement;
-import com.onnyth.onnythserver.repository.AchievementRepository;
-import com.onnyth.onnythserver.repository.UserAchievementRepository;
+import com.onnyth.onnythserver.achievement.application.AchievementProgressCalculator;
+import com.onnyth.onnythserver.achievement.application.port.AchievementRepository;
+import com.onnyth.onnythserver.achievement.application.port.UserAchievementRepository;
+import com.onnyth.onnythserver.achievement.domain.model.Achievement;
+import com.onnyth.onnythserver.achievement.domain.model.UserAchievement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,7 +22,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class AchievementUnlockService {
+public class AchievementUnlockUseCaseService {
 
     private final AchievementRepository achievementRepository;
     private final UserAchievementRepository userAchievementRepository;
@@ -35,7 +36,6 @@ public class AchievementUnlockService {
     public List<Achievement> checkAndUnlockAchievements(UUID userId) {
         List<Achievement> allActive = achievementRepository.findAllByIsActiveTrue();
 
-        // Get already-unlocked achievement IDs
         Set<UUID> unlockedIds = userAchievementRepository.findAllByUserId(userId).stream()
                 .map(UserAchievement::getAchievementId)
                 .collect(Collectors.toSet());
@@ -43,16 +43,17 @@ public class AchievementUnlockService {
         List<Achievement> newlyUnlocked = new ArrayList<>();
 
         for (Achievement achievement : allActive) {
-            if (unlockedIds.contains(achievement.getId()))
+            if (unlockedIds.contains(achievement.getId())) {
                 continue;
+            }
 
             int progress = progressCalculator.calculateProgress(userId, achievement);
             if (progress >= 100) {
-                UserAchievement ua = UserAchievement.builder()
+                UserAchievement userAchievement = UserAchievement.builder()
                         .userId(userId)
                         .achievementId(achievement.getId())
                         .build();
-                userAchievementRepository.save(ua);
+                userAchievementRepository.save(userAchievement);
                 newlyUnlocked.add(achievement);
                 log.info("Achievement unlocked: {} for user {}", achievement.getCode(), userId);
             }

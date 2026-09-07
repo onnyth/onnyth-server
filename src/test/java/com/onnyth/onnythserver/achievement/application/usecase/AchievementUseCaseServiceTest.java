@@ -1,19 +1,19 @@
-package com.onnyth.onnythserver.unit.service;
-import com.onnyth.onnythserver.user.domain.model.User;
+package com.onnyth.onnythserver.achievement.application.usecase;
 
-import com.onnyth.onnythserver.dto.AchievementResponse;
-import com.onnyth.onnythserver.dto.AchievementStatsResponse;
-import com.onnyth.onnythserver.dto.DisplayedBadgeResponse;
-import com.onnyth.onnythserver.exceptions.BadgeNotFoundException;
-import com.onnyth.onnythserver.exceptions.BadgeNotUnlockedException;
-import com.onnyth.onnythserver.models.*;
-import com.onnyth.onnythserver.repository.AchievementRepository;
+import com.onnyth.onnythserver.achievement.adapter.in.rest.dto.AchievementResponse;
+import com.onnyth.onnythserver.achievement.adapter.in.rest.dto.AchievementStatsResponse;
+import com.onnyth.onnythserver.achievement.application.AchievementProgressCalculator;
+import com.onnyth.onnythserver.achievement.application.exception.BadgeNotFoundException;
+import com.onnyth.onnythserver.achievement.application.exception.BadgeNotUnlockedException;
+import com.onnyth.onnythserver.achievement.application.port.AchievementRepository;
+import com.onnyth.onnythserver.achievement.application.port.UserAchievementRepository;
+import com.onnyth.onnythserver.achievement.domain.model.Achievement;
+import com.onnyth.onnythserver.achievement.domain.model.AchievementCategory;
+import com.onnyth.onnythserver.achievement.domain.model.UserAchievement;
 import com.onnyth.onnythserver.friendship.application.port.FriendshipRepository;
-import com.onnyth.onnythserver.repository.UserAchievementRepository;
-import com.onnyth.onnythserver.user.application.port.UserRepository;
-import com.onnyth.onnythserver.service.AchievementProgressCalculator;
-import com.onnyth.onnythserver.service.AchievementService;
 import com.onnyth.onnythserver.support.TestDataFactory;
+import com.onnyth.onnythserver.user.application.port.UserRepository;
+import com.onnyth.onnythserver.user.domain.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -24,17 +24,17 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("AchievementService")
-class AchievementServiceTest {
+@DisplayName("AchievementUseCaseService")
+class AchievementUseCaseServiceTest {
 
     @Mock
     private AchievementRepository achievementRepository;
@@ -48,13 +48,14 @@ class AchievementServiceTest {
     private AchievementProgressCalculator progressCalculator;
 
     @InjectMocks
-    private AchievementService achievementService;
+    private AchievementUseCaseService achievementService;
 
     private static final UUID USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final UUID ACH_1 = UUID.fromString("00000000-0000-0000-0000-000000000010");
     private static final UUID ACH_2 = UUID.fromString("00000000-0000-0000-0000-000000000020");
 
-    private Achievement achievement1, achievement2;
+    private Achievement achievement1;
+    private Achievement achievement2;
 
     @BeforeEach
     void setUp() {
@@ -73,19 +74,19 @@ class AchievementServiceTest {
         @DisplayName("returns all achievements with unlock status and progress")
         void returnsAll() {
             when(achievementRepository.findAllByIsActiveTrue()).thenReturn(List.of(achievement1, achievement2));
-            UserAchievement ua = UserAchievement.builder().userId(USER_ID).achievementId(ACH_1)
+            UserAchievement userAchievement = UserAchievement.builder().userId(USER_ID).achievementId(ACH_1)
                     .unlockedAt(Instant.now()).build();
-            when(userAchievementRepository.findAllByUserId(USER_ID)).thenReturn(List.of(ua));
+            when(userAchievementRepository.findAllByUserId(USER_ID)).thenReturn(List.of(userAchievement));
             when(progressCalculator.calculateProgress(USER_ID, achievement2)).thenReturn(50);
 
             List<AchievementResponse> result = achievementService.getAllAchievements(USER_ID);
 
             assertThat(result).hasSize(2);
-            AchievementResponse unlocked = result.stream().filter(r -> r.id().equals(ACH_1)).findFirst().orElseThrow();
+            AchievementResponse unlocked = result.stream().filter(response -> response.id().equals(ACH_1)).findFirst().orElseThrow();
             assertThat(unlocked.isUnlocked()).isTrue();
             assertThat(unlocked.progress()).isEqualTo(100);
 
-            AchievementResponse locked = result.stream().filter(r -> r.id().equals(ACH_2)).findFirst().orElseThrow();
+            AchievementResponse locked = result.stream().filter(response -> response.id().equals(ACH_2)).findFirst().orElseThrow();
             assertThat(locked.isUnlocked()).isFalse();
             assertThat(locked.progress()).isEqualTo(50);
         }
@@ -98,15 +99,15 @@ class AchievementServiceTest {
         @DisplayName("returns correct totals and earned points")
         void returnsStats() {
             when(achievementRepository.findAllByIsActiveTrue()).thenReturn(List.of(achievement1, achievement2));
-            UserAchievement ua = UserAchievement.builder().userId(USER_ID).achievementId(ACH_1).build();
-            when(userAchievementRepository.findAllByUserId(USER_ID)).thenReturn(List.of(ua));
+            UserAchievement userAchievement = UserAchievement.builder().userId(USER_ID).achievementId(ACH_1).build();
+            when(userAchievementRepository.findAllByUserId(USER_ID)).thenReturn(List.of(userAchievement));
 
             AchievementStatsResponse stats = achievementService.getAchievementStats(USER_ID);
 
             assertThat(stats.totalAchievements()).isEqualTo(2);
             assertThat(stats.unlockedCount()).isEqualTo(1);
-            assertThat(stats.totalPoints()).isEqualTo(15); // 10 + 5
-            assertThat(stats.earnedPoints()).isEqualTo(10); // only ACH_1 unlocked
+            assertThat(stats.totalPoints()).isEqualTo(15);
+            assertThat(stats.earnedPoints()).isEqualTo(10);
         }
     }
 

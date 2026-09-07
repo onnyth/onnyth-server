@@ -1,9 +1,13 @@
-package com.onnyth.onnythserver.service;
+package com.onnyth.onnythserver.achievement.application;
 
-import com.onnyth.onnythserver.lifestats.application.port.*;
-import com.onnyth.onnythserver.models.Achievement;
-import com.onnyth.onnythserver.models.StatDomain;
+import com.onnyth.onnythserver.achievement.domain.model.Achievement;
 import com.onnyth.onnythserver.friendship.application.port.FriendshipRepository;
+import com.onnyth.onnythserver.lifestats.application.port.UserCharismaRepository;
+import com.onnyth.onnythserver.lifestats.application.port.UserOccupationRepository;
+import com.onnyth.onnythserver.lifestats.application.port.UserPhysiqueRepository;
+import com.onnyth.onnythserver.lifestats.application.port.UserWealthRepository;
+import com.onnyth.onnythserver.lifestats.application.port.UserWisdomRepository;
+import com.onnyth.onnythserver.models.StatDomain;
 import com.onnyth.onnythserver.user.application.port.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +50,7 @@ public class AchievementProgressCalculator {
             case "RANK_TIER" -> calculateRankTierProgress(userId, threshold);
             case "PROFILE_COMPLETE" -> calculateProfileCompleteProgress(userId);
             case "ANY_STAT_INPUT" -> calculateAnyStatInputProgress(userId);
-            case "UPDATE_STREAK" -> 0; // Placeholder for future streak tracking
+            case "UPDATE_STREAK" -> 0;
             default -> {
                 log.warn("Unknown requirement type: {}", reqType);
                 yield 0;
@@ -68,21 +72,21 @@ public class AchievementProgressCalculator {
     private int getDomainScore(UUID userId, StatDomain domain) {
         return switch (domain) {
             case OCCUPATION -> occupationRepository.findByUserIdAndIsCurrentTrue(userId)
-                    .map(o -> o.getScore()).orElse(0);
+                    .map(occupation -> occupation.getScore()).orElse(0);
             case WEALTH -> wealthRepository.findByUserId(userId)
-                    .map(w -> w.getScore()).orElse(0);
+                    .map(wealth -> wealth.getScore()).orElse(0);
             case PHYSIQUE -> physiqueRepository.findByUserId(userId)
-                    .map(p -> p.getScore()).orElse(0);
+                    .map(physique -> physique.getScore()).orElse(0);
             case WISDOM -> wisdomRepository.findByUserId(userId)
-                    .map(w -> w.getScore()).orElse(0);
+                    .map(wisdom -> wisdom.getScore()).orElse(0);
             case CHARISMA -> charismaRepository.findByUserId(userId)
-                    .map(c -> c.getScore()).orElse(0);
+                    .map(charisma -> charisma.getScore()).orElse(0);
         };
     }
 
     private int calculateAllDomainsMinProgress(UUID userId, int threshold) {
         int domainsMet = 0;
-        int totalDomains = StatDomain.values().length; // 5
+        int totalDomains = StatDomain.values().length;
 
         for (StatDomain domain : StatDomain.values()) {
             if (getDomainScore(userId, domain) >= threshold) {
@@ -120,7 +124,6 @@ public class AchievementProgressCalculator {
     }
 
     private int calculateAnyStatInputProgress(UUID userId) {
-        // Check if user has any domain stat populated
         for (StatDomain domain : StatDomain.values()) {
             if (getDomainScore(userId, domain) > 0) {
                 return 100;

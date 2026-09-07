@@ -22,7 +22,7 @@ import com.onnyth.onnythserver.lifestats.application.port.UserWisdomRepository;
 import com.onnyth.onnythserver.models.StatDomain;
 import com.onnyth.onnythserver.ranking.adapter.in.rest.dto.RankProgressResponse;
 import com.onnyth.onnythserver.ranking.application.usecase.RankUseCaseService;
-import com.onnyth.onnythserver.service.AchievementUnlockService;
+import com.onnyth.onnythserver.achievement.application.usecase.AchievementUnlockUseCaseService;
 import com.onnyth.onnythserver.user.application.exception.UserNotFoundException;
 import com.onnyth.onnythserver.user.application.port.UserRepository;
 import com.onnyth.onnythserver.user.domain.model.User;
@@ -50,7 +50,7 @@ public class FriendshipUseCaseService {
     private final FriendshipRepository friendshipRepository;
     private final UserRepository userRepository;
     private final RankUseCaseService rankService;
-    private final AchievementUnlockService achievementUnlockService;
+    private final AchievementUnlockUseCaseService achievementUnlockService;
     private final UserOccupationRepository occupationRepository;
     private final UserWealthRepository wealthRepository;
     private final UserPhysiqueRepository physiqueRepository;

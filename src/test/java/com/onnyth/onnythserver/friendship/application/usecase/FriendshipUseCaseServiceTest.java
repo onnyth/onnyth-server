@@ -20,7 +20,7 @@ import com.onnyth.onnythserver.lifestats.application.port.UserWisdomRepository;
 import com.onnyth.onnythserver.ranking.adapter.in.rest.dto.RankProgressResponse;
 import com.onnyth.onnythserver.ranking.application.usecase.RankUseCaseService;
 import com.onnyth.onnythserver.ranking.domain.model.RankTier;
-import com.onnyth.onnythserver.service.AchievementUnlockService;
+import com.onnyth.onnythserver.achievement.application.usecase.AchievementUnlockUseCaseService;
 import com.onnyth.onnythserver.support.TestDataFactory;
 import com.onnyth.onnythserver.user.application.port.UserRepository;
 import com.onnyth.onnythserver.user.domain.model.User;
@@ -61,7 +61,7 @@ class FriendshipUseCaseServiceTest {
     @Mock
     private RankUseCaseService rankService;
     @Mock
-    private AchievementUnlockService achievementUnlockService;
+    private AchievementUnlockUseCaseService achievementUnlockService;
     @Mock
     private UserOccupationRepository occupationRepository;
     @Mock

@@ -1,38 +1,44 @@
-package com.onnyth.onnythserver.service;
+package com.onnyth.onnythserver.achievement.application.usecase;
 
-import com.onnyth.onnythserver.dto.*;
-import com.onnyth.onnythserver.exceptions.BadgeNotFoundException;
-import com.onnyth.onnythserver.exceptions.BadgeNotUnlockedException;
-import com.onnyth.onnythserver.user.application.exception.UserNotFoundException;
-import com.onnyth.onnythserver.models.Achievement;
-import com.onnyth.onnythserver.models.AchievementCategory;
-import com.onnyth.onnythserver.user.domain.model.User;
-import com.onnyth.onnythserver.models.UserAchievement;
-import com.onnyth.onnythserver.repository.AchievementRepository;
+import com.onnyth.onnythserver.achievement.adapter.in.rest.dto.AchievementResponse;
+import com.onnyth.onnythserver.achievement.adapter.in.rest.dto.AchievementStatsResponse;
+import com.onnyth.onnythserver.achievement.adapter.in.rest.dto.DisplayedBadgeResponse;
+import com.onnyth.onnythserver.achievement.application.AchievementProgressCalculator;
+import com.onnyth.onnythserver.achievement.application.exception.BadgeNotFoundException;
+import com.onnyth.onnythserver.achievement.application.exception.BadgeNotUnlockedException;
+import com.onnyth.onnythserver.achievement.application.port.AchievementRepository;
+import com.onnyth.onnythserver.achievement.application.port.UserAchievementRepository;
+import com.onnyth.onnythserver.achievement.domain.model.Achievement;
+import com.onnyth.onnythserver.achievement.domain.model.AchievementCategory;
+import com.onnyth.onnythserver.achievement.domain.model.UserAchievement;
 import com.onnyth.onnythserver.friendship.application.port.FriendshipRepository;
-import com.onnyth.onnythserver.repository.UserAchievementRepository;
+import com.onnyth.onnythserver.user.application.exception.UserNotFoundException;
 import com.onnyth.onnythserver.user.application.port.UserRepository;
+import com.onnyth.onnythserver.user.domain.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class AchievementService {
+public class AchievementUseCaseService {
 
     private final AchievementRepository achievementRepository;
     private final UserAchievementRepository userAchievementRepository;
     private final UserRepository userRepository;
     private final FriendshipRepository friendshipRepository;
     private final AchievementProgressCalculator progressCalculator;
-
-    // ─── Catalog ──────────────────────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public List<AchievementResponse> getAllAchievements(UUID userId) {
@@ -68,8 +74,6 @@ public class AchievementService {
                 .toList();
     }
 
-    // ─── Stats ────────────────────────────────────────────────────────────────
-
     @Transactional(readOnly = true)
     public AchievementStatsResponse getAchievementStats(UUID userId) {
         List<Achievement> allActive = achievementRepository.findAllByIsActiveTrue();
@@ -91,16 +95,15 @@ public class AchievementService {
                 .build();
     }
 
-    // ─── Badge Display ────────────────────────────────────────────────────────
-
     @Transactional(readOnly = true)
     public List<DisplayedBadgeResponse> getDisplayedBadges(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId.toString()));
 
         List<UUID> displayedIds = user.getDisplayedAchievements();
-        if (displayedIds == null || displayedIds.isEmpty())
+        if (displayedIds == null || displayedIds.isEmpty()) {
             return List.of();
+        }
 
         List<Achievement> achievements = achievementRepository.findAllById(displayedIds);
         return achievements.stream()
@@ -118,14 +121,12 @@ public class AchievementService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId.toString()));
 
-        // Remove duplicates
         List<UUID> uniqueIds = achievementIds.stream().distinct().toList();
 
         if (uniqueIds.size() > 3) {
             throw new IllegalArgumentException("You can display a maximum of 3 badges");
         }
 
-        // Validate all exist and are unlocked
         for (UUID achId : uniqueIds) {
             Achievement achievement = achievementRepository.findById(achId)
                     .orElseThrow(() -> new BadgeNotFoundException("Achievement not found: " + achId));
@@ -140,8 +141,6 @@ public class AchievementService {
         return getDisplayedBadges(userId);
     }
 
-    // ─── Friend Achievements ──────────────────────────────────────────────────
-
     @Transactional(readOnly = true)
     public List<AchievementResponse> getFriendAchievements(UUID userId, UUID friendId) {
         validateFriendship(userId, friendId);
@@ -154,28 +153,26 @@ public class AchievementService {
         return getAchievementStats(friendId);
     }
 
-    // ─── Private helpers ──────────────────────────────────────────────────────
-
     private Map<UUID, UserAchievement> getUserUnlockMap(UUID userId) {
         return userAchievementRepository.findAllByUserId(userId).stream()
                 .collect(Collectors.toMap(UserAchievement::getAchievementId, Function.identity()));
     }
 
-    private AchievementResponse toResponse(Achievement a, Map<UUID, UserAchievement> unlockMap, UUID userId) {
-        UserAchievement ua = unlockMap.get(a.getId());
-        boolean isUnlocked = ua != null;
-        int progress = isUnlocked ? 100 : progressCalculator.calculateProgress(userId, a);
+    private AchievementResponse toResponse(Achievement achievement, Map<UUID, UserAchievement> unlockMap, UUID userId) {
+        UserAchievement userAchievement = unlockMap.get(achievement.getId());
+        boolean isUnlocked = userAchievement != null;
+        int progress = isUnlocked ? 100 : progressCalculator.calculateProgress(userId, achievement);
 
         return AchievementResponse.builder()
-                .id(a.getId())
-                .name(a.getName())
-                .description(a.getDescription())
-                .icon(a.getIcon())
-                .category(a.getCategory().getDisplayName())
-                .points(a.getPoints())
+                .id(achievement.getId())
+                .name(achievement.getName())
+                .description(achievement.getDescription())
+                .icon(achievement.getIcon())
+                .category(achievement.getCategory().getDisplayName())
+                .points(achievement.getPoints())
                 .isUnlocked(isUnlocked)
                 .progress(progress)
-                .unlockedAt(ua != null ? ua.getUnlockedAt() : null)
+                .unlockedAt(userAchievement != null ? userAchievement.getUnlockedAt() : null)
                 .build();
     }
 

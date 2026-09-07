@@ -1,4 +1,4 @@
-package com.onnyth.onnythserver.models;
+package com.onnyth.onnythserver.achievement.domain.model;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

@@ -1,11 +1,10 @@
-package com.onnyth.onnythserver.controller;
+package com.onnyth.onnythserver.achievement.adapter.in.rest;
 
-import com.onnyth.onnythserver.dto.AchievementResponse;
-import com.onnyth.onnythserver.dto.AchievementStatsResponse;
-import com.onnyth.onnythserver.dto.DisplayedBadgeResponse;
-import com.onnyth.onnythserver.models.AchievementCategory;
+import com.onnyth.onnythserver.achievement.adapter.in.rest.dto.AchievementResponse;
+import com.onnyth.onnythserver.achievement.adapter.in.rest.dto.AchievementStatsResponse;
+import com.onnyth.onnythserver.achievement.adapter.in.rest.dto.DisplayedBadgeResponse;
+import com.onnyth.onnythserver.achievement.application.usecase.AchievementUseCaseService;
 import com.onnyth.onnythserver.security.SecurityConfig;
-import com.onnyth.onnythserver.service.AchievementService;
 import com.onnyth.onnythserver.support.MockJwtDecoderConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -25,8 +24,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AchievementController.class)
 @Import({ SecurityConfig.class, MockJwtDecoderConfig.class })
@@ -35,8 +36,9 @@ class AchievementControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
     @MockitoBean
-    private AchievementService achievementService;
+    private AchievementUseCaseService achievementService;
 
     private static final UUID USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final UUID ACH_ID = UUID.fromString("00000000-0000-0000-0000-000000000010");
