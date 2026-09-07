@@ -1,17 +1,17 @@
-package com.onnyth.onnythserver.service;
+package com.onnyth.onnythserver.store.application.usecase;
 
-import com.onnyth.onnythserver.dto.CosmeticItemResponse;
-import com.onnyth.onnythserver.exceptions.CosmeticAlreadyOwnedException;
-import com.onnyth.onnythserver.exceptions.CosmeticNotFoundException;
-import com.onnyth.onnythserver.exceptions.InsufficientCoinsException;
+import com.onnyth.onnythserver.store.adapter.in.rest.dto.CosmeticItemResponse;
+import com.onnyth.onnythserver.store.application.exception.CosmeticAlreadyOwnedException;
+import com.onnyth.onnythserver.store.application.exception.CosmeticNotFoundException;
+import com.onnyth.onnythserver.store.application.exception.InsufficientCoinsException;
+import com.onnyth.onnythserver.store.application.port.CosmeticItemRepository;
+import com.onnyth.onnythserver.store.application.port.UserCosmeticRepository;
+import com.onnyth.onnythserver.store.domain.model.CosmeticCategory;
+import com.onnyth.onnythserver.store.domain.model.CosmeticItem;
+import com.onnyth.onnythserver.store.domain.model.UserCosmetic;
 import com.onnyth.onnythserver.user.application.exception.UserNotFoundException;
-import com.onnyth.onnythserver.models.CosmeticCategory;
-import com.onnyth.onnythserver.models.CosmeticItem;
-import com.onnyth.onnythserver.user.domain.model.User;
-import com.onnyth.onnythserver.models.UserCosmetic;
-import com.onnyth.onnythserver.repository.CosmeticItemRepository;
-import com.onnyth.onnythserver.repository.UserCosmeticRepository;
 import com.onnyth.onnythserver.user.application.port.UserRepository;
+import com.onnyth.onnythserver.user.domain.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class CosmeticService {
+public class StoreUseCaseService {
 
     private final CosmeticItemRepository cosmeticItemRepository;
     private final UserCosmeticRepository userCosmeticRepository;
@@ -77,11 +77,9 @@ public class CosmeticService {
             throw new InsufficientCoinsException(user.getOnnythCoins(), item.getPrice());
         }
 
-        // Deduct Onnyth Coins
         user.setOnnythCoins(user.getOnnythCoins() - item.getPrice());
         userRepository.save(user);
 
-        // Record ownership
         UserCosmetic userCosmetic = UserCosmetic.builder()
                 .userId(userId)
                 .cosmeticItemId(itemId)
@@ -108,7 +106,6 @@ public class CosmeticService {
         userCosmetic.setIsEquipped(true);
         userCosmeticRepository.save(userCosmetic);
 
-        // Sync active cosmetic reference on User for fast profile card reads
         CosmeticItem item = cosmeticItemRepository.findById(itemId).orElse(null);
         if (item != null) {
             User user = userRepository.findById(userId)
@@ -117,7 +114,7 @@ public class CosmeticService {
                 user.setActiveFrameCosmetic(item);
             } else if (item.getCategory() == CosmeticCategory.BACKGROUND) {
                 user.setActiveBackgroundCosmetic(item);
-                user.setActiveBackgroundColor(null); // cosmetic overrides solid color
+                user.setActiveBackgroundColor(null);
             }
             userRepository.save(user);
         }

@@ -1,16 +1,16 @@
 package com.onnyth.onnythserver.user.application.usecase;
 
 import com.onnyth.onnythserver.activity.application.port.ActivityLogRepository;
+import com.onnyth.onnythserver.achievement.application.port.UserAchievementRepository;
+import com.onnyth.onnythserver.friendship.application.port.FriendRequestRepository;
+import com.onnyth.onnythserver.friendship.application.port.FriendshipRepository;
 import com.onnyth.onnythserver.lifestats.application.port.*;
 import com.onnyth.onnythserver.profile.application.port.ProfileVoteRepository;
 import com.onnyth.onnythserver.quest.application.port.QuestCompletionRepository;
 import com.onnyth.onnythserver.repository.FeedEventRepository;
-import com.onnyth.onnythserver.friendship.application.port.FriendRequestRepository;
-import com.onnyth.onnythserver.friendship.application.port.FriendshipRepository;
 import com.onnyth.onnythserver.repository.RegistrationDraftRepository;
-import com.onnyth.onnythserver.achievement.application.port.UserAchievementRepository;
-import com.onnyth.onnythserver.repository.UserCosmeticRepository;
 import com.onnyth.onnythserver.scoring.application.port.ScoreHistoryRepository;
+import com.onnyth.onnythserver.store.application.port.UserCosmeticRepository;
 import com.onnyth.onnythserver.streak.application.port.UserStreakRepository;
 import com.onnyth.onnythserver.user.application.exception.UserNotFoundException;
 import com.onnyth.onnythserver.user.application.port.UserRepository;
@@ -60,7 +60,6 @@ public class AccountDeletionUseCaseService {
 
         log.info("Starting account deletion for userId={}", userId);
 
-        // Delete all related data (order matters for FK constraints)
         activityLogRepository.deleteAllByUserId(userId);
         userStreakRepository.deleteByUserId(userId);
         userAchievementRepository.deleteAllByUserId(userId);
@@ -72,20 +71,17 @@ public class AccountDeletionUseCaseService {
         scoreHistoryRepository.deleteAllByUserId(userId);
         registrationDraftRepository.deleteByUserId(userId);
 
-        // Domain profile data
         occupationRepository.deleteAllByUserId(userId);
         wealthRepository.deleteByUserId(userId);
         physiqueRepository.deleteByUserId(userId);
         wisdomRepository.deleteByUserId(userId);
         charismaRepository.deleteByUserId(userId);
 
-        // Friendships (bidirectional)
         friendshipRepository.deleteAllByUserId(userId);
         friendshipRepository.deleteAllByFriendId(userId);
         friendRequestRepository.deleteAllBySenderId(userId);
         friendRequestRepository.deleteAllByReceiverId(userId);
 
-        // Finally, delete the user record
         userRepository.deleteById(userId);
 
         log.info("Account deletion complete for userId={}", userId);

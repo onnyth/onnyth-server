@@ -1,4 +1,4 @@
-package com.onnyth.onnythserver.models;
+package com.onnyth.onnythserver.store.domain.model;
 
 /**
  * Rarity tiers for cosmetic items.

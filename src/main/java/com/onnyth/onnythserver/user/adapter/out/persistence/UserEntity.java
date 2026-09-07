@@ -1,7 +1,7 @@
 package com.onnyth.onnythserver.user.adapter.out.persistence;
 
-import com.onnyth.onnythserver.models.CosmeticItem;
 import com.onnyth.onnythserver.ranking.domain.model.RankTier;
+import com.onnyth.onnythserver.store.adapter.out.persistence.CosmeticItemEntity;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -108,11 +108,11 @@ public class UserEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "active_frame_cosmetic_id")
-    private CosmeticItem activeFrameCosmetic;
+    private CosmeticItemEntity activeFrameCosmetic;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "active_background_cosmetic_id")
-    private CosmeticItem activeBackgroundCosmetic;
+    private CosmeticItemEntity activeBackgroundCosmetic;
 
     @ColumnDefault("now()")
     @Column(name = "created_at", nullable = false, updatable = false, insertable = false)

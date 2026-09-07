@@ -1,10 +1,10 @@
-package com.onnyth.onnythserver.controller;
+package com.onnyth.onnythserver.store.adapter.in.rest;
 
-import com.onnyth.onnythserver.dto.CosmeticItemResponse;
-import com.onnyth.onnythserver.dto.EquipRequest;
-import com.onnyth.onnythserver.dto.PurchaseRequest;
-import com.onnyth.onnythserver.models.CosmeticCategory;
-import com.onnyth.onnythserver.service.CosmeticService;
+import com.onnyth.onnythserver.store.adapter.in.rest.dto.CosmeticItemResponse;
+import com.onnyth.onnythserver.store.adapter.in.rest.dto.EquipRequest;
+import com.onnyth.onnythserver.store.adapter.in.rest.dto.PurchaseRequest;
+import com.onnyth.onnythserver.store.application.usecase.StoreUseCaseService;
+import com.onnyth.onnythserver.store.domain.model.CosmeticCategory;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -14,7 +14,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,7 +31,7 @@ import java.util.UUID;
 @Tag(name = "Store", description = "Cosmetic store — browse, purchase, and equip items")
 public class StoreController {
 
-    private final CosmeticService cosmeticService;
+    private final StoreUseCaseService cosmeticService;
 
     @Operation(summary = "Get store items", description = "List all active cosmetic items, optionally filtered by category")
     @ApiResponses(value = {

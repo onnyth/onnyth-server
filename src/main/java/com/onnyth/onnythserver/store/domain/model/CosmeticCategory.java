@@ -1,4 +1,4 @@
-package com.onnyth.onnythserver.models;
+package com.onnyth.onnythserver.store.domain.model;
 
 /**
  * Categories of cosmetic items available in the store.

@@ -1,8 +1,8 @@
-package com.onnyth.onnythserver.dto;
+package com.onnyth.onnythserver.store.adapter.in.rest.dto;
 
-import com.onnyth.onnythserver.models.CosmeticCategory;
-import com.onnyth.onnythserver.models.CosmeticItem;
-import com.onnyth.onnythserver.models.CosmeticRarity;
+import com.onnyth.onnythserver.store.domain.model.CosmeticCategory;
+import com.onnyth.onnythserver.store.domain.model.CosmeticItem;
+import com.onnyth.onnythserver.store.domain.model.CosmeticRarity;
 import lombok.Builder;
 
 import java.util.UUID;

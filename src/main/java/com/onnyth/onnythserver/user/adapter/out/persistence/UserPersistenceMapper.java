@@ -1,5 +1,6 @@
 package com.onnyth.onnythserver.user.adapter.out.persistence;
 
+import com.onnyth.onnythserver.store.adapter.out.persistence.CosmeticItemPersistenceMapper;
 import com.onnyth.onnythserver.user.domain.model.User;
 
 public final class UserPersistenceMapper {
@@ -32,8 +33,8 @@ public final class UserPersistenceMapper {
                 .country(entity.getCountry())
                 .voteScore(entity.getVoteScore())
                 .activeBackgroundColor(entity.getActiveBackgroundColor())
-                .activeFrameCosmetic(entity.getActiveFrameCosmetic())
-                .activeBackgroundCosmetic(entity.getActiveBackgroundCosmetic())
+                .activeFrameCosmetic(CosmeticItemPersistenceMapper.toDomain(entity.getActiveFrameCosmetic()))
+                .activeBackgroundCosmetic(CosmeticItemPersistenceMapper.toDomain(entity.getActiveBackgroundCosmetic()))
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
@@ -64,8 +65,8 @@ public final class UserPersistenceMapper {
                 .country(domain.getCountry())
                 .voteScore(domain.getVoteScore())
                 .activeBackgroundColor(domain.getActiveBackgroundColor())
-                .activeFrameCosmetic(domain.getActiveFrameCosmetic())
-                .activeBackgroundCosmetic(domain.getActiveBackgroundCosmetic())
+                .activeFrameCosmetic(CosmeticItemPersistenceMapper.toEntity(domain.getActiveFrameCosmetic()))
+                .activeBackgroundCosmetic(CosmeticItemPersistenceMapper.toEntity(domain.getActiveBackgroundCosmetic()))
                 .createdAt(domain.getCreatedAt())
                 .updatedAt(domain.getUpdatedAt())
                 .build();
