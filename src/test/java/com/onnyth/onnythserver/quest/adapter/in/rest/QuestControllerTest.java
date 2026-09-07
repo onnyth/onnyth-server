@@ -1,12 +1,14 @@
-package com.onnyth.onnythserver.controller;
+package com.onnyth.onnythserver.quest.adapter.in.rest;
 
-import com.onnyth.onnythserver.dto.QuestCompletionResponse;
-import com.onnyth.onnythserver.dto.QuestListResponse;
-import com.onnyth.onnythserver.dto.QuestResponse;
-import com.onnyth.onnythserver.exceptions.QuestAlreadyCompletedException;
-import com.onnyth.onnythserver.exceptions.QuestExpiredException;
-import com.onnyth.onnythserver.exceptions.QuestNotFoundException;
-import com.onnyth.onnythserver.service.QuestService;
+import com.onnyth.onnythserver.quest.adapter.in.rest.dto.QuestCompletionResponse;
+import com.onnyth.onnythserver.quest.adapter.in.rest.dto.QuestListResponse;
+import com.onnyth.onnythserver.quest.adapter.in.rest.dto.QuestResponse;
+import com.onnyth.onnythserver.quest.application.exception.QuestAlreadyCompletedException;
+import com.onnyth.onnythserver.quest.application.exception.QuestExpiredException;
+import com.onnyth.onnythserver.quest.application.exception.QuestNotFoundException;
+import com.onnyth.onnythserver.quest.application.usecase.QuestUseCaseService;
+import com.onnyth.onnythserver.security.SecurityConfig;
+import com.onnyth.onnythserver.support.MockJwtDecoderConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -16,20 +18,15 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.onnyth.onnythserver.security.SecurityConfig;
-import com.onnyth.onnythserver.support.MockJwtDecoderConfig;
-
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(QuestController.class)
 @Import({ SecurityConfig.class, MockJwtDecoderConfig.class })
@@ -40,7 +37,7 @@ class QuestControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private QuestService questService;
+    private QuestUseCaseService questService;
 
     private static final UUID USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final UUID QUEST_ID = UUID.fromString("00000000-0000-0000-0000-000000000099");

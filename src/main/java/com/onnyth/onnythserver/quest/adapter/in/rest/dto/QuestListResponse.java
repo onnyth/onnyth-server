@@ -1,4 +1,4 @@
-package com.onnyth.onnythserver.dto;
+package com.onnyth.onnythserver.quest.adapter.in.rest.dto;
 
 import lombok.Builder;
 

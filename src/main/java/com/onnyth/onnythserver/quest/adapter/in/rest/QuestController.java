@@ -1,9 +1,9 @@
-package com.onnyth.onnythserver.controller;
+package com.onnyth.onnythserver.quest.adapter.in.rest;
 
-import com.onnyth.onnythserver.dto.QuestCompletionResponse;
-import com.onnyth.onnythserver.dto.QuestListResponse;
-import com.onnyth.onnythserver.dto.QuestResponse;
-import com.onnyth.onnythserver.service.QuestService;
+import com.onnyth.onnythserver.quest.adapter.in.rest.dto.QuestCompletionResponse;
+import com.onnyth.onnythserver.quest.adapter.in.rest.dto.QuestListResponse;
+import com.onnyth.onnythserver.quest.adapter.in.rest.dto.QuestResponse;
+import com.onnyth.onnythserver.quest.application.usecase.QuestUseCaseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -12,7 +12,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
@@ -22,7 +26,7 @@ import java.util.UUID;
 @Tag(name = "Quests", description = "Quest system — view and complete quests to earn XP")
 public class QuestController {
 
-    private final QuestService questService;
+    private final QuestUseCaseService questService;
 
     @Operation(summary = "Get active quests", description = "Returns all active quests with the user's completion status")
     @ApiResponses(value = {

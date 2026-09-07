@@ -1,7 +1,17 @@
-package com.onnyth.onnythserver.models;
+package com.onnyth.onnythserver.quest.adapter.out.persistence;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
@@ -18,7 +28,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "quest_completions", uniqueConstraints = @UniqueConstraint(columnNames = { "user_id", "quest_id" }))
-public class QuestCompletion {
+public class QuestCompletionEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

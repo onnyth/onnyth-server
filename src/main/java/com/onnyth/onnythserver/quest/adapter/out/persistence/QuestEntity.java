@@ -1,7 +1,20 @@
-package com.onnyth.onnythserver.models;
+package com.onnyth.onnythserver.quest.adapter.out.persistence;
 
-import jakarta.persistence.*;
-import lombok.*;
+import com.onnyth.onnythserver.models.StatDomain;
+import com.onnyth.onnythserver.quest.domain.model.QuestStatus;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
@@ -19,7 +32,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "quests")
-public class Quest {
+public class QuestEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

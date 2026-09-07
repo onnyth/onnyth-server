@@ -1,20 +1,22 @@
-package com.onnyth.onnythserver.unit.service;
-import com.onnyth.onnythserver.user.domain.model.User;
+package com.onnyth.onnythserver.quest.application.usecase;
 
-import com.onnyth.onnythserver.dto.QuestCompletionResponse;
-import com.onnyth.onnythserver.dto.QuestListResponse;
-import com.onnyth.onnythserver.dto.QuestResponse;
-import com.onnyth.onnythserver.exceptions.QuestAlreadyCompletedException;
-import com.onnyth.onnythserver.exceptions.QuestExpiredException;
-import com.onnyth.onnythserver.exceptions.QuestNotFoundException;
-import com.onnyth.onnythserver.models.*;
-import com.onnyth.onnythserver.ranking.domain.model.RankTier;
-import com.onnyth.onnythserver.repository.QuestCompletionRepository;
-import com.onnyth.onnythserver.repository.QuestRepository;
-import com.onnyth.onnythserver.user.application.port.UserRepository;
-import com.onnyth.onnythserver.service.QuestService;
+import com.onnyth.onnythserver.models.StatDomain;
+import com.onnyth.onnythserver.quest.adapter.in.rest.dto.QuestCompletionResponse;
+import com.onnyth.onnythserver.quest.adapter.in.rest.dto.QuestListResponse;
+import com.onnyth.onnythserver.quest.adapter.in.rest.dto.QuestResponse;
+import com.onnyth.onnythserver.quest.application.exception.QuestAlreadyCompletedException;
+import com.onnyth.onnythserver.quest.application.exception.QuestExpiredException;
+import com.onnyth.onnythserver.quest.application.exception.QuestNotFoundException;
+import com.onnyth.onnythserver.quest.application.port.QuestCompletionRepository;
+import com.onnyth.onnythserver.quest.application.port.QuestRepository;
+import com.onnyth.onnythserver.quest.domain.model.Quest;
+import com.onnyth.onnythserver.quest.domain.model.QuestCompletion;
+import com.onnyth.onnythserver.quest.domain.model.QuestStatus;
 import com.onnyth.onnythserver.ranking.application.usecase.RankUseCaseService;
+import com.onnyth.onnythserver.ranking.domain.model.RankTier;
 import com.onnyth.onnythserver.support.TestDataFactory;
+import com.onnyth.onnythserver.user.application.port.UserRepository;
+import com.onnyth.onnythserver.user.domain.model.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -32,11 +34,12 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("QuestService")
-class QuestServiceTest {
+@DisplayName("QuestUseCaseService")
+class QuestUseCaseServiceTest {
 
     @Mock
     private QuestRepository questRepository;
@@ -48,7 +51,7 @@ class QuestServiceTest {
     private RankUseCaseService rankService;
 
     @InjectMocks
-    private QuestService questService;
+    private QuestUseCaseService questService;
 
     private Quest buildQuest(String title, int xpReward, StatDomain category) {
         return Quest.builder()

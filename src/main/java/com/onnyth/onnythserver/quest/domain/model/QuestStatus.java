@@ -1,4 +1,4 @@
-package com.onnyth.onnythserver.models;
+package com.onnyth.onnythserver.quest.domain.model;
 
 /**
  * Status of a quest.

@@ -1,6 +1,6 @@
-package com.onnyth.onnythserver.dto;
+package com.onnyth.onnythserver.quest.adapter.in.rest.dto;
 
-import com.onnyth.onnythserver.models.Quest;
+import com.onnyth.onnythserver.quest.domain.model.Quest;
 import lombok.Builder;
 
 import java.time.Instant;
