@@ -4,7 +4,7 @@ import com.onnyth.onnythserver.leaderboard.adapter.in.rest.dto.CategoryLeaderboa
 import com.onnyth.onnythserver.leaderboard.adapter.in.rest.dto.LeaderboardResponse;
 import com.onnyth.onnythserver.leaderboard.adapter.in.rest.dto.UserLeaderboardPositionResponse;
 import com.onnyth.onnythserver.leaderboard.application.usecase.LeaderboardUseCaseService;
-import com.onnyth.onnythserver.models.StatDomain;
+import com.onnyth.onnythserver.shared.domain.model.StatDomain;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

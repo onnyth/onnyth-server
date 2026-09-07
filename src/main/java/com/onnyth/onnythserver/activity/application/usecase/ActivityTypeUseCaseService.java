@@ -4,7 +4,7 @@ import com.onnyth.onnythserver.activity.adapter.in.rest.dto.ActivityTypeResponse
 import com.onnyth.onnythserver.activity.application.exception.ActivityTypeNotFoundException;
 import com.onnyth.onnythserver.activity.application.port.ActivityTypeRepository;
 import com.onnyth.onnythserver.activity.domain.model.ActivityType;
-import com.onnyth.onnythserver.models.StatDomain;
+import com.onnyth.onnythserver.shared.domain.model.StatDomain;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

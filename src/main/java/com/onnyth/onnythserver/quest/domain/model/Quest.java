@@ -1,6 +1,6 @@
 package com.onnyth.onnythserver.quest.domain.model;
 
-import com.onnyth.onnythserver.models.StatDomain;
+import com.onnyth.onnythserver.shared.domain.model.StatDomain;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

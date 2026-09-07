@@ -1,6 +1,6 @@
 package com.onnyth.onnythserver.friendship.application.usecase;
 
-import com.onnyth.onnythserver.dto.StatComparisonResponse;
+import com.onnyth.onnythserver.friendship.adapter.in.rest.dto.StatComparisonResponse;
 import com.onnyth.onnythserver.friendship.adapter.in.rest.dto.FriendProfileResponse;
 import com.onnyth.onnythserver.friendship.adapter.in.rest.dto.FriendRequestResponse;
 import com.onnyth.onnythserver.friendship.adapter.in.rest.dto.FriendResponse;
@@ -19,7 +19,7 @@ import com.onnyth.onnythserver.lifestats.application.port.UserOccupationReposito
 import com.onnyth.onnythserver.lifestats.application.port.UserPhysiqueRepository;
 import com.onnyth.onnythserver.lifestats.application.port.UserWealthRepository;
 import com.onnyth.onnythserver.lifestats.application.port.UserWisdomRepository;
-import com.onnyth.onnythserver.models.StatDomain;
+import com.onnyth.onnythserver.shared.domain.model.StatDomain;
 import com.onnyth.onnythserver.ranking.adapter.in.rest.dto.RankProgressResponse;
 import com.onnyth.onnythserver.ranking.application.usecase.RankUseCaseService;
 import com.onnyth.onnythserver.achievement.application.usecase.AchievementUnlockUseCaseService;

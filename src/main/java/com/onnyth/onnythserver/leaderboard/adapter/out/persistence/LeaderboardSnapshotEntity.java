@@ -1,6 +1,6 @@
 package com.onnyth.onnythserver.leaderboard.adapter.out.persistence;
 
-import com.onnyth.onnythserver.models.StatDomain;
+import com.onnyth.onnythserver.shared.domain.model.StatDomain;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

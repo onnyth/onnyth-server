@@ -1,6 +1,6 @@
 package com.onnyth.onnythserver.quest.adapter.out.persistence;
 
-import com.onnyth.onnythserver.models.StatDomain;
+import com.onnyth.onnythserver.shared.domain.model.StatDomain;
 import com.onnyth.onnythserver.quest.domain.model.QuestStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

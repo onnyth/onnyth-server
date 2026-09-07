@@ -1,7 +1,7 @@
 package com.onnyth.onnythserver.activity.adapter.in.rest.dto;
 
 import com.onnyth.onnythserver.activity.domain.model.ActivityType;
-import com.onnyth.onnythserver.models.StatDomain;
+import com.onnyth.onnythserver.shared.domain.model.StatDomain;
 import lombok.Builder;
 
 import java.util.UUID;

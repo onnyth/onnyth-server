@@ -8,7 +8,7 @@ import com.onnyth.onnythserver.activity.application.usecase.ActivityTypeUseCaseS
 import com.onnyth.onnythserver.activity.application.usecase.ActivityUseCaseService;
 import com.onnyth.onnythserver.leveling.adapter.in.rest.dto.LevelProgressResponse;
 import com.onnyth.onnythserver.leveling.application.usecase.LevelUseCaseService;
-import com.onnyth.onnythserver.models.StatDomain;
+import com.onnyth.onnythserver.shared.domain.model.StatDomain;
 import com.onnyth.onnythserver.streak.adapter.in.rest.dto.StreakResponse;
 import com.onnyth.onnythserver.streak.application.usecase.StreakUseCaseService;
 import io.swagger.v3.oas.annotations.Operation;

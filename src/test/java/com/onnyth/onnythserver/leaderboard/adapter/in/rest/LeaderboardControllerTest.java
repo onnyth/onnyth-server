@@ -5,7 +5,7 @@ import com.onnyth.onnythserver.leaderboard.adapter.in.rest.dto.LeaderboardEntryR
 import com.onnyth.onnythserver.leaderboard.adapter.in.rest.dto.LeaderboardResponse;
 import com.onnyth.onnythserver.leaderboard.adapter.in.rest.dto.UserLeaderboardPositionResponse;
 import com.onnyth.onnythserver.leaderboard.application.usecase.LeaderboardUseCaseService;
-import com.onnyth.onnythserver.models.StatDomain;
+import com.onnyth.onnythserver.shared.domain.model.StatDomain;
 import com.onnyth.onnythserver.security.SecurityConfig;
 import com.onnyth.onnythserver.support.MockJwtDecoderConfig;
 import org.junit.jupiter.api.DisplayName;

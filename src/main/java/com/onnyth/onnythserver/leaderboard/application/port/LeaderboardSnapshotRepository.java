@@ -1,7 +1,7 @@
 package com.onnyth.onnythserver.leaderboard.application.port;
 
 import com.onnyth.onnythserver.leaderboard.domain.model.LeaderboardSnapshot;
-import com.onnyth.onnythserver.models.StatDomain;
+import com.onnyth.onnythserver.shared.domain.model.StatDomain;
 
 import java.time.LocalDate;
 import java.util.List;

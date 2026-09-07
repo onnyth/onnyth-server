@@ -1,7 +1,7 @@
 package com.onnyth.onnythserver.activity.adapter.out.persistence;
 
 import com.onnyth.onnythserver.activity.domain.model.ActivityFrequency;
-import com.onnyth.onnythserver.models.StatDomain;
+import com.onnyth.onnythserver.shared.domain.model.StatDomain;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

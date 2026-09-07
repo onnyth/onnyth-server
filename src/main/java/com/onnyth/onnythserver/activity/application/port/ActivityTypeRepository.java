@@ -1,7 +1,7 @@
 package com.onnyth.onnythserver.activity.application.port;
 
 import com.onnyth.onnythserver.activity.domain.model.ActivityType;
-import com.onnyth.onnythserver.models.StatDomain;
+import com.onnyth.onnythserver.shared.domain.model.StatDomain;
 
 import java.util.List;
 import java.util.Optional;

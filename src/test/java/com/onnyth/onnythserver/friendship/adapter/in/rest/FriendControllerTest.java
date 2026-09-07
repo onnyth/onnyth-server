@@ -1,6 +1,6 @@
 package com.onnyth.onnythserver.friendship.adapter.in.rest;
 
-import com.onnyth.onnythserver.dto.StatComparisonResponse;
+import com.onnyth.onnythserver.friendship.adapter.in.rest.dto.StatComparisonResponse;
 import com.onnyth.onnythserver.friendship.adapter.in.rest.dto.FriendProfileResponse;
 import com.onnyth.onnythserver.friendship.adapter.in.rest.dto.FriendRequestResponse;
 import com.onnyth.onnythserver.friendship.adapter.in.rest.dto.FriendResponse;

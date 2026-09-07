@@ -8,7 +8,7 @@ import com.onnyth.onnythserver.friendship.application.port.FriendshipRepository;
 import com.onnyth.onnythserver.lifestats.application.port.*;
 import com.onnyth.onnythserver.profile.application.port.ProfileVoteRepository;
 import com.onnyth.onnythserver.quest.application.port.QuestCompletionRepository;
-import com.onnyth.onnythserver.repository.RegistrationDraftRepository;
+import com.onnyth.onnythserver.registration.application.port.RegistrationDraftRepository;
 import com.onnyth.onnythserver.scoring.application.port.ScoreHistoryRepository;
 import com.onnyth.onnythserver.store.application.port.UserCosmeticRepository;
 import com.onnyth.onnythserver.streak.application.port.UserStreakRepository;

@@ -9,7 +9,7 @@ import com.onnyth.onnythserver.lifestats.application.port.UserOccupationReposito
 import com.onnyth.onnythserver.lifestats.application.port.UserPhysiqueRepository;
 import com.onnyth.onnythserver.lifestats.application.port.UserWealthRepository;
 import com.onnyth.onnythserver.lifestats.application.port.UserWisdomRepository;
-import com.onnyth.onnythserver.models.StatDomain;
+import com.onnyth.onnythserver.shared.domain.model.StatDomain;
 import com.onnyth.onnythserver.friendship.application.port.FriendshipRepository;
 import com.onnyth.onnythserver.user.application.port.UserRepository;
 import com.onnyth.onnythserver.user.domain.model.User;

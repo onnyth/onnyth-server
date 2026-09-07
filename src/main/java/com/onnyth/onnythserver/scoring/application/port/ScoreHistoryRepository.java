@@ -1,6 +1,6 @@
 package com.onnyth.onnythserver.scoring.application.port;
 
-import com.onnyth.onnythserver.models.StatDomain;
+import com.onnyth.onnythserver.shared.domain.model.StatDomain;
 import com.onnyth.onnythserver.scoring.domain.model.ScoreHistory;
 
 import java.util.List;

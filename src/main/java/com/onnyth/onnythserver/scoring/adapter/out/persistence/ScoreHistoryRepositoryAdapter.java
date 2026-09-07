@@ -1,6 +1,6 @@
 package com.onnyth.onnythserver.scoring.adapter.out.persistence;
 
-import com.onnyth.onnythserver.models.StatDomain;
+import com.onnyth.onnythserver.shared.domain.model.StatDomain;
 import com.onnyth.onnythserver.scoring.application.port.ScoreHistoryRepository;
 import com.onnyth.onnythserver.scoring.domain.model.ScoreHistory;
 import lombok.RequiredArgsConstructor;

@@ -2,7 +2,7 @@ package com.onnyth.onnythserver.activity.adapter.out.persistence;
 
 import com.onnyth.onnythserver.activity.application.port.ActivityTypeRepository;
 import com.onnyth.onnythserver.activity.domain.model.ActivityType;
-import com.onnyth.onnythserver.models.StatDomain;
+import com.onnyth.onnythserver.shared.domain.model.StatDomain;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 

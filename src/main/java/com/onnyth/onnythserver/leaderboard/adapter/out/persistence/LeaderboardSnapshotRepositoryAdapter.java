@@ -2,7 +2,7 @@ package com.onnyth.onnythserver.leaderboard.adapter.out.persistence;
 
 import com.onnyth.onnythserver.leaderboard.application.port.LeaderboardSnapshotRepository;
 import com.onnyth.onnythserver.leaderboard.domain.model.LeaderboardSnapshot;
-import com.onnyth.onnythserver.models.StatDomain;
+import com.onnyth.onnythserver.shared.domain.model.StatDomain;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 

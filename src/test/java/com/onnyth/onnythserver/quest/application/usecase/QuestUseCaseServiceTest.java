@@ -1,6 +1,6 @@
 package com.onnyth.onnythserver.quest.application.usecase;
 
-import com.onnyth.onnythserver.models.StatDomain;
+import com.onnyth.onnythserver.shared.domain.model.StatDomain;
 import com.onnyth.onnythserver.quest.adapter.in.rest.dto.QuestCompletionResponse;
 import com.onnyth.onnythserver.quest.adapter.in.rest.dto.QuestListResponse;
 import com.onnyth.onnythserver.quest.adapter.in.rest.dto.QuestResponse;

@@ -1,6 +1,6 @@
 package com.onnyth.onnythserver.scoring.adapter.out.persistence;
 
-import com.onnyth.onnythserver.models.StatDomain;
+import com.onnyth.onnythserver.shared.domain.model.StatDomain;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
