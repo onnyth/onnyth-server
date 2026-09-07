@@ -1,7 +1,7 @@
-package com.onnyth.onnythserver.unit.service;
+package com.onnyth.onnythserver.search.application.usecase;
 
-import com.onnyth.onnythserver.service.SearchService;
-import com.onnyth.onnythserver.service.SearchService.LanguageEntry;
+import com.onnyth.onnythserver.search.application.usecase.SearchUseCaseService;
+import com.onnyth.onnythserver.search.application.usecase.SearchUseCaseService.LanguageEntry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -12,7 +12,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for SearchService.
+ * Unit tests for SearchUseCaseService.
  *
  * Tests all aspects of in-memory autocomplete search:
  *   - Empty / null / short queries
@@ -22,14 +22,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  *   - MAX_RESULTS cap of 8
  *   - All four datasets (roles, companies, universities, languages)
  */
-@DisplayName("SearchService")
-class SearchServiceTest {
+@DisplayName("SearchUseCaseService")
+class SearchUseCaseServiceTest {
 
-    private SearchService searchService;
+    private SearchUseCaseService searchService;
 
     @BeforeEach
     void setUp() {
-        searchService = new SearchService();
+        searchService = new SearchUseCaseService();
         // Manually invoke @PostConstruct since Spring is not running
         searchService.init();
     }

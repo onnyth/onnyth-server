@@ -1,7 +1,7 @@
-package com.onnyth.onnythserver.controller;
+package com.onnyth.onnythserver.search.adapter.in.rest;
 
-import com.onnyth.onnythserver.dto.UserSearchResponse;
-import com.onnyth.onnythserver.service.UserSearchService;
+import com.onnyth.onnythserver.search.adapter.in.rest.dto.UserSearchResponse;
+import com.onnyth.onnythserver.search.application.usecase.UserSearchUseCaseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ import java.util.UUID;
 @Tag(name = "User Search", description = "Search for users by username or name")
 public class UserSearchController {
 
-    private final UserSearchService userSearchService;
+    private final UserSearchUseCaseService userSearchService;
 
     @Operation(summary = "Search users", description = "Case-insensitive partial match on username or full name, excludes self, annotates friendship status")
     @GetMapping("/search")

@@ -1,7 +1,7 @@
-package com.onnyth.onnythserver.controller;
+package com.onnyth.onnythserver.search.adapter.in.rest;
 
-import com.onnyth.onnythserver.service.SearchService;
-import com.onnyth.onnythserver.service.SearchService.LanguageEntry;
+import com.onnyth.onnythserver.search.application.usecase.SearchUseCaseService;
+import com.onnyth.onnythserver.search.application.usecase.SearchUseCaseService.LanguageEntry;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ import java.util.List;
 @Tag(name = "Search", description = "Autocomplete search for onboarding fields")
 public class SearchController {
 
-    private final SearchService searchService;
+    private final SearchUseCaseService searchService;
 
     @Operation(summary = "Search job roles (O*NET-based taxonomy)")
     @GetMapping("/roles")

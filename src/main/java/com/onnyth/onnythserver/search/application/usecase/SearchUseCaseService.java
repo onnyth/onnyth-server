@@ -1,4 +1,4 @@
-package com.onnyth.onnythserver.service;
+package com.onnyth.onnythserver.search.application.usecase;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
-public class SearchService {
+public class SearchUseCaseService {
 
     private static final int MAX_RESULTS = 8;
 
@@ -40,7 +40,7 @@ public class SearchService {
         companies = buildCompaniesList();
         universities = buildUniversitiesList();
         languages = buildLanguagesList();
-        log.info("[SearchService] Loaded {} roles, {} companies, {} universities, {} languages",
+        log.info("[SearchUseCaseService] Loaded {} roles, {} companies, {} universities, {} languages",
                 roles.size(), companies.size(), universities.size(), languages.size());
     }
 

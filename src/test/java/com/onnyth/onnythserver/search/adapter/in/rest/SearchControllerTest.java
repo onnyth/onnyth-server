@@ -1,8 +1,8 @@
-package com.onnyth.onnythserver.controller;
+package com.onnyth.onnythserver.search.adapter.in.rest;
 
 import com.onnyth.onnythserver.security.SecurityConfig;
-import com.onnyth.onnythserver.service.SearchService;
-import com.onnyth.onnythserver.service.SearchService.LanguageEntry;
+import com.onnyth.onnythserver.search.application.usecase.SearchUseCaseService;
+import com.onnyth.onnythserver.search.application.usecase.SearchUseCaseService.LanguageEntry;
 import com.onnyth.onnythserver.support.MockJwtDecoderConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *   - All four endpoints (roles, companies, universities, languages)
  *   - Valid query returns 200 with JSON body
  *   - Empty query returns 200 with empty array
- *   - Delegate to SearchService with correct argument
+ *   - Delegate to SearchUseCaseService with correct argument
  */
 @WebMvcTest(SearchController.class)
 @Import({ SecurityConfig.class, MockJwtDecoderConfig.class })
@@ -39,7 +39,7 @@ class SearchControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private SearchService searchService;
+    private SearchUseCaseService searchService;
 
     // ─── Authentication ──────────────────────────────────────────────────────
 

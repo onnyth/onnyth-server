@@ -1,6 +1,6 @@
-package com.onnyth.onnythserver.service;
+package com.onnyth.onnythserver.search.application.usecase;
 
-import com.onnyth.onnythserver.dto.UserSearchResponse;
+import com.onnyth.onnythserver.search.adapter.in.rest.dto.UserSearchResponse;
 import com.onnyth.onnythserver.friendship.domain.model.FriendRequestStatus;
 import com.onnyth.onnythserver.user.domain.model.User;
 import com.onnyth.onnythserver.friendship.application.port.FriendRequestRepository;
@@ -16,7 +16,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class UserSearchService {
+public class UserSearchUseCaseService {
 
     private final UserRepository userRepository;
     private final FriendshipRepository friendshipRepository;
