@@ -8,11 +8,12 @@ import com.onnyth.onnythserver.exceptions.QuestAlreadyCompletedException;
 import com.onnyth.onnythserver.exceptions.QuestExpiredException;
 import com.onnyth.onnythserver.exceptions.QuestNotFoundException;
 import com.onnyth.onnythserver.models.*;
+import com.onnyth.onnythserver.ranking.domain.model.RankTier;
 import com.onnyth.onnythserver.repository.QuestCompletionRepository;
 import com.onnyth.onnythserver.repository.QuestRepository;
 import com.onnyth.onnythserver.user.application.port.UserRepository;
 import com.onnyth.onnythserver.service.QuestService;
-import com.onnyth.onnythserver.service.RankService;
+import com.onnyth.onnythserver.ranking.application.usecase.RankUseCaseService;
 import com.onnyth.onnythserver.support.TestDataFactory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -44,7 +45,7 @@ class QuestServiceTest {
     @Mock
     private UserRepository userRepository;
     @Mock
-    private RankService rankService;
+    private RankUseCaseService rankService;
 
     @InjectMocks
     private QuestService questService;

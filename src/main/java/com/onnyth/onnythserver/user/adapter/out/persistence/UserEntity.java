@@ -1,7 +1,7 @@
 package com.onnyth.onnythserver.user.adapter.out.persistence;
 
 import com.onnyth.onnythserver.models.CosmeticItem;
-import com.onnyth.onnythserver.models.RankTier;
+import com.onnyth.onnythserver.ranking.domain.model.RankTier;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;

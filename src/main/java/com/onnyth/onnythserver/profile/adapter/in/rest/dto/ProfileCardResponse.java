@@ -1,8 +1,8 @@
 package com.onnyth.onnythserver.profile.adapter.in.rest.dto;
 
-import com.onnyth.onnythserver.models.RankTier;
+import com.onnyth.onnythserver.ranking.domain.model.RankTier;
 import com.onnyth.onnythserver.user.domain.model.User;
-import com.onnyth.onnythserver.service.LevelService;
+import com.onnyth.onnythserver.leveling.application.usecase.LevelUseCaseService;
 import lombok.Builder;
 
 import java.util.UUID;
@@ -87,7 +87,7 @@ public record ProfileCardResponse(
                 .rankTier(tier.getDisplayName())
                 .rankBadgeUrl(tier.getBadgeEmoji())
                 .level(user.getLevel())
-                .levelTitle(LevelService.getTitle(user.getLevel()))
+                .levelTitle(LevelUseCaseService.getTitle(user.getLevel()))
                 .onnythCoins(user.getOnnythCoins() != null ? user.getOnnythCoins() : 0)
                 .currentStreak(currentStreak)
                 .worldRank(user.getWorldRank())

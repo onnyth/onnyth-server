@@ -1,0 +1,43 @@
+package com.onnyth.onnythserver.xp.application.usecase;
+
+import com.onnyth.onnythserver.xp.domain.event.XpAwardedEvent;
+import com.onnyth.onnythserver.user.application.exception.UserNotFoundException;
+import com.onnyth.onnythserver.user.domain.model.User;
+import com.onnyth.onnythserver.user.application.port.UserRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class XpUseCaseService {
+
+    private final UserRepository userRepository;
+    private final ApplicationEventPublisher eventPublisher;
+
+    /**
+     * Award XP to a user and publish an XpAwardedEvent.
+     *
+     * @return the user's new total XP
+     */
+    @Transactional
+    public long awardXp(UUID userId, int amount) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId.toString()));
+
+        long newTotalXp = user.getXp() + amount;
+        user.setXp(newTotalXp);
+        userRepository.save(user);
+
+        log.info("XP awarded: userId={}, amount={}, newTotal={}", userId, amount, newTotalXp);
+
+        eventPublisher.publishEvent(new XpAwardedEvent(userId, amount, newTotalXp));
+
+        return newTotalXp;
+    }
+}

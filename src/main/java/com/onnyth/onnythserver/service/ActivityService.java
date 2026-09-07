@@ -11,6 +11,9 @@ import com.onnyth.onnythserver.user.domain.model.User;
 import com.onnyth.onnythserver.repository.ActivityLogRepository;
 import com.onnyth.onnythserver.repository.ActivityTypeRepository;
 import com.onnyth.onnythserver.user.application.port.UserRepository;
+import com.onnyth.onnythserver.leveling.application.usecase.LevelUseCaseService;
+import com.onnyth.onnythserver.streak.application.usecase.StreakUseCaseService;
+import com.onnyth.onnythserver.xp.application.usecase.XpUseCaseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -37,9 +40,9 @@ public class ActivityService {
     private final ActivityTypeRepository activityTypeRepository;
     private final UserRepository userRepository;
     private final ActivityTypeService activityTypeService;
-    private final XpService xpService;
-    private final LevelService levelService;
-    private final StreakService streakService;
+    private final XpUseCaseService xpService;
+    private final LevelUseCaseService levelService;
+    private final StreakUseCaseService streakService;
 
     /**
      * Log an activity: validate cooldown, persist log, award XP, check level-up, update streak.
@@ -90,7 +93,7 @@ public class ActivityService {
                 .loggedAt(activityLog.getLoggedAt())
                 .newTotalXP(newTotalXp)
                 .newLevel(user.getLevel())
-                .levelTitle(LevelService.getTitle(user.getLevel()))
+                .levelTitle(LevelUseCaseService.getTitle(user.getLevel()))
                 .streakUpdated(streakUpdated)
                 .build();
     }

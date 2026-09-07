@@ -5,10 +5,10 @@ import com.onnyth.onnythserver.profile.adapter.in.rest.dto.ProfileUpdateRequest;
 import com.onnyth.onnythserver.user.application.exception.UserNotFoundException;
 import com.onnyth.onnythserver.user.application.exception.UsernameAlreadyExistsException;
 import com.onnyth.onnythserver.lifestats.application.port.*;
-import com.onnyth.onnythserver.models.RankTier;
+import com.onnyth.onnythserver.ranking.domain.model.RankTier;
 import com.onnyth.onnythserver.user.domain.model.User;
 import com.onnyth.onnythserver.user.application.port.UserRepository;
-import com.onnyth.onnythserver.repository.UserStreakRepository;
+import com.onnyth.onnythserver.streak.application.port.UserStreakRepository;
 
 import com.onnyth.onnythserver.profile.adapter.out.storage.StorageServiceAdapter;
 import com.onnyth.onnythserver.support.TestDataFactory;

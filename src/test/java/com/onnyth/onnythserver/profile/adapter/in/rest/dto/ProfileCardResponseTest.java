@@ -1,6 +1,6 @@
 package com.onnyth.onnythserver.profile.adapter.in.rest.dto;
 
-import com.onnyth.onnythserver.models.RankTier;
+import com.onnyth.onnythserver.ranking.domain.model.RankTier;
 import com.onnyth.onnythserver.user.domain.model.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

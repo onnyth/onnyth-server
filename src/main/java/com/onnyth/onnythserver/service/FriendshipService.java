@@ -1,6 +1,9 @@
 package com.onnyth.onnythserver.service;
 
-import com.onnyth.onnythserver.dto.*;
+import com.onnyth.onnythserver.dto.FriendProfileResponse;
+import com.onnyth.onnythserver.dto.FriendRequestResponse;
+import com.onnyth.onnythserver.dto.FriendResponse;
+import com.onnyth.onnythserver.dto.StatComparisonResponse;
 import com.onnyth.onnythserver.exceptions.*;
 import com.onnyth.onnythserver.user.application.exception.UserNotFoundException;
 import com.onnyth.onnythserver.lifestats.application.port.*;
@@ -10,6 +13,8 @@ import com.onnyth.onnythserver.repository.FriendshipRepository;
 import com.onnyth.onnythserver.user.application.port.UserRepository;
 import com.onnyth.onnythserver.user.domain.model.User;
 import com.onnyth.onnythserver.repository.*;
+import com.onnyth.onnythserver.ranking.adapter.in.rest.dto.RankProgressResponse;
+import com.onnyth.onnythserver.ranking.application.usecase.RankUseCaseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -33,7 +38,7 @@ public class FriendshipService {
     private final FriendRequestRepository friendRequestRepository;
     private final FriendshipRepository friendshipRepository;
     private final UserRepository userRepository;
-    private final RankService rankService;
+    private final RankUseCaseService rankService;
     private final AchievementUnlockService achievementUnlockService;
     private final UserOccupationRepository occupationRepository;
     private final UserWealthRepository wealthRepository;

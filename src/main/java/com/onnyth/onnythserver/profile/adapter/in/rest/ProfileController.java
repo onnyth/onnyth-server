@@ -3,9 +3,9 @@ package com.onnyth.onnythserver.profile.adapter.in.rest;
 import com.onnyth.onnythserver.profile.adapter.in.rest.dto.ProfileCardResponse;
 import com.onnyth.onnythserver.profile.adapter.in.rest.dto.ProfileResponse;
 import com.onnyth.onnythserver.profile.adapter.in.rest.dto.ProfileUpdateRequest;
-import com.onnyth.onnythserver.dto.RankProgressResponse;
+import com.onnyth.onnythserver.ranking.adapter.in.rest.dto.RankProgressResponse;
 import com.onnyth.onnythserver.profile.application.usecase.ProfileUseCaseService;
-import com.onnyth.onnythserver.service.RankService;
+import com.onnyth.onnythserver.ranking.application.usecase.RankUseCaseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -30,7 +30,7 @@ import java.util.UUID;
 public class ProfileController {
 
         private final ProfileUseCaseService profileService;
-        private final RankService rankService;
+        private final RankUseCaseService rankService;
 
         @Operation(summary = "Get current user's profile")
         @ApiResponses(value = {

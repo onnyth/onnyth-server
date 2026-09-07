@@ -4,7 +4,7 @@ import com.onnyth.onnythserver.user.application.port.UserRepository;
 import com.onnyth.onnythserver.dto.LeaderboardResponse;
 import com.onnyth.onnythserver.lifestats.application.port.*;
 import com.onnyth.onnythserver.dto.UserLeaderboardPositionResponse;
-import com.onnyth.onnythserver.models.RankTier;
+import com.onnyth.onnythserver.ranking.domain.model.RankTier;
 import com.onnyth.onnythserver.user.domain.model.User;
 import com.onnyth.onnythserver.repository.*;
 import com.onnyth.onnythserver.service.LeaderboardService;

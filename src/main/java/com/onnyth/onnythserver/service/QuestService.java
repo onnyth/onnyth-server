@@ -14,6 +14,7 @@ import com.onnyth.onnythserver.user.domain.model.User;
 import com.onnyth.onnythserver.repository.QuestCompletionRepository;
 import com.onnyth.onnythserver.repository.QuestRepository;
 import com.onnyth.onnythserver.user.application.port.UserRepository;
+import com.onnyth.onnythserver.ranking.application.usecase.RankUseCaseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,7 +34,7 @@ public class QuestService {
     private final QuestRepository questRepository;
     private final QuestCompletionRepository questCompletionRepository;
     private final UserRepository userRepository;
-    private final RankService rankService;
+    private final RankUseCaseService rankService;
 
     /**
      * Get all active quests with the user's completion status.

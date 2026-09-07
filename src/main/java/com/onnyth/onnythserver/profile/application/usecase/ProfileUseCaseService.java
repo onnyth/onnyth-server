@@ -11,7 +11,7 @@ import com.onnyth.onnythserver.lifestats.domain.model.*;
 import com.onnyth.onnythserver.models.*;
 import com.onnyth.onnythserver.user.domain.model.User;
 import com.onnyth.onnythserver.user.application.port.UserRepository;
-import com.onnyth.onnythserver.repository.*;
+import com.onnyth.onnythserver.streak.application.port.UserStreakRepository;
 import com.onnyth.onnythserver.profile.adapter.out.storage.StorageServiceAdapter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

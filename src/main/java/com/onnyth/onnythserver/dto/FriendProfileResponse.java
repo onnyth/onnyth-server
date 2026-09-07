@@ -1,5 +1,6 @@
 package com.onnyth.onnythserver.dto;
 
+import com.onnyth.onnythserver.ranking.adapter.in.rest.dto.RankProgressResponse;
 import lombok.Builder;
 
 import java.util.UUID;

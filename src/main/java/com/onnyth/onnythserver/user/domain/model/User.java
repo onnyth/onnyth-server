@@ -1,7 +1,7 @@
 package com.onnyth.onnythserver.user.domain.model;
 
 import com.onnyth.onnythserver.models.CosmeticItem;
-import com.onnyth.onnythserver.models.RankTier;
+import com.onnyth.onnythserver.ranking.domain.model.RankTier;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,9 +18,9 @@ import java.util.UUID;
  * Kept mutable (getters/setters) to match the widespread mutate-then-save
  * pattern used throughout the existing service layer.
  *
- * NOTE: still references {@link CosmeticItem} and {@link RankTier} from the
- * legacy {@code models} package. These will move into their own bounded
- * contexts (store, ranking) in a later migration phase.
+ * NOTE: still references {@link CosmeticItem} from the legacy {@code models}
+ * package. {@link RankTier} now lives in the ranking bounded context;
+ * cosmetics will move into their own bounded context in a later migration phase.
  */
 @Getter
 @Setter

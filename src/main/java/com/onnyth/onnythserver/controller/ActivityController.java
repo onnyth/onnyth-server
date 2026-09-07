@@ -1,11 +1,16 @@
 package com.onnyth.onnythserver.controller;
 
-import com.onnyth.onnythserver.dto.*;
+import com.onnyth.onnythserver.dto.ActivityLogResponse;
+import com.onnyth.onnythserver.dto.ActivityStatusResponse;
+import com.onnyth.onnythserver.dto.ActivityTypeResponse;
+import com.onnyth.onnythserver.dto.LogActivityRequest;
 import com.onnyth.onnythserver.models.StatDomain;
 import com.onnyth.onnythserver.service.ActivityService;
 import com.onnyth.onnythserver.service.ActivityTypeService;
-import com.onnyth.onnythserver.service.LevelService;
-import com.onnyth.onnythserver.service.StreakService;
+import com.onnyth.onnythserver.leveling.adapter.in.rest.dto.LevelProgressResponse;
+import com.onnyth.onnythserver.leveling.application.usecase.LevelUseCaseService;
+import com.onnyth.onnythserver.streak.adapter.in.rest.dto.StreakResponse;
+import com.onnyth.onnythserver.streak.application.usecase.StreakUseCaseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -30,8 +35,8 @@ public class ActivityController {
 
     private final ActivityService activityService;
     private final ActivityTypeService activityTypeService;
-    private final LevelService levelService;
-    private final StreakService streakService;
+    private final LevelUseCaseService levelService;
+    private final StreakUseCaseService streakService;
 
     @Operation(summary = "Get activity types", description = "List all active activity types, optionally filtered by category")
     @ApiResponses(value = {

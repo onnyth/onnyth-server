@@ -7,13 +7,14 @@ import com.onnyth.onnythserver.dto.FriendProfileResponse;
 import com.onnyth.onnythserver.lifestats.application.port.*;
 import com.onnyth.onnythserver.dto.FriendRequestResponse;
 import com.onnyth.onnythserver.dto.FriendResponse;
-import com.onnyth.onnythserver.dto.RankProgressResponse;
+import com.onnyth.onnythserver.ranking.adapter.in.rest.dto.RankProgressResponse;
 import com.onnyth.onnythserver.exceptions.*;
 import com.onnyth.onnythserver.models.*;
+import com.onnyth.onnythserver.ranking.domain.model.RankTier;
 import com.onnyth.onnythserver.repository.*;
 import com.onnyth.onnythserver.service.AchievementUnlockService;
 import com.onnyth.onnythserver.service.FriendshipService;
-import com.onnyth.onnythserver.service.RankService;
+import com.onnyth.onnythserver.ranking.application.usecase.RankUseCaseService;
 import com.onnyth.onnythserver.support.TestDataFactory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -48,7 +49,7 @@ class FriendshipServiceTest {
     @Mock
     private UserRepository userRepository;
     @Mock
-    private RankService rankService;
+    private RankUseCaseService rankService;
     @Mock
     private AchievementUnlockService achievementUnlockService;
     @Mock

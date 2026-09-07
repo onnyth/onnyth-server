@@ -4,11 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.onnyth.onnythserver.profile.adapter.in.rest.dto.ProfileCardResponse;
 import com.onnyth.onnythserver.profile.adapter.in.rest.dto.ProfileResponse;
 import com.onnyth.onnythserver.profile.adapter.in.rest.dto.ProfileUpdateRequest;
-import com.onnyth.onnythserver.dto.RankProgressResponse;
+import com.onnyth.onnythserver.ranking.adapter.in.rest.dto.RankProgressResponse;
 import com.onnyth.onnythserver.user.application.exception.UserNotFoundException;
 import com.onnyth.onnythserver.user.application.exception.UsernameAlreadyExistsException;
 import com.onnyth.onnythserver.profile.application.usecase.ProfileUseCaseService;
-import com.onnyth.onnythserver.service.RankService;
+import com.onnyth.onnythserver.ranking.application.usecase.RankUseCaseService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -50,7 +50,7 @@ class ProfileControllerTest {
         private ProfileUseCaseService profileService;
 
         @MockitoBean
-        private RankService rankService;
+        private RankUseCaseService rankService;
 
         private static final UUID USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
 
