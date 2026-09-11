@@ -38,9 +38,6 @@ build/
 .env.*.local
 .env.production
 
-# Agents
-.agents/
-
 # Supabase
 supabase/.temp
 supabase/.branches
