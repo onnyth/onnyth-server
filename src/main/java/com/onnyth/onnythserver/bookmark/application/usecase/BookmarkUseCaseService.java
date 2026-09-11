@@ -6,6 +6,8 @@ import com.onnyth.onnythserver.bookmark.application.command.UpdateBookmarkComman
 import com.onnyth.onnythserver.bookmark.application.exception.BookmarkNotFoundException;
 import com.onnyth.onnythserver.bookmark.application.exception.IdempotencyConflictException;
 import com.onnyth.onnythserver.bookmark.application.port.BookmarkRepository;
+import com.onnyth.onnythserver.bookmark.application.port.out.BookmarkEventPublisher;
+import com.onnyth.onnythserver.bookmark.domain.event.BookmarkCreated;
 import com.onnyth.onnythserver.bookmark.domain.model.Bookmark;
 import com.onnyth.onnythserver.shared.idempotency.application.IdempotencyResponse;
 import com.onnyth.onnythserver.shared.idempotency.application.IdempotencySerializer;
@@ -17,6 +19,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.Optional;
 import java.util.Set;
@@ -32,16 +36,13 @@ public class BookmarkUseCaseService {
     private final IdempotencyService idempotencyService;
     private final IdempotencySerializer idempotencySerializer;
     private final RequestHasher requestHasher;
+    private final BookmarkEventPublisher bookmarkEventPublisher;
 
     /**
-     * Redis-backed idempotency is treated as a best-effort cache, not a system of record —
-     * the same philosophy already accepted for Kafka publish failures (UC-1 A5: the bookmark
-     * is source of truth, publish failures are logged for reconciliation). A transient Redis
-     * failure on read or write must never roll back or block a successful bookmark creation.
-     * Accepted tradeoff: if Redis is unavailable during the idempotency window, a client retry
-     * with the same Idempotency-Key will not find the cached response and may create a
-     * duplicate bookmark. This is deliberate until a stronger dedup mechanism (e.g. a DB-level
-     * unique constraint on the request hash, or the Phase 3 Outbox) is introduced.
+     * Creates a bookmark. If {@code idempotencyKey} matches a previously cached request with
+     * the same content, returns the cached response instead of creating a new bookmark; if it
+     * matches a cached request with different content, throws {@link IdempotencyConflictException}.
+     * On successful creation, publishes a {@link BookmarkCreated} event.
      */
     @Transactional
     public CreateBookmarkResponse createBookmark(CreateBookmarkCommand command, String idempotencyKey) {
@@ -70,6 +71,8 @@ public class BookmarkUseCaseService {
 
         Bookmark savedBookmark = bookmarkRepository.save(bookmark);
 
+        publishBookmarkCreated(savedBookmark);
+
         CreateBookmarkResponse createBookmarkResponse = CreateBookmarkResponse.fromDomain(savedBookmark);
 
         safeSaveIdempotencyRecord(
@@ -85,9 +88,8 @@ public class BookmarkUseCaseService {
     }
 
     /**
-     * Builds a canonical string representation of the command for hashing, independent of
-     * the iteration order of the {@code tags} set, so logically identical retries always
-     * produce the same idempotency hash.
+     * Builds a canonical string representation of the command for hashing, ignoring the
+     * iteration order of the {@code tags} set.
      */
     private String canonicalize(CreateBookmarkCommand command) {
         Set<String> tags = command.tags() == null ? Set.of() : command.tags();
@@ -96,8 +98,8 @@ public class BookmarkUseCaseService {
     }
 
     /**
-     * Reads the cached idempotency record, treating a Redis failure as a cache miss so the
-     * request can still proceed to create the bookmark rather than fail outright.
+     * Reads the cached idempotency record for the given key, returning an empty result if
+     * the read fails.
      */
     private Optional<IdempotencyResponse> safeGetIdempotencyRecord(String idempotencyKey) {
         try {
@@ -109,14 +111,45 @@ public class BookmarkUseCaseService {
     }
 
     /**
-     * Persists the idempotency record for future replay, tolerating Redis failures so a
-     * transient cache outage never rolls back an already-persisted bookmark.
+     * Persists the idempotency record for the given key, logging a warning if the write fails.
      */
     private void safeSaveIdempotencyRecord(String idempotencyKey, IdempotencyResponse response) {
         try {
             idempotencyService.save(idempotencyKey, response);
         } catch (Exception e) {
             log.warn("Idempotency cache write failed for key {}; bookmark was still created", idempotencyKey, e);
+        }
+    }
+
+    /**
+     * Builds a {@link BookmarkCreated} event for the given bookmark and publishes it after the
+     * current transaction commits. If no transaction is active, publishes immediately.
+     */
+    private void publishBookmarkCreated(Bookmark bookmark) {
+        BookmarkCreated event = BookmarkCreated.of(bookmark.getId(), bookmark.getTitle(), bookmark.getUrl());
+
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    safePublish(event);
+                }
+            });
+        } else {
+            safePublish(event);
+        }
+    }
+
+    /**
+     * Publishes the given event via {@link BookmarkEventPublisher}, logging a warning instead
+     * of throwing if publishing fails.
+     */
+    private void safePublish(BookmarkCreated event) {
+        try {
+            bookmarkEventPublisher.publish(event);
+        } catch (Exception e) {
+            log.warn("Failed to publish BookmarkCreated event for bookmark {}; bookmark was still created",
+                    event.bookmarkId(), e);
         }
     }
 

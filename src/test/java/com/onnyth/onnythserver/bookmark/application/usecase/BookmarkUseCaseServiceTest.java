@@ -5,6 +5,8 @@ import com.onnyth.onnythserver.bookmark.adapter.in.rest.dto.CreateBookmarkRespon
 import com.onnyth.onnythserver.bookmark.application.command.CreateBookmarkCommand;
 import com.onnyth.onnythserver.bookmark.application.exception.IdempotencyConflictException;
 import com.onnyth.onnythserver.bookmark.application.port.BookmarkRepository;
+import com.onnyth.onnythserver.bookmark.application.port.out.BookmarkEventPublisher;
+import com.onnyth.onnythserver.bookmark.domain.event.BookmarkCreated;
 import com.onnyth.onnythserver.bookmark.domain.model.Bookmark;
 import com.onnyth.onnythserver.shared.idempotency.application.IdempotencyResponse;
 import com.onnyth.onnythserver.shared.idempotency.application.IdempotencySerializer;
@@ -44,6 +46,9 @@ class BookmarkUseCaseServiceTest {
     @Mock
     private IdempotencyService idempotencyService;
 
+    @Mock
+    private BookmarkEventPublisher bookmarkEventPublisher;
+
     private IdempotencySerializer idempotencySerializer;
     private RequestHasher requestHasher;
 
@@ -57,7 +62,8 @@ class BookmarkUseCaseServiceTest {
                 bookmarkRepository,
                 idempotencyService,
                 idempotencySerializer,
-                requestHasher
+                requestHasher,
+                bookmarkEventPublisher
         );
     }
 
@@ -92,6 +98,7 @@ class BookmarkUseCaseServiceTest {
             assertThat(response.id()).isEqualTo(BOOKMARK_ID);
             assertThat(response.url()).isEqualTo(command.url());
             verify(idempotencyService).save(anyString(), any(IdempotencyResponse.class));
+            verify(bookmarkEventPublisher).publish(any(BookmarkCreated.class));
         }
 
         @Test
@@ -112,6 +119,7 @@ class BookmarkUseCaseServiceTest {
 
             assertThat(response.id()).isEqualTo(BOOKMARK_ID);
             verify(bookmarkRepository, never()).save(any(Bookmark.class));
+            verify(bookmarkEventPublisher, never()).publish(any(BookmarkCreated.class));
         }
 
         @Test
@@ -194,6 +202,24 @@ class BookmarkUseCaseServiceTest {
 
             assertThat(response.id()).isEqualTo(BOOKMARK_ID);
             assertThat(response.url()).isEqualTo(command.url());
+        }
+
+        @Test
+        @DisplayName("still returns the created bookmark when the event publisher throws (A1)")
+        void returnsBookmarkWhenPublishFails() {
+            CreateBookmarkCommand command = CreateBookmarkCommand.of(
+                    "https://onnyth.com/article", "Useful article", Set.of("wellness")
+            );
+            String idempotencyKey = "key-7";
+
+            when(idempotencyService.get(idempotencyKey)).thenReturn(Optional.empty());
+            when(bookmarkRepository.save(any(Bookmark.class))).thenReturn(persistedBookmark(command));
+            doThrow(new RuntimeException("Kafka broker unavailable"))
+                    .when(bookmarkEventPublisher).publish(any(BookmarkCreated.class));
+
+            CreateBookmarkResponse response = bookmarkUseCaseService.createBookmark(command, idempotencyKey);
+
+            assertThat(response.id()).isEqualTo(BOOKMARK_ID);
         }
     }
 }
