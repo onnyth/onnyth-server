@@ -28,7 +28,7 @@ a801a0a refactor(search): migrate search module to hexagonal architecture
 ```
 
 The historical rationale (why hexagonal specifically, vs. e.g. a simpler layered-by-feature split) is
-**not documented** in the repository. `.agents/skills/conventions/SKILL.md` states the resulting rule
+**not documented** in the repository. `docs/engineering/coding-standards.md` states the resulting rule
 but not the motivation. Do not fabricate a justification beyond what is verifiable here.
 
 ## Decision
@@ -54,17 +54,20 @@ as unwired social-feature placeholders, not as an example of the old architectur
 
 ## Why This Decision
 
-Not documented beyond the stated goal in `.agents/skills/conventions/SKILL.md`: enforce a consistent
+Not documented beyond the stated goal in `docs/engineering/coding-standards.md`: enforce a consistent
 per-feature boundary and keep framework/persistence concerns out of domain and application code.
 
 ## Consequences
 
 - **Easier**: locating all code for a feature (one package subtree); replacing an adapter (e.g. swap
   persistence tech) without touching application/domain code; unit-testing use cases without Spring.
-- **Harder**: some technical docs (`.agents/skills/authentication`, `error-handling`, `testing`,
-  `api-reference`) still reference pre-migration file paths (`controller/`, `service/`, `models/`,
-  `exceptions/handler/`) — see `docs/known-issues.md`. New agents must verify paths against source
-  before trusting a skill's "Key Files" table.
+- **Harder**: this migration is also why the `docs/` tree was later consolidated from a separate
+  `.agents/skills/*/SKILL.md` system into feature-by-feature docs under `docs/features/` — several of
+  those old skill files had drifted to reference pre-migration file paths (`controller/`, `service/`,
+  `models/`, `exceptions/handler/`) after the migration landed. See
+  `docs/development/known-issues.md` for the cautionary example (the old life-stats skill) and
+  `docs/ai/documentation-rules.md` for the rule this motivates (replace docs in place, don't let them
+  drift from the code they describe).
 - Cross-feature reuse must go through a feature's `application/port`, not its entity/repository —
   slightly more ceremony for simple lookups, but keeps persistence details from leaking across
   feature boundaries.
@@ -72,9 +75,9 @@ per-feature boundary and keep framework/persistence concerns out of domain and a
 ## Implementation
 
 See any feature module under `src/main/java/com/onnyth/onnythserver/` (e.g. `bookmark/`, `auth/`,
-`profile/`) and `.agents/skills/conventions/SKILL.md` for the canonical shape.
+`profile/`) and `docs/architecture/low-level-design.md` for the canonical shape.
 
 ## Related
 
-- `.agents/skills/conventions/SKILL.md`, `.agents/skills/onnyth-overview/SKILL.md`
-- `docs/known-issues.md` (stale skill file paths)
+- `docs/architecture/low-level-design.md`, `docs/architecture/module-structure.md`
+- `docs/development/known-issues.md` (schema/migration gaps and other verified issues)

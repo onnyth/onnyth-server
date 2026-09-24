@@ -16,20 +16,21 @@ cosmetics, and interact with friends (requests, leaderboards, activity feed). Th
 
 ```text
 AGENTS.md                → you are here (AI entry point)
-docs/                     → durable, curated project knowledge (ADRs, current state, known issues)
-.agents/skills/           → per-feature/topic technical reference ("skills"), read on demand
-.agents/prd/              → product backlog, sprint plans, user stories (product/process history)
+docs/                     → the durable, single source of truth for product, architecture, features,
+                            API, data, engineering standards, ADRs, and current implementation state
 src/main/java/…           → application source, organized per-feature (see Architecture below)
-src/main/resources/db/migration/ → Flyway migrations (source of truth for the "core" schema)
-supabase/migrations/      → Supabase CLI migrations (parallel migration history, see docs/known-issues.md)
+src/main/resources/db/migration/ → Flyway migrations (incomplete — see docs/data/overview.md)
+supabase/migrations/      → Supabase CLI migrations (parallel migration history, see docs/development/known-issues.md)
 src/test/java/…           → tests, package structure mirrors src/main/java per feature
 docker-compose.yml        → local Kafka broker (+ app container); Postgres/Auth/Storage come from `supabase start`
 .github/workflows/ci-cd.yml → CI (mvn verify) + Railway deploy on push to main
 ```
 
-**Do not create a `docs/` category that duplicates `.agents/skills/`.** Skills are the primary
-per-feature/per-topic technical reference; `docs/` holds ADRs, current-state snapshots, and
-cross-cutting known issues that skills don't own.
+`docs/` is the **only** documentation/process system in this repository — see `docs/README.md` for its
+full structure. Two prior systems have been retired and fully consolidated into `docs/`: a per-feature
+skills tree (`.agents/skills/*/SKILL.md`, now `docs/features/` and `docs/architecture/`) and a
+product/process tree (`.agents/prd/` — product backlog, sprint plans, user stories — now
+`docs/development/`). Do not recreate either as a parallel system.
 
 ## Technology stack
 
@@ -48,7 +49,7 @@ cross-cutting known issues that skills don't own.
 ## Architecture: Hexagonal (per-feature)
 
 This codebase was fully migrated from a top-level `controller/service/repository/models` layout to a
-**per-feature hexagonal layout** (see `.agents/skills/conventions/SKILL.md` and
+**per-feature hexagonal layout** (see `docs/architecture/low-level-design.md` and
 `docs/decisions/ADR-0001-hexagonal-architecture.md`). Every feature package should follow this shape:
 
 ```text
@@ -69,7 +70,7 @@ Current feature modules: `achievement`, `activity`, `auth`, `bookmark`, `feed`, 
 `search`, `store`, `streak`, `user`, `xp`. Cross-cutting code lives in `shared` (base exceptions,
 `StatDomain`, idempotency contracts), `configuration`, `security`, `system`. `models/` holds
 `Post`/`Comment`/`Like` — intentionally unwired placeholders for a future social feature (see
-`.agents/prd/product-backlog.md` Epic 4).
+`docs/development/future-work.md`).
 
 ### Rules future agents MUST follow
 
@@ -97,10 +98,11 @@ Current feature modules: `achievement`, `activity`, `auth`, `bookmark`, `feed`, 
 9. **DTOs are Java records** living next to the adapter that owns them
    (`adapter/in/rest/dto/`), with Jakarta Validation annotations and static `fromDomain(...)` factories.
 10. **New Flyway migration**: `V{next}__description.sql` in `src/main/resources/db/migration/`; check
-    the highest existing `V{N}` first (see `.agents/skills/data-layer/SKILL.md`). Every entity that
-    will run against production (`ddl-auto=validate`) needs a matching migration — do not rely on the
-    test profile's `ddl-auto=update` to paper over a missing migration (see
-    `docs/known-issues.md` for a real instance of this gap).
+    the highest existing `V{N}` first (see `docs/data/database-schema.md`). Every entity that
+    will run against production (`ddl-auto=validate`) needs a matching migration **and** a mirrored
+    `supabase/migrations/*.sql` entry — do not rely on the test profile's `ddl-auto=update` to paper
+    over a missing migration (see `docs/development/known-issues.md` #1 for the current, large-scale
+    instance of this gap — roughly half the system's tables have no Flyway migration today).
 11. **`/api/v1/` prefix** for new endpoints unless following an existing unprefixed contract
     (`/api/users/**`).
 
@@ -110,44 +112,48 @@ Current feature modules: `achievement`, `activity`, `auth`, `bookmark`, `feed`, 
 ./mvnw compile                       # build
 ./mvnw test                          # all tests
 ./mvnw test -Dtest="com.onnyth.onnythserver.bookmark.**"   # single feature
-./mvnw pitest:mutationCoverage       # mutation testing (service/controller/model/handler classes)
+./mvnw pitest:mutationCoverage       # mutation testing (currently misconfigured, see docs/engineering/testing.md)
 ./mvnw spring-boot:run               # run locally (needs `supabase start` for DB/Auth/Storage + Kafka)
 docker compose up                    # local Kafka broker (+ optional containerized app)
 ```
 
 Local dependencies: Supabase CLI (`supabase start` for Postgres/Auth/Storage) + `docker-compose.yml`
 for Kafka. Redis must also be running locally (`localhost:6379`) for the bookmark idempotency feature
-to work — `docker-compose.yml` does not currently start Redis (see `docs/known-issues.md`).
+to work — `docker-compose.yml` does not currently start Redis (see `docs/development/known-issues.md`).
 
 ## Documentation workflow
 
-Before a significant change: check `.agents/skills/SKILL.md` for the relevant feature skill,
-`.agents/prd/product-backlog.md` for status, and `docs/decisions/README.md` for any ADR governing the
-area you're touching.
+Before a significant change: read `docs/ai/context.md`, then the relevant `docs/features/<feature>.md`,
+`docs/development/current-state.md` for status, and `docs/decisions/README.md` for any ADR governing
+the area you're touching.
 
 After a change, update docs if it affected: architecture/boundaries, business rules, API contracts,
 DB schema, events/Kafka topics, Redis usage, auth/authorization, infra/deployment, or testing strategy.
-Concretely:
-- Feature behavior/endpoints/entities changed → update the matching `.agents/skills/*/SKILL.md`
-  (per the update protocol in `.agents/prd/ORCHESTRATOR.md`).
+Full protocol: `docs/ai/documentation-rules.md`. Concretely:
+- Feature behavior/endpoints/entities changed → update the matching `docs/features/<feature>.md`
+  (replace sections in place) and `docs/features/README.md` if its status changed.
 - A new significant architectural decision (or one that reverses a prior ADR) → add/supersede an ADR
   under `docs/decisions/`.
-- Implemented/planned status changed → update `.agents/prd/product-backlog.md` and, if notable,
-  `docs/product/current-state.md`.
+- Implemented/planned status changed → update `docs/development/current-state.md`.
 - A project-wide AI/dev rule changed → update this file.
 
 Do not update docs for pure refactors with no behavior/contract change.
 
 ## Known constraints / important notes
 
-- **Skill staleness**: several `.agents/skills/*` files predate the hexagonal migration and a later
-  registration/structured-stats rewrite of `lifestats`. File paths and, in `life-stats/SKILL.md`'s
-  case, the underlying data model are inaccurate. See `docs/known-issues.md` before trusting file
-  paths in `authentication`, `error-handling`, `testing`, or `life-stats` skills — verify against
-  actual source first.
+- **`docs/` is the sole documentation/process system.** Two prior systems (`.agents/skills/*/SKILL.md`
+  and `.agents/prd/`) have been retired and fully consolidated into `docs/` — do not recreate either.
+  See `docs/README.md`.
+- **Several product behaviors that look wired are not actually triggered end-to-end** — most
+  importantly, score recalculation, feed-event creation, and broad achievement re-evaluation all have
+  the code/contract in place but no caller/listener invokes them. See
+  `docs/development/known-issues.md` #4, #6, #7 and `docs/development/current-state.md` before
+  assuming these behaviors work.
 - **Kafka/Redis are feature-scoped**, not general infra — only `bookmark` uses them today. Don't
   assume other features have an event bus or cache.
-- **`bookmark` table has no Flyway migration** (works only because the test profile uses
-  `ddl-auto=update`); production would fail schema validation. See `docs/known-issues.md`.
+- **Roughly half the system's tables have no Flyway migration** (including `bookmark`) — they work
+  only because the test profile uses `ddl-auto=update` and because production's actual schema was
+  bootstrapped via Supabase-side migrations. See `docs/development/known-issues.md` #1 and
+  `docs/data/overview.md`.
 - Secrets (`SUPABASE_*`, `DATABASE_*`, `RAILWAY_TOKEN`) are supplied via environment/`.env`/CI
   secrets — never hardcode or print real values in docs or code.

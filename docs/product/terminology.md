@@ -1,0 +1,17 @@
+# Terminology
+
+Terms that sound alike but mean different things in this codebase — the most common source of an AI
+(or a new contributor) getting the domain subtly wrong.
+
+| Term A | ≠ Term B | Why they're different |
+|---|---|---|
+| **Score** (`totalScore`) | **Level** (`level`/`xp`) | Score is a weighted function of real-world stat *values* (occupation, wealth, physique, wisdom, charisma). Level is driven by *engagement* — XP earned from activities/quests/streaks. A user can have a high score and a low level, or vice versa. See `docs/features/scoring.md` vs. `docs/features/leveling.md`. |
+| **Rank / Rank Tier** | **Level** | Rank tier is derived purely from `totalScore` (e.g. Bronze/Silver/Gold/Platinum/Elite). Level is a separate numeric track from `xp`. Two independent progression displays appear on the same profile card. |
+| **Activity** | **Quest** | An Activity is repeatable and cataloged (with a cooldown) — logging a workout today doesn't prevent logging one tomorrow. A Quest is completed once per user (unique constraint on `(user_id, quest_id)`). |
+| **Quest** | **Achievement** | A Quest is something the user actively completes via an endpoint call. An Achievement unlocks automatically when the unlock-condition logic detects it's been met — there's no "complete this achievement" endpoint. |
+| **Friend / Friendship** | **Follow** | A Friendship is mutual — formed by a request + accept, represented as two rows (one per direction). `Follow` is a one-directional model that exists in code (`friendship/domain/model/Follow.java`) but has **no use case or endpoint** — it is not a live feature. Don't assume "follow" works because the model exists. |
+| **OnnythCoins** | **Score** | `onnythCoins` is a spendable in-app currency (used to purchase cosmetics in `store/`). `totalScore`/rank-tier progress is not spendable and is not currency — improving your score doesn't directly grant coins (verify the exact coin-earning mechanism in `docs/features/cosmetics.md` / `docs/features/activities.md` before assuming a link). |
+| **Leaderboard position** | **World Rank / Country Rank** | `leaderboard/`'s position is scoped to a friend group (see `docs/features/leaderboard.md`). `User.worldRank`/`User.countryRank` are separate, periodically-computed global standings unrelated to any specific friend group — both can exist on the same profile card simultaneously and mean different things. |
+| **Domain score rank badge** (🥉🥈🥇💎👑 per stat domain on the profile card) | **Account Rank Tier badge** (`RankTier`'s emoji) | These are two visually similar but independently-computed badges with different thresholds — one per stat domain (hardcoded in `ProfileUseCaseService`), one account-wide (`ranking/domain/model/RankTier`). See `docs/features/profiles.md` Domain Logic. |
+| **Profile Vote** (upvote/downvote a profile) | **Achievement unlock** | Profile votes are a direct peer social signal (`profile_votes` table, `voteScore` on `User`). They do not unlock achievements or affect score/rank directly (verify in `docs/features/achievements.md` if this changes). |
+| **Bookmark** | Any gamification concept | `bookmark/` is unrelated to the RPG/life-tracking domain — it's a generic URL-saving utility feature that happens to live in the same codebase as the reference pattern for idempotency + domain events. Don't assume it participates in scoring, XP, or the social graph. |

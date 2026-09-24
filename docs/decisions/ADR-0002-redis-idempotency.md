@@ -47,7 +47,7 @@ accepted for Kafka publish failures (see ADR-0003).
   best-effort wrapper methods) is copy-paste reusable for any future unsafe endpoint that needs the
   same guarantee.
 - **Harder**: Redis is now a required runtime dependency for this one endpoint to be fully idempotent,
-  but `docker-compose.yml` does not provision a Redis service (see `docs/known-issues.md`) — a
+  but `docker-compose.yml` does not provision a Redis service (see `docs/development/known-issues.md`) — a
   contributor running only `docker compose up` will not have Redis available.
 - A duplicate bookmark is possible during a Redis outage combined with a client retry — accepted, not
   a bug.
@@ -64,4 +64,4 @@ accepted for Kafka publish failures (see ADR-0003).
 
 - `docs/decisions/ADR-0001-hexagonal-architecture.md` (port/adapter shape)
 - `docs/decisions/ADR-0003-kafka-domain-events.md` (same best-effort/fail-open precedent)
-- `docs/known-issues.md` (Redis not in `docker-compose.yml`)
+- `docs/development/known-issues.md` (Redis not in `docker-compose.yml`)

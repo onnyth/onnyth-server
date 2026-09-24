@@ -1,7 +1,8 @@
 # Architecture Decision Records
 
 ADRs capture *why* a significant, hard-to-reverse decision was made — not implementation detail (that
-belongs in `.agents/skills/`). Read these before proposing an alternative to an established pattern.
+belongs in `docs/architecture/` and `docs/features/`). Read these before proposing an alternative to
+an established pattern.
 
 | ADR | Decision | Status |
 |---|---|---|
